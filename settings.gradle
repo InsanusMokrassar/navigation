@@ -1,7 +1,7 @@
-rootProject.name = 'project_name'
+rootProject.name = 'navigation'
 
 String[] includes = [
-    ":lib"
+    ":core"
 ]
 
 
@@ -14,5 +14,3 @@ includes.each { originalName ->
     project.name = projectName
     project.projectDir = new File(projectDirectory)
 }
-
-enableFeaturePreview("VERSION_CATALOGS")
