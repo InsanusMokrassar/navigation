@@ -5,6 +5,7 @@ plugins {
 }
 
 apply from: "$mppProjectWithSerializationPresetPath"
+apply from: "$publishGradlePath"
 
 kotlin {
     sourceSets {
