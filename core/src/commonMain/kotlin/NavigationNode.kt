@@ -12,10 +12,12 @@ abstract class NavigationNode<T> {
     }
     open val id: NavigationNodeId = NavigationNodeId()
 
-    abstract val chainHolder: ChainHolder<T>
+    abstract val chain: NavigationChain<T>
+    val chainHolder
+        get() = chain
 
-    internal val _subchains = mutableListOf<ChainHolder<T>>()
-    protected val subchains: List<ChainHolder<T>> = _subchains
+    internal val _subchains = mutableListOf<NavigationChain<T>>()
+    protected val subchains: List<NavigationChain<T>> = _subchains
     private val _stateChanges = MutableSharedFlow<NavigationNodeState>(extraBufferCapacity = Int.MAX_VALUE)
 
     val stateChanges: Flow<NavigationNodeState> = _stateChanges.asSharedFlow()
@@ -66,8 +68,8 @@ abstract class NavigationNode<T> {
         log.d { "onDestroy" }
     }
 
-    fun createSubChain(config: T): Pair<NavigationNode<T>, ChainHolder<T>>? {
-        val newSubChain = ChainHolder(this, chainHolder.scope.LinkedSupervisorScope(), chainHolder.nodeFactory)
+    fun createSubChain(config: T): Pair<NavigationNode<T>, NavigationChain<T>>? {
+        val newSubChain = NavigationChain(this, chain.scope.LinkedSupervisorScope(), chain.nodeFactory)
         _subchains.add(newSubChain)
         val createdNode = newSubChain.push(config) ?: return null
         newSubChain.stackFlow.subscribeSafelyWithoutExceptions(newSubChain.scope) {
@@ -79,5 +81,5 @@ abstract class NavigationNode<T> {
         return createdNode to newSubChain
     }
 
-    class Empty<T>(override val chainHolder: ChainHolder<T>) : NavigationNode<T>()
+    class Empty<T>(override val chain: NavigationChain<T>) : NavigationNode<T>()
 }
