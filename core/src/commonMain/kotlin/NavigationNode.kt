@@ -13,6 +13,8 @@ abstract class NavigationNode<T> {
     open val id: NavigationNodeId = NavigationNodeId()
 
     abstract val chain: NavigationChain<T>
+
+    @Deprecated("Renamed", ReplaceWith("chain"))
     val chainHolder
         get() = chain
 
