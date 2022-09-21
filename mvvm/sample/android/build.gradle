@@ -35,6 +35,7 @@ android {
 dependencies {
     implementation libs.kotlin
     implementation libs.kotlin.serialization
+    implementation libs.kotlin.reflect
     implementation libs.android.core.ktx
     implementation libs.android.appcompat
     implementation libs.android.material

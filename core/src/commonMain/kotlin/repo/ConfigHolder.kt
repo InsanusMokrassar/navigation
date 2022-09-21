@@ -4,12 +4,13 @@ import kotlinx.serialization.Serializable
 
 sealed interface ConfigHolder<T> {
     @Serializable
-    data class Simple<T>(
+    data class Node<T>(
         val config: T,
-        val subconfig: ConfigHolder<T>?
+        val subnode: Node<T>?,
+        val subchains: List<Chain<T>>
     ) : ConfigHolder<T>
     @Serializable
-    data class Parent<T>(
-        val configs: List<Simple<T>>
+    data class Chain<T>(
+        val firstNodeConfig: Node<T>
     ) : ConfigHolder<T>
 }

@@ -13,6 +13,7 @@ abstract class NavigationNode<T> {
     open val id: NavigationNodeId = NavigationNodeId()
 
     abstract val chain: NavigationChain<T>
+    abstract val config: T
 
     @Deprecated("Renamed", ReplaceWith("chain"))
     val chainHolder
@@ -70,8 +71,12 @@ abstract class NavigationNode<T> {
         log.d { "onDestroy" }
     }
 
-    fun createSubChain(config: T): Pair<NavigationNode<T>, NavigationChain<T>>? {
-        val newSubChain = NavigationChain(this, chain.scope.LinkedSupervisorScope(), chain.nodeFactory)
+    fun createEmptySubChain(): NavigationChain<T> {
+        return NavigationChain(this, chain.scope.LinkedSupervisorScope(), chain.nodeFactory)
+    }
+
+    fun createEmptySubChain(config: T): Pair<NavigationNode<T>, NavigationChain<T>>? {
+        val newSubChain = createEmptySubChain()
         _subchains.add(newSubChain)
         val createdNode = newSubChain.push(config) ?: return null
         newSubChain.stackFlow.subscribeSafelyWithoutExceptions(newSubChain.scope) {
@@ -83,5 +88,5 @@ abstract class NavigationNode<T> {
         return createdNode to newSubChain
     }
 
-    class Empty<T>(override val chain: NavigationChain<T>) : NavigationNode<T>()
+    class Empty<T>(override val chain: NavigationChain<T>, override val config: T) : NavigationNode<T>()
 }

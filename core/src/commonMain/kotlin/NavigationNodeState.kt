@@ -49,13 +49,7 @@ sealed interface NavigationNodeState : Comparable<NavigationNodeState> {
         /**
          * @return [NavigationNodeState] with [stateNumber] if any or null
          */
-        fun value(stateNumber: Number): NavigationNodeState? = when (stateNumber) {
-            NEW.stateNumber -> NEW
-            CREATED.stateNumber -> CREATED
-            STARTED.stateNumber -> STARTED
-            RESUMED.stateNumber -> RESUMED
-            else -> null
-        }
+        fun value(stateNumber: Number): NavigationNodeState? = values.firstOrNull { it.stateNumber == stateNumber.toByte() }
     }
 }
 
