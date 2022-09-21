@@ -14,8 +14,12 @@ espresso_core = "3.4.0"
 
 android-gradle-plugin = "7.2.2"
 android-minSdk = "21"
-android-compileSdk = "32"
-android-buildTools = "32.0.0"
+android-compileSdk = "33"
+android-buildTools = "33.0.0"
+
+android-core-ktx = "1.9.0"
+android-appcompat = "1.5.1"
+android-material = "1.6.1"
 
 github-release = "2.4.1"
 
@@ -33,6 +37,12 @@ android-test-espresso-core = { module = "androidx.test.espresso:espresso-core", 
 microutils-coroutines = { module = "dev.inmo:micro_utils.coroutines", version.ref = "microutils" }
 kslog = { module = "dev.inmo:kslog", version.ref = "kslog" }
 uuid = { module = "com.benasher44:uuid", version.ref = "uuid" }
+
+# Android
+
+android-core-ktx = { module = "androidx.core:core-ktx", version.ref = "android-core-ktx" }
+android-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "android-appcompat" }
+android-material = { module = "com.google.android.material:material", version.ref = "android-material" }
 
 # buildscript classpaths
 
