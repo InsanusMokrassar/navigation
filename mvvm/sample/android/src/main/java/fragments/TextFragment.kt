@@ -2,15 +2,15 @@ package dev.inmo.navigation.mvvm.sample.android.fragments
 
 import android.os.Bundle
 import android.view.*
-import android.widget.FrameLayout
 import android.widget.TextView
+import dev.inmo.micro_utils.common.argumentOrThrow
 import dev.inmo.navigation.core.fragments.NodeFragment
 import dev.inmo.navigation.mvvm.sample.android.AndroidNodeConfig
 import dev.inmo.navigation.mvvm.sample.android.R
 
 class TextFragment : NodeFragment<AndroidNodeConfig>() {
-    protected val text: String by argument()
-    protected val viewId: Int by argument()
+    protected val text: String by argumentOrThrow()
+    protected val viewId: Int by argumentOrThrow()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_text, container, false).apply {

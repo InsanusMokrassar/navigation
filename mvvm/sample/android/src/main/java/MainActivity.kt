@@ -8,7 +8,7 @@ import dev.inmo.navigation.core.*
 import dev.inmo.navigation.core.fragments.AndroidFragmentNode
 import dev.inmo.navigation.core.repo.*
 import dev.inmo.navigation.mvvm.sample.android.fragments.TextFragment
-import dev.inmo.navigation.mvvm.sample.android.repo.AndroidSPConfigsRepo
+import dev.inmo.navigation.core.AndroidSPConfigsRepo
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
@@ -19,7 +19,8 @@ class MainActivity : AppCompatActivity() {
 
         val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
         val repo = AndroidSPConfigsRepo(
-            getSharedPreferences("internal", MODE_PRIVATE)
+            getSharedPreferences("internal", MODE_PRIVATE),
+            AndroidNodeConfig::class
         )
 
         lateinit var rootChainHolder: NavigationChain<AndroidNodeConfig>
