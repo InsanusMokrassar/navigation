@@ -3,7 +3,8 @@ package dev.inmo.navigation.mvvm.sample.android
 import androidx.annotation.IdRes
 import kotlinx.serialization.Serializable
 
-interface AndroidNodeConfig {
+@Serializable
+sealed interface AndroidNodeConfig {
     val viewId: Int
 
     @Serializable
