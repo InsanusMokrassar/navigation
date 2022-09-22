@@ -2,7 +2,8 @@ package dev.inmo.navigation.core
 
 import dev.inmo.kslog.common.d
 import dev.inmo.kslog.common.logger
-import dev.inmo.micro_utils.coroutines.*
+import dev.inmo.micro_utils.coroutines.LinkedSupervisorScope
+import dev.inmo.micro_utils.coroutines.subscribeSafelyWithoutExceptions
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.*
 
@@ -21,9 +22,12 @@ abstract class NavigationNode<T> {
 
     internal val _subchains = mutableListOf<NavigationChain<T>>()
     protected val subchains: List<NavigationChain<T>> = _subchains
-    private val _stateChanges = MutableSharedFlow<NavigationNodeState>(extraBufferCapacity = Int.MAX_VALUE)
+    internal val _subchainsFlow = MutableStateFlow<List<NavigationChain<T>>>(subchains)
+    val subchainsFlow: StateFlow<List<NavigationChain<T>>> = _subchainsFlow.asStateFlow()
+    private val _stateChanges = MutableSharedFlow<NavigationStateChange>(extraBufferCapacity = Int.MAX_VALUE)
 
-    val stateChanges: Flow<NavigationNodeState> = _stateChanges.asSharedFlow()
+    val stateChangesFlow: Flow<NavigationStateChange> = _stateChanges.asSharedFlow()
+    val statesFlow: Flow<NavigationNodeState> = stateChangesFlow.map { it.to }
     var state: NavigationNodeState = NavigationNodeState.NEW
         internal set(value) {
             val changes = NavigationStateChangeList(field, value)
@@ -32,20 +36,20 @@ abstract class NavigationNode<T> {
                 field = change.to
 
                 if (change.isNegative) {
-                    _stateChanges.tryEmit(change.to)
+                    _stateChanges.tryEmit(change)
                 }
 
-                when {
-                    change.onCreate -> onCreate()
-                    change.onStart -> onStart()
-                    change.onResume -> onResume()
-                    change.onPause -> onPause()
-                    change.onStop -> onStop()
-                    change.onDestroy -> onDestroy()
+                when (change.type) {
+                    NavigationStateChange.Type.CREATE -> onCreate()
+                    NavigationStateChange.Type.START -> onStart()
+                    NavigationStateChange.Type.RESUME -> onResume()
+                    NavigationStateChange.Type.PAUSE -> onPause()
+                    NavigationStateChange.Type.STOP -> onStop()
+                    NavigationStateChange.Type.DESTROY -> onDestroy()
                 }
 
                 if (change.isPositive) {
-                    _stateChanges.tryEmit(change.to)
+                    _stateChanges.tryEmit(change)
                 }
 
                 log.d { "State has been changed from ${change.from} to ${change.to}" }
@@ -72,18 +76,22 @@ abstract class NavigationNode<T> {
     }
 
     fun createEmptySubChain(): NavigationChain<T> {
-        return NavigationChain(this, chain.scope.LinkedSupervisorScope(), chain.nodeFactory)
-    }
+        return NavigationChain(this, chain.scope.LinkedSupervisorScope(), chain.nodeFactory).also {
+            _subchains.add(it)
+            _subchainsFlow.value = (_subchains.toList())
 
-    fun createEmptySubChain(config: T): Pair<NavigationNode<T>, NavigationChain<T>>? {
-        val newSubChain = createEmptySubChain()
-        _subchains.add(newSubChain)
-        val createdNode = newSubChain.push(config) ?: return null
-        newSubChain.stackFlow.subscribeSafelyWithoutExceptions(newSubChain.scope) {
-            if (it.isEmpty() && _subchains.remove(newSubChain)) {
-                newSubChain.scope.cancel()
+            it.stackFlow.dropWhile { it.isEmpty() }.subscribeSafelyWithoutExceptions(it.scope) { _ ->
+                if (it.stack.isEmpty() && _subchains.remove(it)) {
+                    it.scope.cancel()
+                    _subchainsFlow.value = (_subchains.toList())
+                }
             }
         }
+    }
+
+    fun createSubChain(config: T): Pair<NavigationNode<T>, NavigationChain<T>>? {
+        val newSubChain = createEmptySubChain()
+        val createdNode = newSubChain.push(config) ?: return null
         log.d { "Stack after adding of $config subchain: ${subchains.joinToString { it.stackFlow.value.joinToString { it.id.string } }}" }
         return createdNode to newSubChain
     }

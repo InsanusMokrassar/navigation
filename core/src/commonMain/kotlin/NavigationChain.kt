@@ -2,13 +2,13 @@ package dev.inmo.navigation.core
 
 import dev.inmo.kslog.common.*
 import dev.inmo.micro_utils.coroutines.*
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 class NavigationChain<T>(
-    private val parentNode: NavigationNode<T>?,
+    internal val parentNode: NavigationNode<T>?,
     internal val scope: CoroutineScope,
     internal val nodeFactory: NavigationNodeFactory<T>
 ) {
@@ -23,11 +23,14 @@ class NavigationChain<T>(
     internal val stackFlow: StateFlow<List<NavigationNode<T>>> = _stackFlow.asStateFlow()
 
     private val parentNodeListeningJob = parentNode ?.run {
-        (flowOf(state) + stateChanges).subscribeSafelyWithoutExceptions(scope) {
+        (flowOf(state) + stateChangesFlow).subscribeSafelyWithoutExceptions(scope) {
             Log.d { "Start update of state due to parent state update to $it" }
             actualizeStackStates()
         }
     }
+
+    val job: Job
+        get() = scope.coroutineContext.job
 
     private val actualizeMutex = Mutex()
     private suspend fun actualizeStackStates() {

@@ -1,15 +1,16 @@
-package dev.inmo.navigation.mvvm.sample.android.fragments
+package dev.inmo.navigation.core.fragments
 
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import dev.inmo.navigation.core.NavigationNode
 import kotlin.reflect.KProperty
 
-abstract class FragmentSubject<Config : Any> : Fragment() {
-    protected var node: NavigationNode<Config>? = null
+abstract class NodeFragment<Config : Any> : Fragment() {
+    protected lateinit var node: AndroidFragmentNode<Config>
         private set
+    protected lateinit var onConfigUpdatedCallback: (Config) -> Unit
 
-    open fun configure(node: NavigationNode<Config>) {
+    open fun configure(node: AndroidFragmentNode<Config>, onConfigUpdatedCallback: (Config) -> Unit) {
         arguments = bundleOf(
             *node.config::class.members.mapNotNull {
                 if (it is KProperty<*>) {
@@ -20,5 +21,6 @@ abstract class FragmentSubject<Config : Any> : Fragment() {
             }.toTypedArray()
         )
         this.node = node
+        this.onConfigUpdatedCallback = onConfigUpdatedCallback
     }
 }

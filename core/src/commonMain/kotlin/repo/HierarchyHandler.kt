@@ -1,7 +1,8 @@
 package dev.inmo.navigation.core.repo
 
 import dev.inmo.navigation.core.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.takeWhile
 
 suspend fun <T> ConfigHolder.Chain<T>.restoreHierarchy(
     node: NavigationNode<T>,
@@ -24,7 +25,7 @@ suspend fun <T> ConfigHolder.Node<T>.restoreHierarchy(
     val node = chain.push(config) ?: return null
 
     if (expectedStateForRestoreContinue != null) {
-        node.stateChanges.takeWhile {
+        node.statesFlow.takeWhile {
             it != expectedStateForRestoreContinue
         }.collect()
     }
@@ -38,9 +39,9 @@ suspend fun <T> ConfigHolder.Node<T>.restoreHierarchy(
     return node
 }
 
-fun <T> NavigationChain<T>.storeHierarchy(): ConfigHolder.Chain<T> {
+fun <T> NavigationChain<T>.storeHierarchy(): ConfigHolder.Chain<T>? {
     return ConfigHolder.Chain(
-        stack.first().storeHierarchy()
+        stack.firstOrNull() ?.storeHierarchy() ?: return null
     )
 }
 
@@ -48,7 +49,7 @@ fun <T> NavigationNode<T>.storeHierarchy(): ConfigHolder.Node<T> {
     return ConfigHolder.Node(
         config,
         chain.stack.dropWhile { it != this }.drop(1).firstOrNull() ?.storeHierarchy(),
-        _subchains.map {
+        _subchains.mapNotNull {
             it.storeHierarchy()
         }
     )

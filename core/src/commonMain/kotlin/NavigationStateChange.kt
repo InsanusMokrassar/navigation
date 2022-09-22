@@ -9,6 +9,21 @@ import kotlin.math.abs
 value class NavigationStateChange internal constructor(
     val pair: Pair<NavigationNodeState, NavigationNodeState>
 ) {
+    @Serializable
+    sealed interface Type {
+        @Serializable
+        object CREATE : Type
+        @Serializable
+        object START : Type
+        @Serializable
+        object RESUME : Type
+        @Serializable
+        object PAUSE : Type
+        @Serializable
+        object STOP : Type
+        @Serializable
+        object DESTROY : Type
+    }
     val from: NavigationNodeState
         get() = pair.first
     val to: NavigationNodeState
@@ -20,21 +35,32 @@ value class NavigationStateChange internal constructor(
     val isNegative
         get() = !isPositive
 
-    val onCreate
+    private val onCreate
         get() = to == NavigationNodeState.CREATED && from == NavigationNodeState.NEW
-    val onStop
+    private val onStop
         get() = to == NavigationNodeState.CREATED && from != NavigationNodeState.NEW
 
-    val onDestroy
+    private val onDestroy
         get() = to == NavigationNodeState.NEW && from != NavigationNodeState.NEW
 
-    val onPause
+    private val onPause
         get() = to == NavigationNodeState.STARTED && from == NavigationNodeState.RESUMED
-    val onStart
+    private val onStart
         get() = to == NavigationNodeState.STARTED && from == NavigationNodeState.CREATED
 
-    val onResume
+    private val onResume
         get() = to == NavigationNodeState.RESUMED
+
+    val type: Type
+        get() = when {
+            onCreate -> Type.CREATE
+            onStart -> Type.START
+            onResume -> Type.RESUME
+            onPause -> Type.PAUSE
+            onStop -> Type.STOP
+            onDestroy -> Type.DESTROY
+            else -> Type.CREATE
+        }
 
     init {
         require(from != to) {
