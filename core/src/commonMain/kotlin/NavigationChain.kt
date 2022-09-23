@@ -1,6 +1,7 @@
 package dev.inmo.navigation.core
 
 import dev.inmo.kslog.common.*
+import dev.inmo.micro_utils.common.diff
 import dev.inmo.micro_utils.coroutines.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -20,7 +21,7 @@ class NavigationChain<T>(
         get() = parentNode ?.state ?: NavigationNodeState.RESUMED
 
     private val _stackFlow = MutableStateFlow<List<NavigationNode<T>>>(emptyList())
-    internal val stackFlow: StateFlow<List<NavigationNode<T>>> = _stackFlow.asStateFlow()
+    val stackFlow: StateFlow<List<NavigationNode<T>>> = _stackFlow.asStateFlow()
 
     private val parentNodeListeningJob = parentNode ?.run {
         (flowOf(state) + stateChangesFlow).subscribeSafelyWithoutExceptions(scope) {
@@ -87,10 +88,13 @@ class NavigationChain<T>(
 
     fun replace(id: NavigationNodeId, config: T): Pair<NavigationNode<T>, NavigationNode<T>>? {
         val i = stack.indexOfFirst { it.id == id }.takeIf { it != -1 } ?: return null
+
         val newNode = nodeFactory.createNode(this, config) ?: return null
         val oldNode = stack.set(i, newNode)
+
         nodesIds.remove(id)
         nodesIds[newNode.id] = newNode
+
         oldNode.state = NavigationNodeState.NEW
         scope.launchSafelyWithoutExceptions { actualizeStackStates() }
 

@@ -4,6 +4,7 @@ import dev.inmo.kslog.common.d
 import dev.inmo.kslog.common.logger
 import dev.inmo.micro_utils.coroutines.LinkedSupervisorScope
 import dev.inmo.micro_utils.coroutines.subscribeSafelyWithoutExceptions
+import dev.inmo.navigation.core.extensions.onNodeRemovedFlow
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.*
 
@@ -21,7 +22,8 @@ abstract class NavigationNode<T> {
         get() = chain
 
     internal val _subchains = mutableListOf<NavigationChain<T>>()
-    protected val subchains: List<NavigationChain<T>> = _subchains
+    protected val subchains: List<NavigationChain<T>>
+        get() = _subchains
     internal val _subchainsFlow = MutableStateFlow<List<NavigationChain<T>>>(subchains)
     val subchainsFlow: StateFlow<List<NavigationChain<T>>> = _subchainsFlow.asStateFlow()
     private val _stateChanges = MutableSharedFlow<NavigationStateChange>(extraBufferCapacity = Int.MAX_VALUE)
@@ -78,12 +80,12 @@ abstract class NavigationNode<T> {
     fun createEmptySubChain(): NavigationChain<T> {
         return NavigationChain(this, chain.scope.LinkedSupervisorScope(), chain.nodeFactory).also {
             _subchains.add(it)
-            _subchainsFlow.value = (_subchains.toList())
+            _subchainsFlow.value = (subchains.toList())
 
-            it.stackFlow.dropWhile { it.isEmpty() }.subscribeSafelyWithoutExceptions(it.scope) { _ ->
+            it.onNodeRemovedFlow.subscribeSafelyWithoutExceptions(it.scope) { removedIndexes ->
                 if (it.stack.isEmpty() && _subchains.remove(it)) {
                     it.scope.cancel()
-                    _subchainsFlow.value = (_subchains.toList())
+                    _subchainsFlow.value = (subchains.toList())
                 }
             }
         }

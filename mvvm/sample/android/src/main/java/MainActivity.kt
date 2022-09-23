@@ -1,8 +1,10 @@
 package dev.inmo.navigation.mvvm.sample.android
 
 import android.os.Bundle
+import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import dev.inmo.micro_utils.common.rootView
 import dev.inmo.micro_utils.coroutines.subscribeSafelyWithoutExceptions
 import dev.inmo.navigation.core.*
 import dev.inmo.navigation.core.fragments.AndroidFragmentNode
@@ -17,6 +19,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val rootFragmentTag = findViewById<View>(R.id.fragment_id).tag.toString()
+
         val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
         val repo = AndroidSPConfigsRepo(
             getSharedPreferences("internal", MODE_PRIVATE),
@@ -29,27 +33,19 @@ class MainActivity : AppCompatActivity() {
                 is AndroidNodeConfig.TextConfig -> AndroidFragmentNode(
                     navigationChain,
                     config,
-                    config.viewId,
+                    config.viewTag,
                     TextFragment::class,
-                    supportFragmentManager
+                    supportFragmentManager,
+                    rootView!!
                 )
 
                 else -> error(config)
             }.also {
-                it.statesFlow.filter {
-                    it == NavigationNodeState.RESUMED || it == NavigationNodeState.CREATED
-                }.subscribeSafelyWithoutExceptions(scope + it.chain.job) {
-                    val hierarchy = rootChainHolder.storeHierarchy() ?: return@subscribeSafelyWithoutExceptions
-                    repo.save(hierarchy)
-                    val textView = findViewById<TextView>(R.id.activity_main_tree_text)
-                    textView.text = hierarchy.toString()
-                }
-                it.subchainsFlow.subscribeSafelyWithoutExceptions(scope + it.chain.job) {
-                    val hierarchy = rootChainHolder.storeHierarchy() ?: return@subscribeSafelyWithoutExceptions
-                    repo.save(hierarchy)
-                    val textView = findViewById<TextView>(R.id.activity_main_tree_text)
-                    textView.text = hierarchy.toString()
-                }
+                it.chain.enableSavingHierarchy(
+                    repo,
+                    scope,
+                    1000L
+                )
             }
         }
         scope.launch {
@@ -57,7 +53,7 @@ class MainActivity : AppCompatActivity() {
                 repo.get() ?: ConfigHolder.Chain(
                     ConfigHolder.Node(
                         AndroidNodeConfig.TextConfig(
-                            R.id.fragment_id,
+                            rootFragmentTag,
                             "Sample"
                         ),
                         null,

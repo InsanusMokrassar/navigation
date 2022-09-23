@@ -5,12 +5,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 sealed interface AndroidNodeConfig {
-    val viewId: Int
+    val viewTag: String
 
     @Serializable
     data class TextConfig(
-        @IdRes
-        override val viewId: Int,
+        override val viewTag: String,
         val text: String
     ) : AndroidNodeConfig
 }

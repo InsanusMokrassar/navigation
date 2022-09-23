@@ -10,15 +10,19 @@ import dev.inmo.navigation.mvvm.sample.android.R
 
 class TextFragment : NodeFragment<AndroidNodeConfig>() {
     protected val text: String by argumentOrThrow()
-    protected val viewId: Int by argumentOrThrow()
+    protected val viewTag: String by argumentOrThrow()
+    protected val subViewTag: String by lazy {
+        "${viewTag}subview"
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_text, container, false).apply {
+            findViewById<View>(R.id.fragment_text_subchain_container) ?.tag = subViewTag
             findViewById<TextView>(R.id.fragment_text_view) ?.text = this@TextFragment.text
             findViewById<View>(R.id.fragment_text_increase).setOnClickListener {
                 node.chain.push(
                     AndroidNodeConfig.TextConfig(
-                        viewId,
+                        viewTag,
                         "${text}X"
                     )
                 )
@@ -29,7 +33,7 @@ class TextFragment : NodeFragment<AndroidNodeConfig>() {
             findViewById<View>(R.id.fragment_text_subchain).setOnClickListener {
                 node.createSubChain(
                     AndroidNodeConfig.TextConfig(
-                        R.id.fragment_text_subchain_container,
+                        subViewTag,
                         "Sub$text"
                     )
                 )
