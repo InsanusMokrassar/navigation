@@ -5,13 +5,15 @@ import android.view.*
 import android.widget.FrameLayout
 import android.widget.TextView
 import dev.inmo.micro_utils.common.argumentOrThrow
-import dev.inmo.micro_utils.coroutines.flatten
-import dev.inmo.micro_utils.coroutines.subscribeSafelyWithoutExceptions
-import dev.inmo.navigation.core.extensions.onChainAddedFlow
-import dev.inmo.navigation.core.extensions.onNodeRemovedFlow
+import dev.inmo.micro_utils.common.findViewsByTag
+import dev.inmo.micro_utils.coroutines.*
+import dev.inmo.navigation.core.NavigationChain
+import dev.inmo.navigation.core.NavigationStateChange
+import dev.inmo.navigation.core.extensions.*
 import dev.inmo.navigation.core.fragments.NodeFragment
 import dev.inmo.navigation.mvvm.sample.android.AndroidNodeConfig
 import dev.inmo.navigation.mvvm.sample.android.R
+import kotlinx.coroutines.flow.*
 
 class TextFragment : NodeFragment<AndroidNodeConfig>() {
     protected val text: String by argumentOrThrow()
@@ -41,24 +43,42 @@ class TextFragment : NodeFragment<AndroidNodeConfig>() {
                 return view
             }
 
-            findViewById<View>(R.id.fragment_text_subchain).setOnClickListener {
-                val subViewTag = "${viewTag}subview${node.chain.stackFlow.value.size}"
-                val view = addFrameLayout(subViewTag) ?: return@setOnClickListener
+            suspend fun enableChainListening(chain: NavigationChain<AndroidNodeConfig>) {
+                var layout: View? = null
 
-                addView(view)
+                val subscriptionJob = chain.stackFlow.subscribeSafelyWithoutExceptions(scope) {
+                    if (it.isNotEmpty() && it.first().config.viewTag == layout ?.tag) {
+                        return@subscribeSafelyWithoutExceptions
+                    }
+
+                    layout ?.let { removeView(it) }
+
+                    layout = addFrameLayout(it.first().config.viewTag) ?: return@subscribeSafelyWithoutExceptions
+                }
+
+                node.onChainRemovedFlow.flatten().dropWhile { it.value != chain }.take(1).collect()
+                subscriptionJob.cancel()
+            }
+
+            node.onChainAddedFlow.flatten().subscribeSafelyWithoutExceptions(scope) { (_, chain) ->
+                enableChainListening(chain)
+            }
+
+            node.subchainsFlow.value.forEach {
+                scope.launchSafelyWithoutExceptions {
+                    enableChainListening(it)
+                }
+            }
+
+            findViewById<View>(R.id.fragment_text_subchain).setOnClickListener {
+                val subViewTag = "${viewTag}subview${node.subchainsFlow.value.size}"
 
                 node.createSubChain(
                     AndroidNodeConfig.TextConfig(
                         subViewTag,
                         "Sub$text"
                     )
-                ) ?.second ?.let {
-                    it.onNodeRemovedFlow.flatten().subscribeSafelyWithoutExceptions() { _ ->
-                        if (it.stackFlow.value.isEmpty()) {
-                            removeView(view)
-                        }
-                    }
-                }
+                )
             }
         }
     }

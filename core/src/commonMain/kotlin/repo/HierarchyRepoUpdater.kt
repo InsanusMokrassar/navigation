@@ -8,15 +8,16 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 
 fun <T> NavigationConfigsRepo<T>.enableSavingHierarchy(
-    baseChain: NavigationChain<T>,
+    listeningChain: NavigationChain<T>,
     scope: CoroutineScope,
+    chainToSave: NavigationChain<T> = listeningChain.rootChain(),
     debounce: Long = 0L
 ): Job {
     val subscope = scope.LinkedSupervisorScope()
     val updatesFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     updatesFlow.debounce(debounce).subscribeSafelyWithoutExceptions(subscope) {
-        val hierarchy = baseChain.storeHierarchy() ?: return@subscribeSafelyWithoutExceptions
+        val hierarchy = chainToSave.storeHierarchy() ?: return@subscribeSafelyWithoutExceptions
         save(hierarchy)
     }
 
@@ -28,18 +29,18 @@ fun <T> NavigationConfigsRepo<T>.enableSavingHierarchy(
         }
         val currentSubscope = subscope.LinkedSupervisorScope()
         onNodeAddedFlow.flatten().subscribeSafelyWithoutExceptions(currentSubscope) { (_, it) ->
-            save(baseChain.storeHierarchy() ?: return@subscribeSafelyWithoutExceptions)
+            save(chainToSave.storeHierarchy() ?: return@subscribeSafelyWithoutExceptions)
             it.onChainAddedFlow.flatten().map { it.value }.subscribeSafelyWithoutExceptions(currentSubscope) {
                 it.enableListeningUpdates()
             }
         }
         onNodeRemovedFlow.flatten().subscribeSafelyWithoutExceptions(currentSubscope) { _ ->
-            save(baseChain.storeHierarchy() ?: return@subscribeSafelyWithoutExceptions)
+            save(chainToSave.storeHierarchy() ?: return@subscribeSafelyWithoutExceptions)
             currentSubscope.cancel()
         }
     }
 
-    baseChain.enableListeningUpdates()
+    listeningChain.enableListeningUpdates()
 
     return subscope.coroutineContext.job
 }
@@ -47,5 +48,6 @@ fun <T> NavigationConfigsRepo<T>.enableSavingHierarchy(
 fun <T> NavigationChain<T>.enableSavingHierarchy(
     repo: NavigationConfigsRepo<T>,
     scope: CoroutineScope,
+    chainToSave: NavigationChain<T> = rootChain(),
     debounce: Long = 0L
-): Job = repo.enableSavingHierarchy(this, scope, debounce)
+): Job = repo.enableSavingHierarchy(this, scope, chainToSave, debounce)

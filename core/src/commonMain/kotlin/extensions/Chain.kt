@@ -25,3 +25,5 @@ val <T> NavigationChain<T>.onNodeRemovedFlow
     get() = onNodesStackDiffFlow.map { it.removed }.filter { it.isNotEmpty() }
 val <T> NavigationChain<T>.onNodeReplacedFlow
     get() = onNodesStackDiffFlow.map { it.replaced }.filter { it.isNotEmpty() }
+
+fun <T> NavigationChain<T>.rootChain(): NavigationChain<T> = parentNode ?.chain ?.rootChain() ?: this

@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import dev.inmo.kslog.common.d
+import dev.inmo.kslog.common.logger
 import dev.inmo.micro_utils.common.rootView
 import dev.inmo.micro_utils.coroutines.subscribeSafelyWithoutExceptions
 import dev.inmo.navigation.core.*
@@ -27,7 +29,6 @@ class MainActivity : AppCompatActivity() {
             AndroidNodeConfig::class
         )
 
-        lateinit var rootChainHolder: NavigationChain<AndroidNodeConfig>
         val factory = NavigationNodeFactory<AndroidNodeConfig> { navigationChain, config ->
             when (config) {
                 is AndroidNodeConfig.TextConfig -> AndroidFragmentNode(
@@ -44,12 +45,13 @@ class MainActivity : AppCompatActivity() {
                 it.chain.enableSavingHierarchy(
                     repo,
                     scope,
-                    1000L
+                    debounce = 1000L
                 )
             }
         }
+
         scope.launch {
-            rootChainHolder = restoreHierarchy<AndroidNodeConfig>(
+            restoreHierarchy<AndroidNodeConfig>(
                 repo.get() ?: ConfigHolder.Chain(
                     ConfigHolder.Node(
                         AndroidNodeConfig.TextConfig(
@@ -60,9 +62,8 @@ class MainActivity : AppCompatActivity() {
                         emptyList()
                     )
                 ),
-                scope,
                 factory = factory
-            ) ?: return@launch
+            ) ?.start(scope) ?: return@launch
         }
     }
 }

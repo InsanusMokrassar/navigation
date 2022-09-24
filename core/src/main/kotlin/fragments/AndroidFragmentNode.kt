@@ -4,10 +4,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.OnHierarchyChangeListener
 import androidx.annotation.IdRes
+import androidx.core.view.children
 import androidx.fragment.app.FragmentManager
 import dev.inmo.micro_utils.common.findViewsByTag
 import dev.inmo.micro_utils.common.findViewsByTagInActivity
 import dev.inmo.navigation.core.*
+import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
 
 class AndroidFragmentNode<Config : Any>(
@@ -40,36 +42,44 @@ class AndroidFragmentNode<Config : Any>(
     override fun onResume() {
         super.onResume()
         fragment ?.let {
-            fragmentManager.beginTransaction().apply {
-                runCatching {
-                }.onSuccess {
-                    commit()
-                }
-
-                fun placeFragment(view: View) {
-                    view.id = view.id ?: View.generateViewId()
-                    replace(view.id, it)
-                }
-
-                findViewsByTag(rootView, viewTag).firstOrNull() ?.also { view ->
-                    view.id = view.id ?: View.generateViewId()
-                    replace(view.id, it)
-                } ?: (rootView as? ViewGroup) ?.let {
-                    lateinit var listener: OnHierarchyChangeListener
-                    listener = object : OnHierarchyChangeListener {
-                        override fun onChildViewAdded(parent: View?, child: View?) {
-                            if (child ?.tag == viewTag) {
-                                placeFragment(child)
-                            } else {
-                                (child as? ViewGroup) ?.setOnHierarchyChangeListener(listener
-                                )
-                            }
-                        }
-
-                        override fun onChildViewRemoved(parent: View?, child: View?) {}
+            fun placeFragment(view: View) {
+                view.id = view.id ?: View.generateViewId()
+                fragmentManager.beginTransaction().apply {
+                    runCatching {
+                        replace(view.id, it)
+                    }.onSuccess {
+                        commit()
                     }
-                    it.setOnHierarchyChangeListener(listener)
                 }
+            }
+
+            fun ViewGroup.setOnHierarchyChangeListenerRecursively(
+                listener: OnHierarchyChangeListener
+            ) {
+                setOnHierarchyChangeListener(listener)
+                children.forEach {
+                    if (it is ViewGroup) {
+                        it.setOnHierarchyChangeListenerRecursively(listener)
+                    }
+                }
+            }
+
+            findViewsByTag(rootView, viewTag).firstOrNull() ?.also { view ->
+                placeFragment(view)
+            } ?: (rootView as? ViewGroup) ?.let {
+                lateinit var listener: OnHierarchyChangeListener
+                listener = object : OnHierarchyChangeListener {
+                    override fun onChildViewAdded(parent: View?, child: View?) {
+                        if (child ?.tag == viewTag) {
+                            placeFragment(child)
+                        } else {
+                            (child as? ViewGroup) ?.setOnHierarchyChangeListener(listener)
+                        }
+                    }
+
+                    override fun onChildViewRemoved(parent: View?, child: View?) {}
+                }
+                it.setOnHierarchyChangeListenerRecursively(listener)
             }
         }
     }

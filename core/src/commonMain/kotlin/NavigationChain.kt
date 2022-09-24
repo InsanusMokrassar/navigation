@@ -3,6 +3,7 @@ package dev.inmo.navigation.core
 import dev.inmo.kslog.common.*
 import dev.inmo.micro_utils.common.diff
 import dev.inmo.micro_utils.coroutines.*
+import dev.inmo.navigation.core.extensions.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
@@ -10,10 +11,9 @@ import kotlinx.coroutines.sync.withLock
 
 class NavigationChain<T>(
     internal val parentNode: NavigationNode<T>?,
-    internal val scope: CoroutineScope,
     internal val nodeFactory: NavigationNodeFactory<T>
 ) {
-    private val Log = logger
+    private val log = logger
     internal val stack = ArrayDeque<NavigationNode<T>>()
     private val nodesIds = mutableMapOf<NavigationNodeId, NavigationNode<T>>()
 
@@ -23,19 +23,9 @@ class NavigationChain<T>(
     private val _stackFlow = MutableStateFlow<List<NavigationNode<T>>>(emptyList())
     val stackFlow: StateFlow<List<NavigationNode<T>>> = _stackFlow.asStateFlow()
 
-    private val parentNodeListeningJob = parentNode ?.run {
-        (flowOf(state) + stateChangesFlow).subscribeSafelyWithoutExceptions(scope) {
-            Log.d { "Start update of state due to parent state update to $it" }
-            actualizeStackStates()
-        }
-    }
-
-    val job: Job
-        get() = scope.coroutineContext.job
-
     private val actualizeMutex = Mutex()
     private suspend fun actualizeStackStates() {
-        val parentState = parentNodeState.also { Log.d { "Parent state of $parentNode now is $it" } }
+        val parentState = parentNodeState.also { log.d { "Parent state of $parentNode now is $it" } }
         actualizeMutex.withLock {
             runCatchingSafely {
                 stack.forEachIndexed { i, node ->
@@ -48,10 +38,10 @@ class NavigationChain<T>(
                         }
                     )
 
-                    Log.d { "$node actual state now is ${node.state}" }
+                    log.d { "$node actual state now is ${node.state}" }
                 }
             }.onFailure {
-                Log.e(it) { "Unable to actualize stack of $this" }
+                log.e(it) { "Unable to actualize stack of $this" }
             }
         }
     }
@@ -60,7 +50,6 @@ class NavigationChain<T>(
         val newNode = nodeFactory.createNode(this, config) ?: return null
         stack.add(newNode)
         nodesIds[newNode.id] = newNode
-        scope.launchSafelyWithoutExceptions { actualizeStackStates() }
         _stackFlow.value = stack.toList()
         return newNode
     }
@@ -71,7 +60,6 @@ class NavigationChain<T>(
             state = NavigationNodeState.NEW
             _stackFlow.value = stack.toList()
         }
-        scope.launchSafelyWithoutExceptions { actualizeStackStates() }
         return removed
     }
 
@@ -80,7 +68,6 @@ class NavigationChain<T>(
         val oldNode = stack.removeAt(i)
         nodesIds.remove(id)
         oldNode.state = NavigationNodeState.NEW
-        scope.launchSafelyWithoutExceptions { actualizeStackStates() }
         _stackFlow.value = stack.toList()
         return oldNode
     }
@@ -96,7 +83,6 @@ class NavigationChain<T>(
         nodesIds[newNode.id] = newNode
 
         oldNode.state = NavigationNodeState.NEW
-        scope.launchSafelyWithoutExceptions { actualizeStackStates() }
 
         _stackFlow.value = stack.toList()
         return oldNode to newNode
@@ -120,20 +106,20 @@ class NavigationChain<T>(
     ): Boolean {
         var found = false
         if (visitedNodesChains.add(parentNode ?.id)) {
-            Log.d { "Start $actionName for id $id in chain with stack ${nodesIds.keys.joinToString()} and parent node ${parentNode ?.id}" }
+            log.d { "Start $actionName for id $id in chain with stack ${nodesIds.keys.joinToString()} and parent node ${parentNode ?.id}" }
             if (nodesIds.containsKey(id)) {
-                Log.d { "Do $actionName for id $id in chain with stack ${nodesIds.keys.joinToString()} and parent node ${parentNode ?.id}" }
+                log.d { "Do $actionName for id $id in chain with stack ${nodesIds.keys.joinToString()} and parent node ${parentNode ?.id}" }
                 onFound()
                 found = true
             } else {
-                Log.d { "Unable to find node id $id in ${nodesIds.keys.joinToString()} for $actionName" }
+                log.d { "Unable to find node id $id in ${nodesIds.keys.joinToString()} for $actionName" }
             }
 
             (stack.flatMap { it._subchains } + listOfNotNull(parentNode ?.chain)).forEach { chainHolder ->
                 found = chainHolder.doInTree(id, visitedNodesChains, actionName, onFound) || found
             }
         } else {
-            Log.d { "Visited again node ${parentNode ?.id} chain with id $id to find where to $actionName" }
+            log.d { "Visited again node ${parentNode ?.id} chain with id $id to find where to $actionName" }
         }
 
         return found
@@ -184,4 +170,48 @@ class NavigationChain<T>(
         id: String,
         config: T
     ) = pushInTree(NavigationNodeId(id), config)
+
+    fun start(scope: CoroutineScope): Job {
+        val subscope = scope.LinkedSupervisorScope()
+
+        parentNode ?.run {
+            (flowOf(state) + stateChangesFlow).subscribeSafelyWithoutExceptions(subscope) {
+                log.d { "Start update of state due to parent state update to $it" }
+                actualizeStackStates()
+            }
+        }
+
+        stackFlow.dropWhile { it.isEmpty() }.subscribeSafelyWithoutExceptions(subscope) {
+            if (it.isEmpty()) {
+                subscope.cancel()
+            } else {
+                actualizeStackStates()
+            }
+        }
+
+        val nodeToJob = mutableMapOf<NavigationNodeId, Job>()
+        val nodeToJobMutex = Mutex()
+
+        onNodeAddedFlow.flatten().subscribeSafelyWithoutExceptions(subscope) {
+            nodeToJobMutex.withLock {
+                nodeToJob[it.value.id] = it.value.start(subscope)
+            }
+        }
+        onNodeRemovedFlow.flatten().subscribeSafelyWithoutExceptions(subscope) {
+            nodeToJobMutex.withLock {
+                nodeToJob.remove(it.value.id) ?.cancel()
+            }
+        }
+
+        subscope.launch {
+            stackFlow.value.forEach {
+                nodeToJobMutex.withLock {
+                    nodeToJob[it.id] = it.start(subscope)
+                }
+            }
+            actualizeStackStates()
+        }
+
+        return subscope.coroutineContext.job
+    }
 }

@@ -2,11 +2,12 @@ package dev.inmo.navigation.core
 
 import dev.inmo.kslog.common.d
 import dev.inmo.kslog.common.logger
-import dev.inmo.micro_utils.coroutines.LinkedSupervisorScope
-import dev.inmo.micro_utils.coroutines.subscribeSafelyWithoutExceptions
-import dev.inmo.navigation.core.extensions.onNodeRemovedFlow
-import kotlinx.coroutines.cancel
+import dev.inmo.micro_utils.coroutines.*
+import dev.inmo.navigation.core.extensions.*
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 abstract class NavigationNode<T> {
     protected val log by lazy {
@@ -78,16 +79,9 @@ abstract class NavigationNode<T> {
     }
 
     fun createEmptySubChain(): NavigationChain<T> {
-        return NavigationChain(this, chain.scope.LinkedSupervisorScope(), chain.nodeFactory).also {
+        return NavigationChain(this, chain.nodeFactory).also {
             _subchains.add(it)
             _subchainsFlow.value = (subchains.toList())
-
-            it.onNodeRemovedFlow.subscribeSafelyWithoutExceptions(it.scope) { removedIndexes ->
-                if (it.stack.isEmpty() && _subchains.remove(it)) {
-                    it.scope.cancel()
-                    _subchainsFlow.value = (subchains.toList())
-                }
-            }
         }
     }
 
@@ -96,6 +90,34 @@ abstract class NavigationNode<T> {
         val createdNode = newSubChain.push(config) ?: return null
         log.d { "Stack after adding of $config subchain: ${subchains.joinToString { it.stackFlow.value.joinToString { it.id.string } }}" }
         return createdNode to newSubChain
+    }
+
+    open fun start(scope: CoroutineScope): Job {
+        val subscope = scope.LinkedSupervisorScope()
+
+        val chainToJob = mutableMapOf<NavigationChain<T>, Job>()
+        val chainToJobMutex = Mutex()
+
+        onChainAddedFlow.flatten().subscribeSafelyWithoutExceptions(subscope) {
+            chainToJobMutex.withLock {
+                chainToJob[it.value] = it.value.start(subscope)
+            }
+        }
+        onChainRemovedFlow.flatten().subscribeSafelyWithoutExceptions(subscope) {
+            chainToJobMutex.withLock {
+                chainToJob.remove(it.value) ?.cancel()
+            }
+        }
+
+        subscope.launch {
+            subchainsFlow.value.forEach {
+                chainToJobMutex.withLock {
+                    chainToJob[it] = it.start(subscope)
+                }
+            }
+        }
+
+        return subscope.coroutineContext.job
     }
 
     class Empty<T>(override val chain: NavigationChain<T>, override val config: T) : NavigationNode<T>()
