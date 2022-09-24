@@ -64,11 +64,11 @@ class TextFragment : NodeFragment<AndroidNodeConfig>() {
                 enableChainListening(chain)
             }
 
-            node.subchainsFlow.value.forEach {
-                scope.launchSafelyWithoutExceptions {
-                    enableChainListening(it)
-                }
-            }
+//            scope.launchSafelyWithoutExceptions {
+//                node.subchainsFlow.value.forEach {
+//                    enableChainListening(it)
+//                }
+//            }
 
             findViewById<View>(R.id.fragment_text_subchain).setOnClickListener {
                 val subViewTag = "${viewTag}subview${node.subchainsFlow.value.size}"

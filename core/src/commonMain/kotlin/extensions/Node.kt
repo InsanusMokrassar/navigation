@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.*
 val <T> NavigationNode<T>.onChainsStackDiffFlow
     get() = flow {
         val previous = mutableListOf<NavigationChain<T>>()
-        previous.applyDiff(subchainsFlow.value)
         subchainsFlow.collect {
             val newValue = subchainsFlow.value
             emit(previous.applyDiff(newValue, strictComparison = true))
