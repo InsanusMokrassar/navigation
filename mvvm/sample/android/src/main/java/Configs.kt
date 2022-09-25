@@ -1,15 +1,13 @@
 package dev.inmo.navigation.mvvm.sample.android
 
-import androidx.annotation.IdRes
+import dev.inmo.navigation.core.AndroidNodeConfig
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed interface AndroidNodeConfig {
-    val viewTag: String
-
+sealed interface SampleConfig : AndroidNodeConfig {
     @Serializable
     data class TextConfig(
         override val viewTag: String,
         val text: String
-    ) : AndroidNodeConfig
+    ) : SampleConfig
 }

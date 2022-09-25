@@ -1,26 +1,17 @@
 package dev.inmo.navigation.core.fragments
 
 import android.view.View
-import android.view.ViewGroup
 import android.view.ViewGroup.NO_ID
-import android.view.ViewGroup.OnHierarchyChangeListener
-import androidx.annotation.IdRes
-import androidx.core.view.children
 import androidx.fragment.app.FragmentManager
 import dev.inmo.micro_utils.common.findViewsByTag
-import dev.inmo.micro_utils.common.findViewsByTagInActivity
-import dev.inmo.micro_utils.coroutines.LinkedSupervisorScope
-import dev.inmo.micro_utils.coroutines.subscribeSafelyWithoutExceptions
+import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.*
-import dev.inmo.navigation.core.utils.FlowOnHierarchyChangeListener
 import kotlinx.coroutines.*
-import java.lang.ref.WeakReference
 import kotlin.reflect.KClass
 
-class AndroidFragmentNode<Config : Any>(
+class AndroidFragmentNode<Config : AndroidNodeConfig>(
     override val chain: NavigationChain<Config>,
     config: Config,
-    private val viewTag: String,
     private val fragmentKClass: KClass<out NodeFragment<Config>>,
     private val fragmentManager: FragmentManager,
     private val rootView: View,
@@ -29,6 +20,8 @@ class AndroidFragmentNode<Config : Any>(
 ) : NavigationNode<Config>() {
     override var config: Config = config
         private set
+    private val viewTag
+        get() = config.viewTag
     private var fragment: NodeFragment<Config>? = null
 
     override fun onCreate() {

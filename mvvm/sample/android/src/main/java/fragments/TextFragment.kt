@@ -12,11 +12,11 @@ import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.NavigationChain
 import dev.inmo.navigation.core.extensions.*
 import dev.inmo.navigation.core.fragments.NodeFragment
-import dev.inmo.navigation.mvvm.sample.android.AndroidNodeConfig
+import dev.inmo.navigation.mvvm.sample.android.SampleConfig
 import dev.inmo.navigation.mvvm.sample.android.R
 import kotlinx.coroutines.flow.*
 
-class TextFragment : NodeFragment<AndroidNodeConfig>() {
+class TextFragment : NodeFragment<SampleConfig>() {
     protected val text: String by argumentOrThrow()
     protected val viewTag: String by argumentOrThrow()
 
@@ -29,11 +29,11 @@ class TextFragment : NodeFragment<AndroidNodeConfig>() {
 
         (view as? ViewGroup) ?.apply {
             findViewById<TextView>(R.id.fragment_text_view) ?.text = this@TextFragment.text
-            findViewById<View>(R.id.fragment_text_increase).setOnClickListener {
+            findViewById<View>(R.id.fragment_text_forward).setOnClickListener {
                 node.chain.push(
-                    AndroidNodeConfig.TextConfig(
+                    SampleConfig.TextConfig(
                         viewTag,
-                        "${text}X"
+                        "${text}${getString(R.string.forward)}"
                     )
                 )
             }
@@ -45,9 +45,9 @@ class TextFragment : NodeFragment<AndroidNodeConfig>() {
                 val subViewTag = "${viewTag}subview${node.subchainsFlow.value.size}"
 
                 node.createSubChain(
-                    AndroidNodeConfig.TextConfig(
+                    SampleConfig.TextConfig(
                         subViewTag,
-                        "Sub$text"
+                        "$text${getString(R.string.subchain)}${node.subchainsFlow.value.size}"
                     )
                 )
             }
@@ -77,7 +77,7 @@ class TextFragment : NodeFragment<AndroidNodeConfig>() {
             return newView
         }
 
-        suspend fun doChainListening(chain: NavigationChain<AndroidNodeConfig>) {
+        suspend fun doChainListening(chain: NavigationChain<SampleConfig>) {
             var layout: View? = null
 
             val subscriptionJob = chain.stackFlow.subscribeSafelyWithoutExceptions(scope) {

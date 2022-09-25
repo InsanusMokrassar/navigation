@@ -11,7 +11,7 @@ import kotlin.reflect.KClass
 class AndroidSPConfigsRepo<T: Any>(
     private val sharedPreferences: SharedPreferences,
     baseConfigKClass: KClass<T>,
-    configKClasses: List<KClass<out T>>
+    configKClasses: List<KClass<out T>>,
 ) : NavigationConfigsRepo<T> {
     private val json: Json = Json(Json.Default) {
         ignoreUnknownKeys = true

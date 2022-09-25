@@ -85,6 +85,11 @@ abstract class NavigationNode<T> {
         }
     }
 
+    protected fun removeChain(chain: NavigationChain<T>) {
+        _subchains.remove(chain)
+        _subchainsFlow.value = subchains
+    }
+
     fun createSubChain(config: T): Pair<NavigationNode<T>, NavigationChain<T>>? {
         val newSubChain = createEmptySubChain()
         val createdNode = newSubChain.push(config) ?: return null
@@ -101,6 +106,11 @@ abstract class NavigationNode<T> {
         onChainAddedFlow.flatten().subscribeSafelyWithoutExceptions(subscope) {
             chainToJobMutex.withLock {
                 chainToJob[it.value] = it.value.start(subscope)
+                it.value.onNodeRemovedFlow.subscribeSafelyWithoutExceptions(subscope) { _ ->
+                    if (it.value.stackFlow.value.isEmpty()) {
+                        removeChain(it.value)
+                    }
+                }
             }
         }
         onChainRemovedFlow.flatten().subscribeSafelyWithoutExceptions(subscope) {

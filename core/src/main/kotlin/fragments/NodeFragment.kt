@@ -4,11 +4,12 @@ import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
+import dev.inmo.navigation.core.AndroidNodeConfig
 import dev.inmo.navigation.core.NavigationNode
 import kotlinx.coroutines.*
 import kotlin.reflect.KProperty
 
-abstract class NodeFragment<Config : Any> : Fragment() {
+abstract class NodeFragment<Config : AndroidNodeConfig> : Fragment() {
     protected lateinit var node: AndroidFragmentNode<Config>
         private set
     protected lateinit var onConfigUpdatedCallback: (Config) -> Unit

@@ -9,8 +9,7 @@
     <FrameLayout
         android:id="@+id/fragment_id"
         android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:layout_centerInParent="true"
+        android:layout_width="match_parent"
         android:tag="root_fragment"/>
     <TextView
         android:id="@+id/activity_main_tree_text"
