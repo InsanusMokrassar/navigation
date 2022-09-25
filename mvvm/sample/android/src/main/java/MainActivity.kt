@@ -24,8 +24,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val rootFragmentTag = findViewById<View>(R.id.fragment_id).tag.toString()
-        val hierarchyListener = FlowOnHierarchyChangeListener(recursive = true)
-        (rootView as? ViewGroup) ?.setOnHierarchyChangeListener(hierarchyListener)
+        val hierarchyListener = FlowOnHierarchyChangeListener(recursive = true, rootView as ViewGroup)
 
         val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
         val repo = AndroidSPConfigsRepo(

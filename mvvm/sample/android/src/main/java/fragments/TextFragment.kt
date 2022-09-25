@@ -4,6 +4,9 @@ import android.os.Bundle
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.TextView
+import androidx.core.view.children
+import dev.inmo.kslog.common.d
+import dev.inmo.kslog.common.logger
 import dev.inmo.micro_utils.common.argumentOrThrow
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.NavigationChain
@@ -60,14 +63,17 @@ class TextFragment : NodeFragment<AndroidNodeConfig>() {
             ).apply {
                 this.tag = tag
                 id = View.generateViewId()
-                layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                visibility = View.VISIBLE
             }
             (view as? ViewGroup) ?.apply {
                 doInUI {
                     addView(newView)
-                    invalidate()
+                }
+                children.forEach {
+                    this@TextFragment.logger.d(it)
                 }
             }
+
             return newView
         }
 
