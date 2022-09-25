@@ -16,23 +16,17 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/fragment_text_increase"
-            android:text="Forward"/>
+            android:id="@+id/fragment_text_back"
+            android:text="←"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/fragment_text_back"
-            android:text="Back"/>
+            android:id="@+id/fragment_text_increase"
+            android:text="→"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/fragment_text_subchain"
-            android:text="Subchain"/>
+            android:text="↓"/>
     </LinearLayout>
-    <FrameLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="15dp"
-        android:id="@+id/fragment_text_subchain_container">
-    </FrameLayout>
 </LinearLayout>

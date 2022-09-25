@@ -24,7 +24,7 @@ abstract class NavigationNode<T> {
 
     internal val _subchains = mutableListOf<NavigationChain<T>>()
     protected val subchains: List<NavigationChain<T>>
-        get() = _subchains
+        get() = _subchains.toList()
     internal val _subchainsFlow = MutableStateFlow<List<NavigationChain<T>>>(subchains)
     val subchainsFlow: StateFlow<List<NavigationChain<T>>> = _subchainsFlow.asStateFlow()
     private val _stateChanges = MutableSharedFlow<NavigationStateChange>(extraBufferCapacity = Int.MAX_VALUE)
@@ -81,7 +81,7 @@ abstract class NavigationNode<T> {
     fun createEmptySubChain(): NavigationChain<T> {
         return NavigationChain(this, chain.nodeFactory).also {
             _subchains.add(it)
-            _subchainsFlow.value = (subchains.toList())
+            _subchainsFlow.value = subchains
         }
     }
 

@@ -10,6 +10,7 @@ import dev.inmo.micro_utils.common.findViewsByTag
 import dev.inmo.micro_utils.common.findViewsByTagInActivity
 import dev.inmo.navigation.core.*
 import kotlinx.coroutines.launch
+import java.lang.ref.WeakReference
 import kotlin.reflect.KClass
 
 class AndroidFragmentNode<Config : Any>(
@@ -54,12 +55,15 @@ class AndroidFragmentNode<Config : Any>(
             }
 
             fun ViewGroup.setOnHierarchyChangeListenerRecursively(
-                listener: OnHierarchyChangeListener
+                listener: OnHierarchyChangeListener,
+                listeningViewGroups: MutableSet<WeakReference<ViewGroup>>
             ) {
-                setOnHierarchyChangeListener(listener)
-                children.forEach {
-                    if (it is ViewGroup) {
-                        it.setOnHierarchyChangeListenerRecursively(listener)
+                if (listeningViewGroups.add(WeakReference(this))) {
+                    setOnHierarchyChangeListener(listener)
+                    children.forEach {
+                        if (it is ViewGroup) {
+                            it.setOnHierarchyChangeListenerRecursively(listener, listeningViewGroups)
+                        }
                     }
                 }
             }
@@ -67,11 +71,15 @@ class AndroidFragmentNode<Config : Any>(
             findViewsByTag(rootView, viewTag).firstOrNull() ?.also { view ->
                 placeFragment(view)
             } ?: (rootView as? ViewGroup) ?.let {
+                val listeningViewGroups = mutableSetOf<WeakReference<ViewGroup>>()
                 lateinit var listener: OnHierarchyChangeListener
                 listener = object : OnHierarchyChangeListener {
                     override fun onChildViewAdded(parent: View?, child: View?) {
                         if (child ?.tag == viewTag) {
                             placeFragment(child)
+                            listeningViewGroups.forEach {
+                                it.get() ?.setOnHierarchyChangeListener(null)
+                            }
                         } else {
                             (child as? ViewGroup) ?.setOnHierarchyChangeListener(listener)
                         }
@@ -79,7 +87,7 @@ class AndroidFragmentNode<Config : Any>(
 
                     override fun onChildViewRemoved(parent: View?, child: View?) {}
                 }
-                it.setOnHierarchyChangeListenerRecursively(listener)
+                it.setOnHierarchyChangeListenerRecursively(listener, listeningViewGroups)
             }
         }
     }

@@ -10,17 +10,14 @@ import kotlinx.coroutines.flow.*
 val <T> NavigationChain<T>.onNodesStackDiffFlow
     get() = flow {
         val previous = mutableListOf<NavigationNode<T>>()
+        emit(previous.applyDiff(stackFlow.value, strictComparison = true))
         stackFlow.collect {
             val newValue = stackFlow.value
             emit(previous.applyDiff(newValue, strictComparison = true))
         }
     }
 val <T> NavigationChain<T>.onNodeAddedFlow
-    get() = onNodesStackDiffFlow.map {
-        it.added + it.replaced.map { it.second }
-    }.filter {
-        it.isNotEmpty()
-    }
+    get() = onNodesStackDiffFlow.map { it.added }.filter { it.isNotEmpty() }
 val <T> NavigationChain<T>.onNodeRemovedFlow
     get() = onNodesStackDiffFlow.map { it.removed }.filter { it.isNotEmpty() }
 val <T> NavigationChain<T>.onNodeReplacedFlow

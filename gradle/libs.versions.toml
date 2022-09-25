@@ -1,6 +1,7 @@
 [versions]
 
 kotlin = "1.7.10"
+kotlin-coroutines = "1.6.4"
 kotlin-serialization = "1.4.0"
 
 microutils = "0.12.15"
@@ -26,6 +27,7 @@ github-release = "2.4.1"
 [libraries]
 
 kotlin = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+kotlin-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlin-coroutines" }
 kotlin-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlin-serialization" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 kotlin-test-common = { module = "org.jetbrains.kotlin:kotlin-test-common", version.ref = "kotlin" }

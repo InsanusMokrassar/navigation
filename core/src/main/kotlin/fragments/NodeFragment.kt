@@ -1,5 +1,6 @@
 package dev.inmo.navigation.core.fragments
 
+import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
@@ -11,17 +12,16 @@ abstract class NodeFragment<Config : Any> : Fragment() {
     protected lateinit var node: AndroidFragmentNode<Config>
         private set
     protected lateinit var onConfigUpdatedCallback: (Config) -> Unit
-    protected val scope = CoroutineScope(Dispatchers.Main)
+    protected var scope = CoroutineScope(Dispatchers.Main)
 
-    init {
-        lifecycle.addObserver(
-            object : DefaultLifecycleObserver {
-                override fun onDestroy(owner: LifecycleOwner) {
-                    super.onDestroy(owner)
-                    scope.cancel()
-                }
-            }
-        )
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        scope.cancel()
     }
 
     open fun configure(node: AndroidFragmentNode<Config>, onConfigUpdatedCallback: (Config) -> Unit) {

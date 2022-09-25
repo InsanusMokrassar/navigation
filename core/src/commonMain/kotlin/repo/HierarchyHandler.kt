@@ -10,9 +10,7 @@ suspend fun <T> ConfigHolder.Chain<T>.restoreHierarchy(
 ): NavigationChain<T> {
     val subchain = node.createEmptySubChain()
 
-    firstNodeConfig.restoreHierarchy(
-        subchain
-    )
+    firstNodeConfig.restoreHierarchy(subchain)
 
     return subchain
 }
@@ -22,9 +20,7 @@ suspend fun <T> ConfigHolder.Chain<T>.restoreHierarchy(
 ): NavigationChain<T> {
     val subchain = NavigationChain(null, factory)
 
-    firstNodeConfig.restoreHierarchy(
-        subchain
-    )
+    firstNodeConfig.restoreHierarchy(subchain)
 
     return subchain
 }
