@@ -60,9 +60,13 @@ class TextFragment : NodeFragment<AndroidNodeConfig>() {
             ).apply {
                 this.tag = tag
                 id = View.generateViewId()
+                layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
             }
             (view as? ViewGroup) ?.apply {
-                addView(newView)
+                doInUI {
+                    addView(newView)
+                    invalidate()
+                }
             }
             return newView
         }
