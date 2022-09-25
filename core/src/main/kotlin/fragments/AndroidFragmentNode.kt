@@ -2,14 +2,18 @@ package dev.inmo.navigation.core.fragments
 
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.NO_ID
 import android.view.ViewGroup.OnHierarchyChangeListener
 import androidx.annotation.IdRes
 import androidx.core.view.children
 import androidx.fragment.app.FragmentManager
 import dev.inmo.micro_utils.common.findViewsByTag
 import dev.inmo.micro_utils.common.findViewsByTagInActivity
+import dev.inmo.micro_utils.coroutines.LinkedSupervisorScope
+import dev.inmo.micro_utils.coroutines.subscribeSafelyWithoutExceptions
 import dev.inmo.navigation.core.*
-import kotlinx.coroutines.launch
+import dev.inmo.navigation.core.utils.FlowOnHierarchyChangeListener
+import kotlinx.coroutines.*
 import java.lang.ref.WeakReference
 import kotlin.reflect.KClass
 
@@ -20,6 +24,7 @@ class AndroidFragmentNode<Config : Any>(
     private val fragmentKClass: KClass<out NodeFragment<Config>>,
     private val fragmentManager: FragmentManager,
     private val rootView: View,
+    private val flowOnHierarchyChangeListener: FlowOnHierarchyChangeListener,
     override val id: NavigationNodeId = NavigationNodeId()
 ) : NavigationNode<Config>() {
     override var config: Config = config
@@ -40,54 +45,24 @@ class AndroidFragmentNode<Config : Any>(
         }
     }
 
+    private fun placeFragment(view: View) {
+        fragment ?.let {
+            view.id = view.id.takeIf { it != NO_ID } ?: View.generateViewId()
+            fragmentManager.beginTransaction().apply {
+                runCatching {
+                    replace(view.id, it)
+                }.onSuccess {
+                    commit()
+                }
+            }
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         fragment ?.let {
-            fun placeFragment(view: View) {
-                view.id = view.id ?: View.generateViewId()
-                fragmentManager.beginTransaction().apply {
-                    runCatching {
-                        replace(view.id, it)
-                    }.onSuccess {
-                        commit()
-                    }
-                }
-            }
-
-            fun ViewGroup.setOnHierarchyChangeListenerRecursively(
-                listener: OnHierarchyChangeListener,
-                listeningViewGroups: MutableSet<WeakReference<ViewGroup>>
-            ) {
-                if (listeningViewGroups.add(WeakReference(this))) {
-                    setOnHierarchyChangeListener(listener)
-                    children.forEach {
-                        if (it is ViewGroup) {
-                            it.setOnHierarchyChangeListenerRecursively(listener, listeningViewGroups)
-                        }
-                    }
-                }
-            }
-
             findViewsByTag(rootView, viewTag).firstOrNull() ?.also { view ->
                 placeFragment(view)
-            } ?: (rootView as? ViewGroup) ?.let {
-                val listeningViewGroups = mutableSetOf<WeakReference<ViewGroup>>()
-                lateinit var listener: OnHierarchyChangeListener
-                listener = object : OnHierarchyChangeListener {
-                    override fun onChildViewAdded(parent: View?, child: View?) {
-                        if (child ?.tag == viewTag) {
-                            placeFragment(child)
-                            listeningViewGroups.forEach {
-                                it.get() ?.setOnHierarchyChangeListener(null)
-                            }
-                        } else {
-                            (child as? ViewGroup) ?.setOnHierarchyChangeListener(listener)
-                        }
-                    }
-
-                    override fun onChildViewRemoved(parent: View?, child: View?) {}
-                }
-                it.setOnHierarchyChangeListenerRecursively(listener, listeningViewGroups)
             }
         }
     }
@@ -103,6 +78,27 @@ class AndroidFragmentNode<Config : Any>(
                     commit()
                 }
             }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        fragment = null
+    }
+
+    override fun start(scope: CoroutineScope): Job {
+        val subsubscope = scope.LinkedSupervisorScope()
+        return super.start(subsubscope).let {
+
+            flowOnHierarchyChangeListener.onChildViewAdded.subscribeSafelyWithoutExceptions(subsubscope) { (_, child) ->
+                fragment ?.let {
+                    if (viewTag == child.tag && state == NavigationNodeState.RESUMED && !it.isAdded) {
+                        placeFragment(child)
+                    }
+                }
+            }
+
+            subsubscope.coroutineContext.job
         }
     }
 }

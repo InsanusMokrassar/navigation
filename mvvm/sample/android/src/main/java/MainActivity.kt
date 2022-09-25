@@ -2,6 +2,7 @@ package dev.inmo.navigation.mvvm.sample.android
 
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import dev.inmo.kslog.common.d
@@ -13,6 +14,7 @@ import dev.inmo.navigation.core.fragments.AndroidFragmentNode
 import dev.inmo.navigation.core.repo.*
 import dev.inmo.navigation.mvvm.sample.android.fragments.TextFragment
 import dev.inmo.navigation.core.AndroidSPConfigsRepo
+import dev.inmo.navigation.core.utils.FlowOnHierarchyChangeListener
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
@@ -22,6 +24,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val rootFragmentTag = findViewById<View>(R.id.fragment_id).tag.toString()
+        val hierarchyListener = FlowOnHierarchyChangeListener(recursive = true)
+        (rootView as? ViewGroup) ?.setOnHierarchyChangeListener(hierarchyListener)
 
         val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
         val repo = AndroidSPConfigsRepo(
@@ -37,7 +41,8 @@ class MainActivity : AppCompatActivity() {
                     config.viewTag,
                     TextFragment::class,
                     supportFragmentManager,
-                    rootView!!
+                    rootView!!,
+                    hierarchyListener
                 )
 
                 else -> error(config)

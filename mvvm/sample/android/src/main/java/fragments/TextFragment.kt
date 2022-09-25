@@ -2,7 +2,6 @@ package dev.inmo.navigation.mvvm.sample.android.fragments
 
 import android.os.Bundle
 import android.view.*
-import android.view.ViewGroup.LayoutParams
 import android.widget.FrameLayout
 import android.widget.TextView
 import dev.inmo.micro_utils.common.argumentOrThrow
@@ -19,7 +18,13 @@ class TextFragment : NodeFragment<AndroidNodeConfig>() {
     protected val viewTag: String by argumentOrThrow()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return view ?: (inflater.inflate(R.layout.fragment_text, container, false) as ViewGroup).apply {
+        return view ?: (inflater.inflate(R.layout.fragment_text, container, false) as ViewGroup)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        (view as? ViewGroup) ?.apply {
             findViewById<TextView>(R.id.fragment_text_view) ?.text = this@TextFragment.text
             findViewById<View>(R.id.fragment_text_increase).setOnClickListener {
                 node.chain.push(
@@ -43,22 +48,23 @@ class TextFragment : NodeFragment<AndroidNodeConfig>() {
                     )
                 )
             }
-        }
+        } ?: return
     }
 
     override fun onResume() {
         super.onResume()
 
-        fun addFrameLayout(tag: String): ViewGroup? {
-            val view = FrameLayout(
+        suspend fun addFrameLayout(tag: String): ViewGroup? {
+            val newView = FrameLayout(
                 context ?: return null,
             ).apply {
                 this.tag = tag
                 id = View.generateViewId()
-                layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
             }
-            (this@TextFragment.view as? ViewGroup) ?.addView(view)
-            return view
+            (view as? ViewGroup) ?.apply {
+                addView(newView)
+            }
+            return newView
         }
 
         suspend fun doChainListening(chain: NavigationChain<AndroidNodeConfig>) {
