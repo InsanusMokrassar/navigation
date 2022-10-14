@@ -9,16 +9,28 @@ import dev.inmo.kslog.common.d
 import dev.inmo.kslog.common.logger
 import dev.inmo.micro_utils.common.argumentOrThrow
 import dev.inmo.micro_utils.coroutines.*
-import dev.inmo.navigation.core.NavigationChain
+import dev.inmo.navigation.core.*
 import dev.inmo.navigation.core.extensions.*
 import dev.inmo.navigation.core.fragments.NodeFragment
 import dev.inmo.navigation.mvvm.sample.android.SampleConfig
 import dev.inmo.navigation.mvvm.sample.android.R
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
 class TextFragment : NodeFragment<SampleConfig>() {
     protected val text: String by argumentOrThrow()
     protected val viewTag: String by argumentOrThrow()
+    protected var scope = CoroutineScope(Dispatchers.Main)
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        scope.cancel()
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return view ?: (inflater.inflate(R.layout.fragment_text, container, false) as ViewGroup)
@@ -61,7 +73,7 @@ class TextFragment : NodeFragment<SampleConfig>() {
             val newView = FrameLayout(
                 context ?: return null,
             ).apply {
-                this.tag = tag
+                navigationTag = tag
                 id = View.generateViewId()
                 visibility = View.VISIBLE
             }
