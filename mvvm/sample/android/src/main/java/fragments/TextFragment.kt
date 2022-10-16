@@ -2,16 +2,17 @@ package dev.inmo.navigation.mvvm.sample.android.fragments
 
 import android.os.Bundle
 import android.view.*
-import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.core.view.children
 import dev.inmo.kslog.common.d
 import dev.inmo.kslog.common.logger
 import dev.inmo.micro_utils.common.argumentOrThrow
+import dev.inmo.micro_utils.common.findViewsByTag
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.*
 import dev.inmo.navigation.core.extensions.*
 import dev.inmo.navigation.core.fragments.NodeFragment
+import dev.inmo.navigation.core.fragments.view.NavigationFragmentContainerView
 import dev.inmo.navigation.mvvm.sample.android.SampleConfig
 import dev.inmo.navigation.mvvm.sample.android.R
 import kotlinx.coroutines.*
@@ -54,7 +55,7 @@ class TextFragment : NodeFragment<SampleConfig>() {
             }
 
             findViewById<View>(R.id.fragment_text_subchain).setOnClickListener {
-                val subViewTag = "${viewTag}subview${node.subchainsFlow.value.size}"
+                val subViewTag = "${viewTag}${getString(R.string.subchain)}${node.subchainsFlow.value.size}"
 
                 node.createSubChain(
                     SampleConfig.TextConfig(
@@ -70,7 +71,7 @@ class TextFragment : NodeFragment<SampleConfig>() {
         super.onResume()
 
         suspend fun addFrameLayout(tag: String): ViewGroup? {
-            val newView = FrameLayout(
+            val newView = NavigationFragmentContainerView(
                 context ?: return null,
             ).apply {
                 navigationTag = tag
@@ -96,10 +97,10 @@ class TextFragment : NodeFragment<SampleConfig>() {
                 val firstConfig = it.firstOrNull() ?.config ?: return@subscribeSafelyWithoutExceptions
                 val viewAsViewGroup = (view as? ViewGroup) ?: return@subscribeSafelyWithoutExceptions
 
-                if (it.isNotEmpty() && firstConfig.viewTag == layout ?.tag) {
+                if (it.isNotEmpty() && firstConfig.viewTag == layout ?.navigationTag) {
                     return@subscribeSafelyWithoutExceptions
                 }
-                val viewByTag = viewAsViewGroup.findViewWithTag<View>(firstConfig.viewTag)
+                val viewByTag = findViewsByTag(viewAsViewGroup, navigationTagKey, firstConfig.viewTag).firstOrNull()
 
                 layout ?.let { viewAsViewGroup.removeView(it) }
 

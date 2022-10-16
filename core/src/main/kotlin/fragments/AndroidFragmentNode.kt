@@ -43,6 +43,7 @@ class AndroidFragmentNode<Config : AndroidNodeConfig>(
             }.toTypedArray()
         )
         fragment ?.arguments = bundle
+        fragment ?.setNode(this)
     }
 
     private fun placeFragment(view: View) {

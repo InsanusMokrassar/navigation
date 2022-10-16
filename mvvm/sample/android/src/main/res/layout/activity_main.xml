@@ -3,14 +3,14 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="match_parent" xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".MainActivity"
     android:orientation="vertical">
-    <FrameLayout
+    <dev.inmo.navigation.core.fragments.view.NavigationFragmentContainerView
         android:id="@+id/fragment_id"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:tag="root_fragment"/>
+        app:navigationTag="root_fragment"/>
     <TextView
         android:id="@+id/activity_main_tree_text"
         android:layout_height="wrap_content"

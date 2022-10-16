@@ -14,7 +14,7 @@ class AndroidNavigationNodeFactory<T : AndroidNodeConfig>(
     private val flowOnHierarchyChangeListener: FlowOnHierarchyChangeListener = FlowOnHierarchyChangeListener(recursive = true).also {
         (rootView as ViewGroup).setOnHierarchyChangeListenerRecursively(it)
     },
-    private val fragmentKClassResolver: (T) -> KClass<out NodeFragment<T>>?
+    private val fragmentKClassResolver: FragmentsClassesFactory<T>
 ) : NavigationNodeFactory<T> {
     override fun createNode(navigationChain: NavigationChain<T>, config: T): NavigationNode<T>? {
         return AndroidFragmentNode(
