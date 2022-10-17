@@ -1,9 +1,9 @@
 package dev.inmo.navigation.core.fragments
 
 import androidx.fragment.app.Fragment
-import dev.inmo.navigation.core.AndroidNodeConfig
+import dev.inmo.navigation.core.NavigationNodeDefaultConfig
 
-abstract class NodeFragment<Config : AndroidNodeConfig> : Fragment() {
+abstract class NodeFragment<Config : NavigationNodeDefaultConfig> : Fragment() {
     protected lateinit var node: AndroidFragmentNode<Config>
         private set
 

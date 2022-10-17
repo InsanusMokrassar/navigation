@@ -11,7 +11,7 @@ import kotlinx.coroutines.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
-class AndroidFragmentNode<Config : AndroidNodeConfig>(
+class AndroidFragmentNode<Config : NavigationNodeDefaultConfig>(
     override val chain: NavigationChain<Config>,
     override var config: Config,
     private val fragmentKClass: KClass<out NodeFragment<Config>>,
@@ -21,7 +21,7 @@ class AndroidFragmentNode<Config : AndroidNodeConfig>(
     override val id: NavigationNodeId = NavigationNodeId()
 ) : NavigationNode<Config>() {
     private val viewTag
-        get() = config.viewTag
+        get() = config.id
     private var fragment: NodeFragment<Config>? = null
 
     override fun onCreate() {
