@@ -92,3 +92,32 @@ inline fun <reified T : NavigationNodeDefaultConfig> AppCompatActivity.initNavig
         lifecycle.removeObserver(observer)
     }
 }
+
+inline fun <reified T : NavigationNodeDefaultConfig> AppCompatActivity.initNavigation(
+    startConfig: T,
+    configsRepo: NavigationConfigsRepo<T> = AndroidSPConfigsRepo(
+        getSharedPreferences("internal", AppCompatActivity.MODE_PRIVATE),
+        T::class
+    ),
+    scope: CoroutineScope = CoroutineScope(Dispatchers.Main),
+    fragmentManager: FragmentManager = supportFragmentManager,
+    rootView: View = this.rootView!!,
+    flowOnHierarchyChangeListener: FlowOnHierarchyChangeListener = FlowOnHierarchyChangeListener(recursive = true).also {
+        (rootView as ViewGroup).setOnHierarchyChangeListenerRecursively(it)
+    },
+    noinline fragmentsClassesFactory: FragmentsClassesFactory<T>
+) = initNavigation(
+    ConfigHolder.Chain(
+        ConfigHolder.Node(
+            startConfig,
+            null,
+            emptyList()
+        )
+    ),
+    configsRepo,
+    scope,
+    fragmentManager,
+    rootView,
+    flowOnHierarchyChangeListener,
+    fragmentsClassesFactory
+)
