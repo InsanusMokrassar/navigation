@@ -1,10 +1,11 @@
 [versions]
 
 kotlin = "1.7.10"
+kotlin-coroutines = "1.6.4"
 kotlin-serialization = "1.4.0"
 
-microutils = "0.12.11"
-kslog = "0.5.1"
+microutils = "0.12.17"
+kslog = "0.5.2"
 uuid = "0.5.0"
 
 dexcount = "3.1.0"
@@ -14,15 +15,21 @@ espresso_core = "3.4.0"
 
 android-gradle-plugin = "7.2.2"
 android-minSdk = "21"
-android-compileSdk = "32"
-android-buildTools = "32.0.0"
+android-compileSdk = "33"
+android-buildTools = "33.0.0"
+
+android-core-ktx = "1.9.0"
+android-appcompat = "1.5.1"
+android-material = "1.6.1"
 
 github-release = "2.4.1"
 
 [libraries]
 
 kotlin = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+kotlin-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlin-coroutines" }
 kotlin-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlin-serialization" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 kotlin-test-common = { module = "org.jetbrains.kotlin:kotlin-test-common", version.ref = "kotlin" }
 kotlin-test-annotations-common = { module = "org.jetbrains.kotlin:kotlin-test-annotations-common", version.ref = "kotlin" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
@@ -30,9 +37,16 @@ kotlin-test-js = { module = "org.jetbrains.kotlin:kotlin-test-js", version.ref =
 android-test-junit = { module = "androidx.test.ext:junit", version.ref = "test_ext_junit_version" }
 android-test-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso_core" }
 
+microutils-common = { module = "dev.inmo:micro_utils.common", version.ref = "microutils" }
 microutils-coroutines = { module = "dev.inmo:micro_utils.coroutines", version.ref = "microutils" }
 kslog = { module = "dev.inmo:kslog", version.ref = "kslog" }
 uuid = { module = "com.benasher44:uuid", version.ref = "uuid" }
+
+# Android
+
+android-core-ktx = { module = "androidx.core:core-ktx", version.ref = "android-core-ktx" }
+android-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "android-appcompat" }
+android-material = { module = "com.google.android.material:material", version.ref = "android-material" }
 
 # buildscript classpaths
 

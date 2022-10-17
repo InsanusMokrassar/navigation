@@ -1,0 +1,46 @@
+plugins {
+    id "org.jetbrains.kotlin.android"
+    id "org.jetbrains.kotlin.plugin.serialization"
+    id "com.android.application"
+}
+
+android {
+
+    defaultConfig {
+        applicationId "${group}.${project.name.replaceFirst(":", "")}"
+        minSdk libs.versions.android.minSdk.get().toInteger()
+        targetSdk libs.versions.android.compileSdk.get().toInteger()
+        compileSdk libs.versions.android.compileSdk.get().toInteger()
+        versionCode "${android_code_version}".toInteger()
+        versionName "$version"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+}
+
+dependencies {
+    implementation libs.kotlin
+    implementation libs.kotlin.coroutines.android
+    implementation libs.kotlin.serialization
+    implementation libs.kotlin.reflect
+    implementation libs.android.core.ktx
+    implementation libs.android.appcompat
+    implementation libs.android.material
+    implementation libs.microutils.common
+
+    implementation project(":navigation.mvvm.sample")
+}

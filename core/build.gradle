@@ -11,9 +11,17 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
+                api libs.microutils.common
                 api libs.microutils.coroutines
                 api libs.kslog
                 api libs.uuid
+            }
+        }
+        androidMain {
+            dependencies {
+                api libs.android.appcompat
+                api libs.kotlin.reflect
+                api libs.kotlin.coroutines.android
             }
         }
     }
