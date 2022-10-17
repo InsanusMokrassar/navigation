@@ -14,7 +14,7 @@ import kotlin.reflect.KProperty
 class AndroidFragmentNode<Config : NavigationNodeDefaultConfig>(
     override val chain: NavigationChain<Config>,
     override var config: Config,
-    private val fragmentKClass: KClass<out NodeFragment<Config>>,
+    private val fragmentKClass: KClass<*>,
     private val fragmentManager: FragmentManager,
     private val rootView: View,
     private val flowOnHierarchyChangeListener: FlowOnHierarchyChangeListener,
@@ -26,9 +26,9 @@ class AndroidFragmentNode<Config : NavigationNodeDefaultConfig>(
 
     override fun onCreate() {
         super.onCreate()
-        fragment = fragmentKClass.objectInstance ?: fragmentKClass.constructors.first {
+        fragment = (fragmentKClass.objectInstance ?: fragmentKClass.constructors.first {
             it.parameters.isEmpty()
-        }.call()
+        }.call()) as NodeFragment<Config>
     }
 
     override fun onStart() {
