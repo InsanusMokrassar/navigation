@@ -15,7 +15,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 
-open class AndroidNavigationHost<T : AndroidNodeConfig>(
+open class AndroidNavigationHost<T : NavigationNodeDefaultConfig>(
     protected val configsRepo: NavigationConfigsRepo<T>,
     protected val startChain: ConfigHolder<T>,
     protected val fragmentsClassesFactory: FragmentsClassesFactory<T>
@@ -62,7 +62,7 @@ open class AndroidNavigationHost<T : AndroidNodeConfig>(
     }
 }
 
-inline fun <reified T : AndroidNodeConfig> AppCompatActivity.initNavigation(
+inline fun <reified T : NavigationNodeDefaultConfig> AppCompatActivity.initNavigation(
     startChain: ConfigHolder<T>,
     configsRepo: NavigationConfigsRepo<T> = AndroidSPConfigsRepo(
         getSharedPreferences("internal", AppCompatActivity.MODE_PRIVATE),
@@ -92,3 +92,32 @@ inline fun <reified T : AndroidNodeConfig> AppCompatActivity.initNavigation(
         lifecycle.removeObserver(observer)
     }
 }
+
+inline fun <reified T : NavigationNodeDefaultConfig> AppCompatActivity.initNavigation(
+    startConfig: T,
+    configsRepo: NavigationConfigsRepo<T> = AndroidSPConfigsRepo(
+        getSharedPreferences("internal", AppCompatActivity.MODE_PRIVATE),
+        T::class
+    ),
+    scope: CoroutineScope = CoroutineScope(Dispatchers.Main),
+    fragmentManager: FragmentManager = supportFragmentManager,
+    rootView: View = this.rootView!!,
+    flowOnHierarchyChangeListener: FlowOnHierarchyChangeListener = FlowOnHierarchyChangeListener(recursive = true).also {
+        (rootView as ViewGroup).setOnHierarchyChangeListenerRecursively(it)
+    },
+    noinline fragmentsClassesFactory: FragmentsClassesFactory<T>
+) = initNavigation(
+    ConfigHolder.Chain(
+        ConfigHolder.Node(
+            startConfig,
+            null,
+            emptyList()
+        )
+    ),
+    configsRepo,
+    scope,
+    fragmentManager,
+    rootView,
+    flowOnHierarchyChangeListener,
+    fragmentsClassesFactory
+)

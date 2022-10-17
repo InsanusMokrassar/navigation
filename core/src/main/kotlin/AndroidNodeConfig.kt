@@ -1,5 +1,4 @@
 package dev.inmo.navigation.core
 
-interface AndroidNodeConfig {
-    val viewTag: String
-}
+@Deprecated("Replaced", ReplaceWith("NavigationNodeDefaultConfig", "dev.inmo.navigation.core.NavigationNodeDefaultConfig"))
+typealias AndroidNodeConfig = NavigationNodeDefaultConfig

@@ -97,14 +97,14 @@ class TextFragment : NodeFragment<SampleConfig>() {
                 val firstConfig = it.firstOrNull() ?.config ?: return@subscribeSafelyWithoutExceptions
                 val viewAsViewGroup = (view as? ViewGroup) ?: return@subscribeSafelyWithoutExceptions
 
-                if (it.isNotEmpty() && firstConfig.viewTag == layout ?.navigationTag) {
+                if (it.isNotEmpty() && firstConfig.id == layout ?.navigationTag) {
                     return@subscribeSafelyWithoutExceptions
                 }
-                val viewByTag = findViewsByTag(viewAsViewGroup, navigationTagKey, firstConfig.viewTag).firstOrNull()
+                val viewByTag = findViewsByTag(viewAsViewGroup, navigationTagKey, firstConfig.id).firstOrNull()
 
                 layout ?.let { viewAsViewGroup.removeView(it) }
 
-                layout = viewByTag ?: addFrameLayout(firstConfig.viewTag) ?: return@subscribeSafelyWithoutExceptions
+                layout = viewByTag ?: addFrameLayout(firstConfig.id) ?: return@subscribeSafelyWithoutExceptions
             }
 
             node.onChainRemovedFlow.flatten().filter { it.value == chain }.take(1).collect()

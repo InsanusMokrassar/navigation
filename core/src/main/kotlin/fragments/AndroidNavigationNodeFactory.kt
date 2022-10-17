@@ -6,9 +6,8 @@ import androidx.fragment.app.FragmentManager
 import dev.inmo.micro_utils.coroutines.FlowOnHierarchyChangeListener
 import dev.inmo.micro_utils.coroutines.setOnHierarchyChangeListenerRecursively
 import dev.inmo.navigation.core.*
-import kotlin.reflect.KClass
 
-class AndroidNavigationNodeFactory<T : AndroidNodeConfig>(
+class AndroidNavigationNodeFactory<T : NavigationNodeDefaultConfig>(
     private val fragmentManager: FragmentManager,
     private val rootView: View,
     private val flowOnHierarchyChangeListener: FlowOnHierarchyChangeListener = FlowOnHierarchyChangeListener(recursive = true).also {

@@ -1,5 +1,11 @@
 # Navigation Changelog
 
+## 0.0.3
+
+* `Versions`:
+  * `MicroUtils`: `0.13.1`
+* Fixes and improvements in android part
+
 ## 0.0.2
 
 * `Versions`:

@@ -11,28 +11,29 @@ import kotlinx.coroutines.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
-class AndroidFragmentNode<Config : AndroidNodeConfig>(
+class AndroidFragmentNode<Config : NavigationNodeDefaultConfig>(
     override val chain: NavigationChain<Config>,
     override var config: Config,
-    private val fragmentKClass: KClass<out NodeFragment<Config>>,
+    private val fragmentKClass: KClass<*>,
     private val fragmentManager: FragmentManager,
     private val rootView: View,
     private val flowOnHierarchyChangeListener: FlowOnHierarchyChangeListener,
     override val id: NavigationNodeId = NavigationNodeId()
 ) : NavigationNode<Config>() {
     private val viewTag
-        get() = config.viewTag
+        get() = config.id
     private var fragment: NodeFragment<Config>? = null
 
     override fun onCreate() {
         super.onCreate()
-        fragment = fragmentKClass.objectInstance ?: fragmentKClass.constructors.first {
+        fragment = (fragmentKClass.objectInstance ?: fragmentKClass.constructors.first {
             it.parameters.isEmpty()
-        }.call()
+        }.call()) as NodeFragment<Config>
     }
 
     override fun onStart() {
         super.onStart()
+        fragment ?.setNode(this)
         val bundle = bundleOf(
             *config::class.members.mapNotNull {
                 if (it is KProperty<*>) {
@@ -43,7 +44,6 @@ class AndroidFragmentNode<Config : AndroidNodeConfig>(
             }.toTypedArray()
         )
         fragment ?.arguments = bundle
-        fragment ?.setNode(this)
     }
 
     private fun placeFragment(view: View) {
