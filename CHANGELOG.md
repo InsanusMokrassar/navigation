@@ -3,8 +3,10 @@
 ## 0.0.2
 
 * `Versions`:
-  * `MicroUtils`: `0.12.13`
+  * `MicroUtils`: `0.13.0`
   * `KSLog`: `0.5.2`
+* Several tools for android navigation have been added
+* Small sample for android have been added
 
 ## 0.0.1
 
