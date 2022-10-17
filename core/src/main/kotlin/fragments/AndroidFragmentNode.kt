@@ -33,6 +33,7 @@ class AndroidFragmentNode<Config : NavigationNodeDefaultConfig>(
 
     override fun onStart() {
         super.onStart()
+        fragment ?.setNode(this)
         val bundle = bundleOf(
             *config::class.members.mapNotNull {
                 if (it is KProperty<*>) {
@@ -43,7 +44,6 @@ class AndroidFragmentNode<Config : NavigationNodeDefaultConfig>(
             }.toTypedArray()
         )
         fragment ?.arguments = bundle
-        fragment ?.setNode(this)
     }
 
     private fun placeFragment(view: View) {
