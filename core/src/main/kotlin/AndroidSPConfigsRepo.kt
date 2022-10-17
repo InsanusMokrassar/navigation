@@ -12,6 +12,7 @@ class AndroidSPConfigsRepo<T: Any>(
     private val sharedPreferences: SharedPreferences,
     baseConfigKClass: KClass<T>,
     configKClasses: List<KClass<out T>>,
+    private val key: String = "navigation"
 ) : NavigationConfigsRepo<T> {
     private val json: Json = Json(Json.Default) {
         ignoreUnknownKeys = true
@@ -42,13 +43,13 @@ class AndroidSPConfigsRepo<T: Any>(
     override fun save(holder: ConfigHolder<T>) {
         sharedPreferences.edit().apply {
             putString(
-                "navigation", json.encodeToString(serializer, holder)
+                key, json.encodeToString(serializer, holder)
             )
         }.apply()
     }
 
     override fun get(): ConfigHolder<T>? {
-        return sharedPreferences.getString("navigation", null) ?.let {
+        return sharedPreferences.getString(key, null) ?.let {
             json.decodeFromString(serializer, it)
         }
     }
