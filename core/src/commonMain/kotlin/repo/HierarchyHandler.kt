@@ -79,12 +79,16 @@ fun <T> NavigationChain<T>.storeHierarchy(): ConfigHolder.Chain<T>? {
     )
 }
 
-fun <T> NavigationNode<T>.storeHierarchy(): ConfigHolder.Node<T> {
-    return ConfigHolder.Node(
-        config,
-        chain.stack.dropWhile { it != this }.drop(1).firstOrNull() ?.storeHierarchy(),
-        _subchains.mapNotNull {
-            it.storeHierarchy()
-        }
-    )
+fun <T> NavigationNode<T>.storeHierarchy(): ConfigHolder.Node<T>? {
+    return if (storableInNavigationHierarchy) {
+        ConfigHolder.Node(
+            config,
+            chain.stack.dropWhile { it != this }.drop(1).firstOrNull() ?.storeHierarchy(),
+            _subchains.mapNotNull {
+                it.storeHierarchy()
+            }
+        )
+    } else {
+        null
+    }
 }

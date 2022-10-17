@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentManager
 import dev.inmo.micro_utils.common.findViewsByTag
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.*
+import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 import kotlinx.coroutines.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty

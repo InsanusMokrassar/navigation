@@ -1,6 +1,6 @@
 package dev.inmo.navigation.mvvm.sample.android
 
-import dev.inmo.navigation.core.NavigationNodeDefaultConfig
+import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 import kotlinx.serialization.Serializable
 
 @Serializable

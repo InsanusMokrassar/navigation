@@ -6,6 +6,7 @@ import androidx.fragment.app.FragmentManager
 import dev.inmo.micro_utils.coroutines.FlowOnHierarchyChangeListener
 import dev.inmo.micro_utils.coroutines.setOnHierarchyChangeListenerRecursively
 import dev.inmo.navigation.core.*
+import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 
 class AndroidNavigationNodeFactory<T : NavigationNodeDefaultConfig>(
     private val fragmentManager: FragmentManager,

@@ -3,6 +3,7 @@ package dev.inmo.navigation.core
 import dev.inmo.kslog.common.d
 import dev.inmo.kslog.common.logger
 import dev.inmo.micro_utils.coroutines.*
+import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 import dev.inmo.navigation.core.extensions.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -17,6 +18,8 @@ abstract class NavigationNode<T> {
 
     abstract val chain: NavigationChain<T>
     abstract val config: T
+    open val storableInNavigationHierarchy: Boolean
+        get() = (config as? NavigationNodeDefaultConfig) ?.storableInNavigationHierarchy ?: true
 
     @Deprecated("Renamed", ReplaceWith("chain"))
     val chainHolder

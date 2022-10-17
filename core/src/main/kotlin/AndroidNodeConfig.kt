@@ -1,4 +1,6 @@
 package dev.inmo.navigation.core
 
-@Deprecated("Replaced", ReplaceWith("NavigationNodeDefaultConfig", "dev.inmo.navigation.core.NavigationNodeDefaultConfig"))
+import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
+
+@Deprecated("Replaced", ReplaceWith("NavigationNodeDefaultConfig", "dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig"))
 typealias AndroidNodeConfig = NavigationNodeDefaultConfig

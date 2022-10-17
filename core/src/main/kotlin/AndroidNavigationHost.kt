@@ -8,6 +8,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import dev.inmo.micro_utils.common.rootView
 import dev.inmo.micro_utils.coroutines.*
+import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 import dev.inmo.navigation.core.fragments.AndroidNavigationNodeFactory
 import dev.inmo.navigation.core.repo.*
 import kotlinx.coroutines.*
