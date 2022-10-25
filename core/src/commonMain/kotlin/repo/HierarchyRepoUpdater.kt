@@ -2,6 +2,7 @@ package dev.inmo.navigation.core.repo
 
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.NavigationChain
+import dev.inmo.navigation.core.NavigationNode
 import dev.inmo.navigation.core.extensions.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
@@ -21,6 +22,12 @@ fun <T> NavigationConfigsRepo<T>.enableSavingHierarchy(
         save(hierarchy)
     }
 
+    fun NavigationNode<T>.enableListeningUpdates(scope: CoroutineScope) {
+        configState.subscribeSafelyWithoutExceptions(scope) {
+            save(chainToSave.storeHierarchy() ?: return@subscribeSafelyWithoutExceptions)
+        }
+    }
+
     fun NavigationChain<T>.enableListeningUpdates() {
         stack.forEach {
             it.subchainsFlow.value.forEach {
@@ -30,6 +37,7 @@ fun <T> NavigationConfigsRepo<T>.enableSavingHierarchy(
         val currentSubscope = subscope.LinkedSupervisorScope()
         onNodeAddedFlow.flatten().subscribeSafelyWithoutExceptions(currentSubscope) { (_, it) ->
             save(chainToSave.storeHierarchy() ?: return@subscribeSafelyWithoutExceptions)
+            it.enableListeningUpdates(currentSubscope)
             it.onChainAddedFlow.flatten().map { it.value }.subscribeSafelyWithoutExceptions(currentSubscope) {
                 it.enableListeningUpdates()
             }

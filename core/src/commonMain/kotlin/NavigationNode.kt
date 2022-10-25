@@ -17,7 +17,9 @@ abstract class NavigationNode<T> {
     open val id: NavigationNodeId = NavigationNodeId()
 
     abstract val chain: NavigationChain<T>
-    abstract val config: T
+    abstract val configState: StateFlow<T>
+    open val config: T
+        get() = configState.value
     open val storableInNavigationHierarchy: Boolean
         get() = (config as? NavigationNodeDefaultConfig) ?.storableInNavigationHierarchy ?: true
 
@@ -133,5 +135,7 @@ abstract class NavigationNode<T> {
         return subscope.coroutineContext.job
     }
 
-    class Empty<T>(override val chain: NavigationChain<T>, override val config: T) : NavigationNode<T>()
+    class Empty<T>(override val chain: NavigationChain<T>, config: T) : NavigationNode<T>() {
+        override val configState: StateFlow<T> = MutableStateFlow(config).asStateFlow()
+    }
 }

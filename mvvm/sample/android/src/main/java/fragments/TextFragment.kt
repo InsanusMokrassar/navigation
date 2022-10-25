@@ -20,8 +20,10 @@ import kotlinx.coroutines.flow.*
 
 class TextFragment : NodeFragment<SampleConfig>() {
     protected val text: String by argumentOrThrow()
-    protected val viewTag: String by argumentOrThrow()
+    protected val id: String by argumentOrThrow()
     protected var scope = CoroutineScope(Dispatchers.Main)
+    private val viewTag
+        get() = id
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
