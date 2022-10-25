@@ -9,21 +9,24 @@ import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.*
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 class AndroidFragmentNode<Config : NavigationNodeDefaultConfig>(
     override val chain: NavigationChain<Config>,
-    override var config: Config,
+    config: Config,
     private val fragmentKClass: KClass<*>,
     private val fragmentManager: FragmentManager,
     private val rootView: View,
     private val flowOnHierarchyChangeListener: FlowOnHierarchyChangeListener,
     override val id: NavigationNodeId = NavigationNodeId()
 ) : NavigationNode<Config>() {
+    private var fragment: NodeFragment<Config>? = null
+    private val _configState = MutableStateFlow(config)
+    override val configState: StateFlow<Config> = _configState.asStateFlow()
     private val viewTag
         get() = config.id
-    private var fragment: NodeFragment<Config>? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -34,7 +37,7 @@ class AndroidFragmentNode<Config : NavigationNodeDefaultConfig>(
 
     override fun onStart() {
         super.onStart()
-        fragment ?.setNode(this)
+        fragment ?.setNode(this, _configState)
         val bundle = bundleOf(
             *config::class.members.mapNotNull {
                 if (it is KProperty<*>) {

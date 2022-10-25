@@ -1,5 +1,10 @@
 # Navigation Changelog
 
+## 0.0.4
+
+* All `NavigationNode`s now have `configState` with type `StateFlow`. Under the hood any node may implement mutability
+  of this flow as it is required
+
 ## 0.0.3
 
 * `Versions`:
