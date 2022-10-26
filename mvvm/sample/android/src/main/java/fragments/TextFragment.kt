@@ -18,9 +18,11 @@ import dev.inmo.navigation.mvvm.sample.android.R
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
-class TextFragment : NodeFragment<SampleConfig>() {
-    protected val text: String by argumentOrThrow()
-    protected val id: String by argumentOrThrow()
+class TextFragment : BaseFragment<SampleConfig.TextConfig>() {
+    protected val text: String
+        get() = _configState.value.text
+    protected val id: String
+        get() = _configState.value.id
     protected var scope = CoroutineScope(Dispatchers.Main)
     private val viewTag
         get() = id
@@ -92,7 +94,7 @@ class TextFragment : NodeFragment<SampleConfig>() {
             return newView
         }
 
-        suspend fun doChainListening(chain: NavigationChain<SampleConfig>) {
+        suspend fun doChainListening(chain: NavigationChain<out SampleConfig>) {
             var layout: View? = null
 
             val subscriptionJob = chain.stackFlow.subscribeSafelyWithoutExceptions(scope) {

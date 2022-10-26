@@ -7,20 +7,20 @@ import dev.inmo.navigation.core.NavigationNode
 import kotlinx.coroutines.flow.*
 
 
-val <T> NavigationChain<T>.onNodesStackDiffFlow
+val <Base> NavigationChain<Base>.onNodesStackDiffFlow
     get() = flow {
-        val previous = mutableListOf<NavigationNode<T>>()
+        val previous = mutableListOf<NavigationNode<out Base, Base>>()
         emit(previous.applyDiff(stackFlow.value, strictComparison = true))
         stackFlow.collect {
             val newValue = stackFlow.value
             emit(previous.applyDiff(newValue, strictComparison = true))
         }
     }
-val <T> NavigationChain<T>.onNodeAddedFlow
+val <Base> NavigationChain<Base>.onNodeAddedFlow
     get() = onNodesStackDiffFlow.map { it.added }.filter { it.isNotEmpty() }
-val <T> NavigationChain<T>.onNodeRemovedFlow
+val <Base> NavigationChain<Base>.onNodeRemovedFlow
     get() = onNodesStackDiffFlow.map { it.removed }.filter { it.isNotEmpty() }
-val <T> NavigationChain<T>.onNodeReplacedFlow
+val <Base> NavigationChain<Base>.onNodeReplacedFlow
     get() = onNodesStackDiffFlow.map { it.replaced }.filter { it.isNotEmpty() }
 
-fun <T> NavigationChain<T>.rootChain(): NavigationChain<T> = parentNode ?.chain ?.rootChain() ?: this
+fun <Base> NavigationChain<Base>.rootChain(): NavigationChain<Base> = parentNode ?.chain ?.rootChain() ?: this

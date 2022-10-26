@@ -9,19 +9,19 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-class NavigationChain<T>(
-    internal val parentNode: NavigationNode<T>?,
-    internal val nodeFactory: NavigationNodeFactory<T>
+class NavigationChain<Base>(
+    internal val parentNode: NavigationNode<out Base, Base>?,
+    internal val nodeFactory: NavigationNodeFactory<Base>
 ) {
     private val log = logger
-    internal val stack = ArrayDeque<NavigationNode<T>>()
-    private val nodesIds = mutableMapOf<NavigationNodeId, NavigationNode<T>>()
+    internal val stack = ArrayDeque<NavigationNode<out Base, Base>>()
+    private val nodesIds = mutableMapOf<NavigationNodeId, NavigationNode<out Base, Base>>()
 
     private val parentNodeState: NavigationNodeState
         get() = parentNode ?.state ?: NavigationNodeState.RESUMED
 
-    private val _stackFlow = MutableStateFlow<List<NavigationNode<T>>>(emptyList())
-    val stackFlow: StateFlow<List<NavigationNode<T>>> = _stackFlow.asStateFlow()
+    private val _stackFlow = MutableStateFlow<List<NavigationNode<out Base, Base>>>(emptyList())
+    val stackFlow: StateFlow<List<NavigationNode<out Base, Base>>> = _stackFlow.asStateFlow()
 
     private val actualizeMutex = Mutex()
     private suspend fun actualizeStackStates() {
@@ -46,7 +46,7 @@ class NavigationChain<T>(
         }
     }
 
-    fun push(config: T): NavigationNode<T>? {
+    fun push(config: Base): NavigationNode<out Base, Base>? {
         val newNode = nodeFactory.createNode(this, config) ?: return null
         stack.add(newNode)
         nodesIds[newNode.id] = newNode
@@ -54,7 +54,7 @@ class NavigationChain<T>(
         return newNode
     }
 
-    fun pop(): NavigationNode<T>? {
+    fun pop(): NavigationNode<out Base, Base>? {
         val removed = stack.removeLastOrNull() ?.apply {
             nodesIds.remove(id)
             state = NavigationNodeState.NEW
@@ -63,7 +63,7 @@ class NavigationChain<T>(
         return removed
     }
 
-    fun drop(id: NavigationNodeId): NavigationNode<T>? {
+    fun drop(id: NavigationNodeId): NavigationNode<out Base, Base>? {
         val i = stack.indexOfFirst { it.id == id }.takeIf { it != -1 } ?: return null
         val oldNode = stack.removeAt(i)
         nodesIds.remove(id)
@@ -73,7 +73,7 @@ class NavigationChain<T>(
     }
     fun drop(id: String) = drop(NavigationNodeId(id))
 
-    fun replace(id: NavigationNodeId, config: T): Pair<NavigationNode<T>, NavigationNode<T>>? {
+    fun replace(id: NavigationNodeId, config: Base): Pair<NavigationNode<out Base, Base>, NavigationNode<out Base, Base>>? {
         val i = stack.indexOfFirst { it.id == id }.takeIf { it != -1 } ?: return null
 
         val newNode = nodeFactory.createNode(this, config) ?: return null
@@ -89,7 +89,7 @@ class NavigationChain<T>(
     }
 
     fun replace(
-        id: String, config: T
+        id: String, config: Base
     ) = replace(NavigationNodeId(id), config)
 
     fun clear() {
@@ -102,7 +102,7 @@ class NavigationChain<T>(
         id: NavigationNodeId,
         visitedNodesChains: MutableSet<NavigationNodeId?>,
         actionName: String,
-        onFound: NavigationChain<T>.() -> Unit
+        onFound: NavigationChain<Base>.() -> Unit
     ): Boolean {
         var found = false
         if (visitedNodesChains.add(parentNode ?.id)) {
@@ -137,7 +137,7 @@ class NavigationChain<T>(
 
     private fun replaceInTree(
         id: NavigationNodeId,
-        config: T,
+        config: Base,
         visitedNodesChains: MutableSet<NavigationNodeId?>
     ): Boolean = doInTree(id, visitedNodesChains, "replace") {
         replace(id, config)
@@ -145,17 +145,17 @@ class NavigationChain<T>(
 
     fun replaceInTree(
         id: NavigationNodeId,
-        config: T
+        config: Base
     ) = replaceInTree(id, config, mutableSetOf())
 
     fun replaceInTree(
         id: String,
-        config: T
+        config: Base
     ) = replaceInTree(NavigationNodeId(id), config)
 
     private fun pushInTree(
         id: NavigationNodeId,
-        config: T,
+        config: Base,
         visitedNodesChains: MutableSet<NavigationNodeId?>
     ): Boolean = doInTree(id, visitedNodesChains, "push") {
         push(config)
@@ -163,12 +163,12 @@ class NavigationChain<T>(
 
     fun pushInTree(
         id: NavigationNodeId,
-        config: T
+        config: Base
     ) = pushInTree(id, config, mutableSetOf())
 
     fun pushInTree(
         id: String,
-        config: T
+        config: Base
     ) = pushInTree(NavigationNodeId(id), config)
 
     fun start(scope: CoroutineScope): Job {

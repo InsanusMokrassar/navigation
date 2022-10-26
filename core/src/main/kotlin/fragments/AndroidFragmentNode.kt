@@ -13,16 +13,16 @@ import kotlinx.coroutines.flow.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
-class AndroidFragmentNode<Config : NavigationNodeDefaultConfig>(
-    override val chain: NavigationChain<Config>,
+class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
+    override val chain: NavigationChain<Base>,
     config: Config,
     private val fragmentKClass: KClass<*>,
     private val fragmentManager: FragmentManager,
     private val rootView: View,
     private val flowOnHierarchyChangeListener: FlowOnHierarchyChangeListener,
     override val id: NavigationNodeId = NavigationNodeId()
-) : NavigationNode<Config>() {
-    private var fragment: NodeFragment<Config>? = null
+) : NavigationNode<Config, Base>() {
+    private var fragment: NodeFragment<Config, Base>? = null
     private val _configState = MutableStateFlow(config)
     override val configState: StateFlow<Config> = _configState.asStateFlow()
     private val viewTag
@@ -32,22 +32,8 @@ class AndroidFragmentNode<Config : NavigationNodeDefaultConfig>(
         super.onCreate()
         fragment = (fragmentKClass.objectInstance ?: fragmentKClass.constructors.first {
             it.parameters.isEmpty()
-        }.call()) as NodeFragment<Config>
-    }
-
-    override fun onStart() {
-        super.onStart()
+        }.call()) as NodeFragment<Config, Base>
         fragment ?.setNode(this, _configState)
-        val bundle = bundleOf(
-            *config::class.members.mapNotNull {
-                if (it is KProperty<*>) {
-                    it.name to it.getter.call(config)
-                } else {
-                    null
-                }
-            }.toTypedArray()
-        )
-        fragment ?.arguments = bundle
     }
 
     private fun placeFragment(view: View) {

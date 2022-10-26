@@ -16,7 +16,7 @@ class AndroidNavigationNodeFactory<T : NavigationNodeDefaultConfig>(
     },
     private val fragmentKClassResolver: FragmentsClassesFactory<T>
 ) : NavigationNodeFactory<T> {
-    override fun createNode(navigationChain: NavigationChain<T>, config: T): NavigationNode<T>? {
+    override fun createNode(navigationChain: NavigationChain<T>, config: T): NavigationNode<out T, T>? {
         return AndroidFragmentNode(
             navigationChain,
             config,

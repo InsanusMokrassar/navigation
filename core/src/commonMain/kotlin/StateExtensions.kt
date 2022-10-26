@@ -4,17 +4,17 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.first
 
-suspend fun <T, Node : NavigationNode<T>> Node.waitDetach() {
+suspend fun <Base, Node : NavigationNode<out Base, Base>> Node.waitDetach() {
     chain.stackFlow.dropWhile {
         it.contains(this)
     }.first()
 }
 
-fun <T, Node : NavigationNode<T>> Node.detachJob(
+fun <Base, Node : NavigationNode<out Base, Base>> Node.detachJob(
     scope: CoroutineScope
 ): Job = scope.launch { waitDetach() }
 
-suspend fun <O : Any, T, Node : NavigationNode<T>> Node.invokeOn(
+suspend fun <O : Any, Base, Node : NavigationNode<out Base, Base>> Node.invokeOn(
     state: NavigationNodeState,
     callback: suspend (Node) -> O
 ): O? = stateChangesFlow.dropWhile {
@@ -23,7 +23,7 @@ suspend fun <O : Any, T, Node : NavigationNode<T>> Node.invokeOn(
     callback(this)
 }
 
-fun <O : Any, T, Node : NavigationNode<T>> Node.invokeOnAsync(
+fun <O : Any, Base, Node : NavigationNode<out Base, Base>> Node.invokeOnAsync(
     state: NavigationNodeState,
     scope: CoroutineScope,
     callback: (Node) -> O

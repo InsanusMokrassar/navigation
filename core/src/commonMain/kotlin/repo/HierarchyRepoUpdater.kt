@@ -22,7 +22,7 @@ fun <T> NavigationConfigsRepo<T>.enableSavingHierarchy(
         save(hierarchy)
     }
 
-    fun NavigationNode<T>.enableListeningUpdates(scope: CoroutineScope) {
+    fun NavigationNode<out T, T>.enableListeningUpdates(scope: CoroutineScope) {
         configState.subscribeSafelyWithoutExceptions(scope) {
             save(chainToSave.storeHierarchy() ?: return@subscribeSafelyWithoutExceptions)
         }
