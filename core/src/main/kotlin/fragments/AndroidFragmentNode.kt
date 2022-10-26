@@ -7,6 +7,7 @@ import dev.inmo.kslog.common.d
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.*
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
+import dev.inmo.navigation.core.fragments.view.NavigationFragmentContainerView
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.reflect.KClass
@@ -18,6 +19,7 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
     private val fragmentManager: FragmentManager,
     private val rootView: View,
     private val flowOnHierarchyChangeListener: FlowOnHierarchyChangeListener,
+    private val manualHierarchyCheckerDelayMillis: Long? = 100L,
     override val id: NavigationNodeId = NavigationNodeId()
 ) : NavigationNode<Config, Base>() {
     private var fragment: NodeFragment<Config, Base>? = null
@@ -47,13 +49,8 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        fragment ?.let {
-            rootView.findViewsWithNavigationTag(viewTag).firstOrNull() ?.also { view ->
-                placeFragment(view)
-            }
-        }
+    private fun placeFragment(): Boolean {
+        return rootView.findViewsWithNavigationTag(viewTag).firstOrNull() ?.also(::placeFragment) != null
     }
 
     override fun onPause() {
@@ -76,25 +73,43 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
     }
 
     override fun start(scope: CoroutineScope): Job {
-        val subsubscope = scope.LinkedSupervisorScope()
-        return super.start(subsubscope).let {
+        val subscope = scope.LinkedSupervisorScope()
+        return super.start(subscope).let {
 
-            flowOnHierarchyChangeListener.onChildViewAdded.subscribeSafelyWithoutExceptions(subsubscope) { (_, child) ->
-                fragment ?.let {
-                    if (viewTag == child.navigationTag && state == NavigationNodeState.RESUMED && !it.isInLayout) {
-                        placeFragment(child)
-                    } else {
-                        log.d {
-                            "Solved to avoid fragment placement:\n" +
-                                "viewTag == child.navigationTag: ${viewTag == child.navigationTag}\n" +
-                                "state == NavigationNodeState.RESUMED: ${state == NavigationNodeState.RESUMED}\n" +
-                                "!fragment.isInLayout: ${!it.isInLayout}"
+            (flowOf(state) + statesFlow).filter { it == NavigationNodeState.RESUMED }.subscribeSafelyWithoutExceptions(subscope) {
+                val subsubscope = subscope.LinkedSupervisorScope()
+
+                if (placeFragment()) {
+                    return@subscribeSafelyWithoutExceptions
+                }
+
+                flowOnHierarchyChangeListener.onChildViewAdded.filterNot {
+                    it.second.navigationTag != viewTag
+                }.subscribeSafelyWithoutExceptions(subsubscope) {
+                    if (placeFragment()) {
+                        subsubscope.cancel()
+                    }
+                }
+
+                (flowOf(state) + statesFlow).filterNot {
+                    it == NavigationNodeState.RESUMED
+                }.take(1).subscribeSafelyWithoutExceptions(subsubscope) {
+                    subsubscope.cancel()
+                }
+
+                subsubscope.launchSafelyWithoutExceptions {
+                    while (state == NavigationNodeState.RESUMED && fragment ?.isAdded == false) {
+                        if (placeFragment()) {
+                            subsubscope.cancel()
+                            break
                         }
+
+                        delay(manualHierarchyCheckerDelayMillis ?: break)
                     }
                 }
             }
 
-            subsubscope.coroutineContext.job
+            subscope.coroutineContext.job
         }
     }
 }

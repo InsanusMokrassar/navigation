@@ -19,6 +19,7 @@ import kotlinx.coroutines.sync.withLock
 open class AndroidNavigationHost<T : NavigationNodeDefaultConfig>(
     protected val configsRepo: NavigationConfigsRepo<T>,
     protected val startChain: ConfigHolder<T>,
+    protected val manualHierarchyCheckerDelayMillis: Long? = 100L,
     protected val fragmentsClassesFactory: FragmentsClassesFactory<T>
 ) {
     var job: Job? = null
@@ -42,6 +43,7 @@ open class AndroidNavigationHost<T : NavigationNodeDefaultConfig>(
                     fragmentManager,
                     rootView,
                     flowOnHierarchyChangeListener,
+                    manualHierarchyCheckerDelayMillis,
                     fragmentsClassesFactory
                 )
                 val nodesFactory = NavigationNodeFactory<T> { navigationChain, config ->
@@ -75,10 +77,12 @@ inline fun <reified T : NavigationNodeDefaultConfig> AppCompatActivity.initNavig
     flowOnHierarchyChangeListener: FlowOnHierarchyChangeListener = FlowOnHierarchyChangeListener(recursive = true).also {
         (rootView as ViewGroup).setOnHierarchyChangeListenerRecursively(it)
     },
+    manualHierarchyCheckerDelayMillis: Long? = 100L,
     noinline fragmentsClassesFactory: FragmentsClassesFactory<T>
 ) = AndroidNavigationHost(
     configsRepo,
     startChain,
+    manualHierarchyCheckerDelayMillis,
     fragmentsClassesFactory
 ).apply {
     start(scope, fragmentManager, rootView, flowOnHierarchyChangeListener)
@@ -106,6 +110,7 @@ inline fun <reified T : NavigationNodeDefaultConfig> AppCompatActivity.initNavig
     flowOnHierarchyChangeListener: FlowOnHierarchyChangeListener = FlowOnHierarchyChangeListener(recursive = true).also {
         (rootView as ViewGroup).setOnHierarchyChangeListenerRecursively(it)
     },
+    manualHierarchyCheckerDelayMillis: Long? = 100L,
     noinline fragmentsClassesFactory: FragmentsClassesFactory<T>
 ) = initNavigation(
     ConfigHolder.Chain(
@@ -120,5 +125,6 @@ inline fun <reified T : NavigationNodeDefaultConfig> AppCompatActivity.initNavig
     fragmentManager,
     rootView,
     flowOnHierarchyChangeListener,
+    manualHierarchyCheckerDelayMillis,
     fragmentsClassesFactory
 )
