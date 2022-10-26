@@ -1,5 +1,11 @@
 # Navigation Changelog
 
+## 0.0.5
+
+**THIS RELEASE CONTAINS BREAKING CHANGES**
+
+* `NavigationNode` now use two types: `Config : Base` and `Base`
+
 ## 0.0.4
 
 * All `NavigationNode`s now have `configState` with type `StateFlow`. Under the hood any node may implement mutability

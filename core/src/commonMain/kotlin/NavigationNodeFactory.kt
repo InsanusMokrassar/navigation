@@ -1,8 +1,8 @@
 package dev.inmo.navigation.core
 
-fun interface NavigationNodeFactory<T> {
+fun interface NavigationNodeFactory<Base> {
     fun createNode(
-        navigationChain: NavigationChain<T>,
-        config: T
-    ): NavigationNode<T>?
+        navigationChain: NavigationChain<Base>,
+        config: Base
+    ): NavigationNode<out Base, Base>?
 }

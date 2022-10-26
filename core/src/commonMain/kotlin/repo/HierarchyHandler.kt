@@ -5,9 +5,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.takeWhile
 
-suspend fun <T> ConfigHolder.Chain<T>.restoreHierarchy(
-    node: NavigationNode<T>
-): NavigationChain<T> {
+suspend fun <Base> ConfigHolder.Chain<Base>.restoreHierarchy(
+    node: NavigationNode<out Base, Base>
+): NavigationChain<Base> {
     val subchain = node.createEmptySubChain()
 
     firstNodeConfig.restoreHierarchy(subchain)
@@ -15,9 +15,9 @@ suspend fun <T> ConfigHolder.Chain<T>.restoreHierarchy(
     return subchain
 }
 
-suspend fun <T> ConfigHolder.Chain<T>.restoreHierarchy(
-    factory: NavigationNodeFactory<T>
-): NavigationChain<T> {
+suspend fun <Base> ConfigHolder.Chain<Base>.restoreHierarchy(
+    factory: NavigationNodeFactory<Base>
+): NavigationChain<Base> {
     val subchain = NavigationChain(null, factory)
 
     firstNodeConfig.restoreHierarchy(subchain)
@@ -25,9 +25,9 @@ suspend fun <T> ConfigHolder.Chain<T>.restoreHierarchy(
     return subchain
 }
 
-suspend fun <T> ConfigHolder.Node<T>.restoreHierarchy(
-    chain: NavigationChain<T>,
-): NavigationNode<T>? {
+suspend fun <Base> ConfigHolder.Node<Base>.restoreHierarchy(
+    chain: NavigationChain<Base>,
+): NavigationNode<out Base, Base>? {
     val node = chain.push(config) ?: return null
 
     subchains.forEach {
@@ -39,17 +39,17 @@ suspend fun <T> ConfigHolder.Node<T>.restoreHierarchy(
     return node
 }
 
-suspend fun <T> NavigationChain<T>.restoreHierarchy(
-    holder: ConfigHolder.Node<T>
-): NavigationNode<T>? {
+suspend fun <Base> NavigationChain<Base>.restoreHierarchy(
+    holder: ConfigHolder.Node<Base>
+): NavigationNode<out Base, Base>? {
     return holder.restoreHierarchy(
         this
     )
 }
 
-suspend fun <T> NavigationNode<T>.restoreHierarchy(
-    holder: ConfigHolder.Chain<T>,
-): NavigationChain<T> {
+suspend fun <Base> NavigationNode<out Base, Base>.restoreHierarchy(
+    holder: ConfigHolder.Chain<Base>,
+): NavigationChain<Base> {
     return holder.restoreHierarchy(
         this
     )
@@ -79,7 +79,7 @@ fun <T> NavigationChain<T>.storeHierarchy(): ConfigHolder.Chain<T>? {
     )
 }
 
-fun <T> NavigationNode<T>.storeHierarchy(): ConfigHolder.Node<T>? {
+fun <Base> NavigationNode<out Base, Base>.storeHierarchy(): ConfigHolder.Node<Base>? {
     return if (storableInNavigationHierarchy) {
         ConfigHolder.Node(
             config,

@@ -30,7 +30,7 @@ value class NavigationStateChange internal constructor(
         get() = pair.second
 
     val isPositive
-        get() = from.stateNumber >= to.stateNumber
+        get() = to.stateNumber > from.stateNumber
 
     val isNegative
         get() = !isPositive

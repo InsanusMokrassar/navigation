@@ -10,15 +10,15 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-abstract class NavigationNode<T> {
+abstract class NavigationNode<Config : Base, Base> {
     protected val log by lazy {
         logger
     }
     open val id: NavigationNodeId = NavigationNodeId()
 
-    abstract val chain: NavigationChain<T>
-    abstract val configState: StateFlow<T>
-    open val config: T
+    abstract val chain: NavigationChain<Base>
+    abstract val configState: StateFlow<Config>
+    open val config: Config
         get() = configState.value
     open val storableInNavigationHierarchy: Boolean
         get() = (config as? NavigationNodeDefaultConfig) ?.storableInNavigationHierarchy ?: true
@@ -27,11 +27,11 @@ abstract class NavigationNode<T> {
     val chainHolder
         get() = chain
 
-    internal val _subchains = mutableListOf<NavigationChain<T>>()
-    protected val subchains: List<NavigationChain<T>>
+    internal val _subchains = mutableListOf<NavigationChain<Base>>()
+    protected val subchains: List<NavigationChain<Base>>
         get() = _subchains.toList()
-    internal val _subchainsFlow = MutableStateFlow<List<NavigationChain<T>>>(subchains)
-    val subchainsFlow: StateFlow<List<NavigationChain<T>>> = _subchainsFlow.asStateFlow()
+    internal val _subchainsFlow = MutableStateFlow<List<NavigationChain<Base>>>(subchains)
+    val subchainsFlow: StateFlow<List<NavigationChain<Base>>> = _subchainsFlow.asStateFlow()
     private val _stateChanges = MutableSharedFlow<NavigationStateChange>(extraBufferCapacity = Int.MAX_VALUE)
 
     val stateChangesFlow: Flow<NavigationStateChange> = _stateChanges.asSharedFlow()
@@ -83,19 +83,19 @@ abstract class NavigationNode<T> {
         log.d { "onDestroy" }
     }
 
-    fun createEmptySubChain(): NavigationChain<T> {
-        return NavigationChain(this, chain.nodeFactory).also {
+    fun createEmptySubChain(): NavigationChain<Base> {
+        return NavigationChain<Base>(this, chain.nodeFactory).also {
             _subchains.add(it)
             _subchainsFlow.value = subchains
         }
     }
 
-    protected fun removeChain(chain: NavigationChain<T>) {
+    protected fun removeChain(chain: NavigationChain<Base>) {
         _subchains.remove(chain)
         _subchainsFlow.value = subchains
     }
 
-    fun createSubChain(config: T): Pair<NavigationNode<T>, NavigationChain<T>>? {
+    fun createSubChain(config: Base): Pair<NavigationNode<out Base, Base>, NavigationChain<Base>>? {
         val newSubChain = createEmptySubChain()
         val createdNode = newSubChain.push(config) ?: return null
         log.d { "Stack after adding of $config subchain: ${subchains.joinToString { it.stackFlow.value.joinToString { it.id.string } }}" }
@@ -105,7 +105,7 @@ abstract class NavigationNode<T> {
     open fun start(scope: CoroutineScope): Job {
         val subscope = scope.LinkedSupervisorScope()
 
-        val chainToJob = mutableMapOf<NavigationChain<T>, Job>()
+        val chainToJob = mutableMapOf<NavigationChain<Base>, Job>()
         val chainToJobMutex = Mutex()
 
         onChainAddedFlow.flatten().subscribeSafelyWithoutExceptions(subscope) {
@@ -135,7 +135,7 @@ abstract class NavigationNode<T> {
         return subscope.coroutineContext.job
     }
 
-    class Empty<T>(override val chain: NavigationChain<T>, config: T) : NavigationNode<T>() {
+    class Empty<T>(override val chain: NavigationChain<T>, config: T) : NavigationNode<T, T>() {
         override val configState: StateFlow<T> = MutableStateFlow(config).asStateFlow()
     }
 }

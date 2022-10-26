@@ -2,27 +2,27 @@ package dev.inmo.navigation.core.fragments
 
 import android.view.View
 import android.view.ViewGroup.NO_ID
-import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentManager
-import dev.inmo.micro_utils.common.findViewsByTag
+import dev.inmo.kslog.common.d
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.*
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
+import dev.inmo.navigation.core.fragments.view.NavigationFragmentContainerView
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.reflect.KClass
-import kotlin.reflect.KProperty
 
-class AndroidFragmentNode<Config : NavigationNodeDefaultConfig>(
-    override val chain: NavigationChain<Config>,
+class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
+    override val chain: NavigationChain<Base>,
     config: Config,
     private val fragmentKClass: KClass<*>,
     private val fragmentManager: FragmentManager,
     private val rootView: View,
     private val flowOnHierarchyChangeListener: FlowOnHierarchyChangeListener,
+    private val manualHierarchyCheckerDelayMillis: Long? = 100L,
     override val id: NavigationNodeId = NavigationNodeId()
-) : NavigationNode<Config>() {
-    private var fragment: NodeFragment<Config>? = null
+) : NavigationNode<Config, Base>() {
+    private var fragment: NodeFragment<Config, Base>? = null
     private val _configState = MutableStateFlow(config)
     override val configState: StateFlow<Config> = _configState.asStateFlow()
     private val viewTag
@@ -32,22 +32,8 @@ class AndroidFragmentNode<Config : NavigationNodeDefaultConfig>(
         super.onCreate()
         fragment = (fragmentKClass.objectInstance ?: fragmentKClass.constructors.first {
             it.parameters.isEmpty()
-        }.call()) as NodeFragment<Config>
-    }
-
-    override fun onStart() {
-        super.onStart()
+        }.call()) as NodeFragment<Config, Base>
         fragment ?.setNode(this, _configState)
-        val bundle = bundleOf(
-            *config::class.members.mapNotNull {
-                if (it is KProperty<*>) {
-                    it.name to it.getter.call(config)
-                } else {
-                    null
-                }
-            }.toTypedArray()
-        )
-        fragment ?.arguments = bundle
     }
 
     private fun placeFragment(view: View) {
@@ -63,13 +49,8 @@ class AndroidFragmentNode<Config : NavigationNodeDefaultConfig>(
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        fragment ?.let {
-            findViewsByTag(rootView, navigationTagKey, viewTag).firstOrNull() ?.also { view ->
-                placeFragment(view)
-            }
-        }
+    private fun placeFragment(): Boolean {
+        return rootView.findViewsWithNavigationTag(viewTag).firstOrNull() ?.also(::placeFragment) != null
     }
 
     override fun onPause() {
@@ -92,18 +73,43 @@ class AndroidFragmentNode<Config : NavigationNodeDefaultConfig>(
     }
 
     override fun start(scope: CoroutineScope): Job {
-        val subsubscope = scope.LinkedSupervisorScope()
-        return super.start(subsubscope).let {
+        val subscope = scope.LinkedSupervisorScope()
+        return super.start(subscope).let {
 
-            flowOnHierarchyChangeListener.onChildViewAdded.subscribeSafelyWithoutExceptions(subsubscope) { (_, child) ->
-                fragment ?.let {
-                    if (viewTag == child.navigationTag && state == NavigationNodeState.RESUMED && !it.isAdded) {
-                        placeFragment(child)
+            (flowOf(state) + statesFlow).filter { it == NavigationNodeState.RESUMED }.subscribeSafelyWithoutExceptions(subscope) {
+                val subsubscope = subscope.LinkedSupervisorScope()
+
+                if (placeFragment()) {
+                    return@subscribeSafelyWithoutExceptions
+                }
+
+                flowOnHierarchyChangeListener.onChildViewAdded.filterNot {
+                    it.second.navigationTag != viewTag
+                }.subscribeSafelyWithoutExceptions(subsubscope) {
+                    if (placeFragment()) {
+                        subsubscope.cancel()
+                    }
+                }
+
+                (flowOf(state) + statesFlow).filterNot {
+                    it == NavigationNodeState.RESUMED
+                }.take(1).subscribeSafelyWithoutExceptions(subsubscope) {
+                    subsubscope.cancel()
+                }
+
+                subsubscope.launchSafelyWithoutExceptions {
+                    while (state == NavigationNodeState.RESUMED && fragment ?.isAdded == false) {
+                        if (placeFragment()) {
+                            subsubscope.cancel()
+                            break
+                        }
+
+                        delay(manualHierarchyCheckerDelayMillis ?: break)
                     }
                 }
             }
 
-            subsubscope.coroutineContext.job
+            subscope.coroutineContext.job
         }
     }
 }

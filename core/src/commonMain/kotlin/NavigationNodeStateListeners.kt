@@ -2,15 +2,15 @@ package dev.inmo.navigation.core
 
 import kotlinx.coroutines.flow.filter
 
-val <T> NavigationNode<T>.onCreateFlow
+val <Base> NavigationNode<out Base, Base>.onCreateFlow
     get() = stateChangesFlow.filter { it.type is NavigationStateChange.Type.CREATE }
-val <T> NavigationNode<T>.onStartFlow
+val <Base> NavigationNode<out Base, Base>.onStartFlow
     get() = stateChangesFlow.filter { it.type is NavigationStateChange.Type.START }
-val <T> NavigationNode<T>.onResumeFlow
+val <Base> NavigationNode<out Base, Base>.onResumeFlow
     get() = stateChangesFlow.filter { it.type is NavigationStateChange.Type.RESUME }
-val <T> NavigationNode<T>.onPauseFlow
+val <Base> NavigationNode<out Base, Base>.onPauseFlow
     get() = stateChangesFlow.filter { it.type is NavigationStateChange.Type.PAUSE }
-val <T> NavigationNode<T>.onStopFlow
+val <Base> NavigationNode<out Base, Base>.onStopFlow
     get() = stateChangesFlow.filter { it.type is NavigationStateChange.Type.STOP }
-val <T> NavigationNode<T>.onDestroyFlow
+val <Base> NavigationNode<out Base, Base>.onDestroyFlow
     get() = stateChangesFlow.filter { it.type is NavigationStateChange.Type.DESTROY }

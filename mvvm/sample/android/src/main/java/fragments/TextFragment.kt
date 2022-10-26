@@ -6,21 +6,20 @@ import android.widget.TextView
 import androidx.core.view.children
 import dev.inmo.kslog.common.d
 import dev.inmo.kslog.common.logger
-import dev.inmo.micro_utils.common.argumentOrThrow
-import dev.inmo.micro_utils.common.findViewsByTag
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.*
 import dev.inmo.navigation.core.extensions.*
-import dev.inmo.navigation.core.fragments.NodeFragment
 import dev.inmo.navigation.core.fragments.view.NavigationFragmentContainerView
 import dev.inmo.navigation.mvvm.sample.android.SampleConfig
 import dev.inmo.navigation.mvvm.sample.android.R
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
-class TextFragment : NodeFragment<SampleConfig>() {
-    protected val text: String by argumentOrThrow()
-    protected val id: String by argumentOrThrow()
+class TextFragment : BaseFragment<SampleConfig.TextConfig>() {
+    protected val text: String
+        get() = _configState.value.text
+    protected val id: String
+        get() = _configState.value.id
     protected var scope = CoroutineScope(Dispatchers.Main)
     private val viewTag
         get() = id
@@ -92,7 +91,7 @@ class TextFragment : NodeFragment<SampleConfig>() {
             return newView
         }
 
-        suspend fun doChainListening(chain: NavigationChain<SampleConfig>) {
+        suspend fun doChainListening(chain: NavigationChain<out SampleConfig>) {
             var layout: View? = null
 
             val subscriptionJob = chain.stackFlow.subscribeSafelyWithoutExceptions(scope) {
@@ -102,7 +101,7 @@ class TextFragment : NodeFragment<SampleConfig>() {
                 if (it.isNotEmpty() && firstConfig.id == layout ?.navigationTag) {
                     return@subscribeSafelyWithoutExceptions
                 }
-                val viewByTag = findViewsByTag(viewAsViewGroup, navigationTagKey, firstConfig.id).firstOrNull()
+                val viewByTag = viewAsViewGroup.findViewsWithNavigationTag(firstConfig.id).firstOrNull()
 
                 layout ?.let { viewAsViewGroup.removeView(it) }
 
