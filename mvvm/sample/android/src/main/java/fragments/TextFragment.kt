@@ -6,12 +6,9 @@ import android.widget.TextView
 import androidx.core.view.children
 import dev.inmo.kslog.common.d
 import dev.inmo.kslog.common.logger
-import dev.inmo.micro_utils.common.argumentOrThrow
-import dev.inmo.micro_utils.common.findViewsByTag
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.*
 import dev.inmo.navigation.core.extensions.*
-import dev.inmo.navigation.core.fragments.NodeFragment
 import dev.inmo.navigation.core.fragments.view.NavigationFragmentContainerView
 import dev.inmo.navigation.mvvm.sample.android.SampleConfig
 import dev.inmo.navigation.mvvm.sample.android.R
@@ -104,7 +101,7 @@ class TextFragment : BaseFragment<SampleConfig.TextConfig>() {
                 if (it.isNotEmpty() && firstConfig.id == layout ?.navigationTag) {
                     return@subscribeSafelyWithoutExceptions
                 }
-                val viewByTag = findViewsByTag(viewAsViewGroup, navigationTagKey, firstConfig.id).firstOrNull()
+                val viewByTag = viewAsViewGroup.findViewsWithNavigationTag(firstConfig.id).firstOrNull()
 
                 layout ?.let { viewAsViewGroup.removeView(it) }
 

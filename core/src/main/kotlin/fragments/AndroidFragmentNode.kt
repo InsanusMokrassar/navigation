@@ -2,16 +2,14 @@ package dev.inmo.navigation.core.fragments
 
 import android.view.View
 import android.view.ViewGroup.NO_ID
-import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentManager
-import dev.inmo.micro_utils.common.findViewsByTag
+import dev.inmo.kslog.common.d
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.*
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.reflect.KClass
-import kotlin.reflect.KProperty
 
 class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
     override val chain: NavigationChain<Base>,
@@ -52,7 +50,7 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
     override fun onResume() {
         super.onResume()
         fragment ?.let {
-            findViewsByTag(rootView, navigationTagKey, viewTag).firstOrNull() ?.also { view ->
+            rootView.findViewsWithNavigationTag(viewTag).firstOrNull() ?.also { view ->
                 placeFragment(view)
             }
         }
@@ -83,8 +81,15 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
 
             flowOnHierarchyChangeListener.onChildViewAdded.subscribeSafelyWithoutExceptions(subsubscope) { (_, child) ->
                 fragment ?.let {
-                    if (viewTag == child.navigationTag && state == NavigationNodeState.RESUMED && !it.isAdded) {
+                    if (viewTag == child.navigationTag && state == NavigationNodeState.RESUMED && !it.isInLayout) {
                         placeFragment(child)
+                    } else {
+                        log.d {
+                            "Solved to avoid fragment placement:\n" +
+                                "viewTag == child.navigationTag: ${viewTag == child.navigationTag}\n" +
+                                "state == NavigationNodeState.RESUMED: ${state == NavigationNodeState.RESUMED}\n" +
+                                "!fragment.isInLayout: ${!it.isInLayout}"
+                        }
                     }
                 }
             }

@@ -25,7 +25,11 @@ class NavigationChain<Base>(
 
     private val actualizeMutex = Mutex()
     private suspend fun actualizeStackStates() {
-        val parentState = parentNodeState.also { log.d { "Parent state of $parentNode now is $it" } }
+        val parentState = parentNodeState.also {
+            log.d {
+                "Chain state (parent $parentNode) now is $it"
+            }
+        }
         actualizeMutex.withLock {
             runCatchingSafely {
                 stack.forEachIndexed { i, node ->
