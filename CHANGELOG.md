@@ -1,5 +1,7 @@
 # Navigation Changelog
 
+## 0.0.6
+
 ## 0.0.5
 
 **THIS RELEASE CONTAINS BREAKING CHANGES**
