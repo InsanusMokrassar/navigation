@@ -2,6 +2,11 @@
 
 ## 0.0.6
 
+* `Versions`:
+  * `Kotlin`: `1.7.20`
+  * `Serialization`: `1.4.1`
+  * `MicroUtils`: `0.13.2`
+  * `KSLog`: `0.5.3`
 * Internal optimizations
 
 ## 0.0.5
