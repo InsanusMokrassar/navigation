@@ -84,7 +84,7 @@ fun <Base> NavigationNode<out Base, Base>.storeHierarchy(): ConfigHolder.Node<Ba
         ConfigHolder.Node(
             config,
             chain.stack.dropWhile { it != this }.drop(1).firstOrNull() ?.storeHierarchy(),
-            _subchains.mapNotNull {
+            subchainsFlow.value.mapNotNull {
                 it.storeHierarchy()
             }
         )
