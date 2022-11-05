@@ -27,11 +27,10 @@ abstract class NavigationNode<Config : Base, Base> {
     val chainHolder
         get() = chain
 
-    internal val _subchains = mutableListOf<NavigationChain<Base>>()
-    protected val subchains: List<NavigationChain<Base>>
-        get() = _subchains.toList()
-    internal val _subchainsFlow = MutableStateFlow<List<NavigationChain<Base>>>(subchains)
+    internal val _subchainsFlow = MutableStateFlow<List<NavigationChain<Base>>>(emptyList())
     val subchainsFlow: StateFlow<List<NavigationChain<Base>>> = _subchainsFlow.asStateFlow()
+    val subchains: List<NavigationChain<Base>>
+        get() = _subchainsFlow.value.toList()
     private val _stateChanges = MutableSharedFlow<NavigationStateChange>(extraBufferCapacity = Int.MAX_VALUE)
 
     val stateChangesFlow: Flow<NavigationStateChange> = _stateChanges.asSharedFlow()
@@ -85,14 +84,12 @@ abstract class NavigationNode<Config : Base, Base> {
 
     fun createEmptySubChain(): NavigationChain<Base> {
         return NavigationChain<Base>(this, chain.nodeFactory).also {
-            _subchains.add(it)
-            _subchainsFlow.value = subchains
+            _subchainsFlow.value += it
         }
     }
 
     protected fun removeChain(chain: NavigationChain<Base>) {
-        _subchains.remove(chain)
-        _subchainsFlow.value = subchains
+        _subchainsFlow.value -= chain
     }
 
     fun createSubChain(config: Base): Pair<NavigationNode<out Base, Base>, NavigationChain<Base>>? {

@@ -119,7 +119,7 @@ class NavigationChain<Base>(
                 log.d { "Unable to find node id $id in ${nodesIds.keys.joinToString()} for $actionName" }
             }
 
-            (stack.flatMap { it._subchains } + listOfNotNull(parentNode ?.chain)).forEach { chainHolder ->
+            (stack.flatMap { it.subchainsFlow.value } + listOfNotNull(parentNode ?.chain)).forEach { chainHolder ->
                 found = chainHolder.doInTree(id, visitedNodesChains, actionName, onFound) || found
             }
         } else {
