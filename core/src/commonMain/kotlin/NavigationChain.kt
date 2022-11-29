@@ -14,7 +14,7 @@ class NavigationChain<Base>(
     internal val nodeFactory: NavigationNodeFactory<Base>
 ) {
     private val log = logger
-    internal val stack = ArrayDeque<NavigationNode<out Base, Base>>()
+    internal val stack = mutableListOf<NavigationNode<out Base, Base>>()
     private val nodesIds = mutableMapOf<NavigationNodeId, NavigationNode<out Base, Base>>()
 
     private val parentNodeState: NavigationNodeState

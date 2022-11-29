@@ -1,5 +1,13 @@
 # Navigation Changelog
 
+## 0.0.7
+
+* `NevigationChain` now uses regular mutable list instead of array deque
+* `Versions`:
+  * `Kotlin`: `1.7.21`
+  * `MicroUtils`: `0.14.4`
+  * `UUID`: `0.6.0`
+
 ## 0.0.6
 
 * `Versions`:
