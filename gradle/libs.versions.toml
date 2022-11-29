@@ -1,12 +1,13 @@
 [versions]
 
-kotlin = "1.7.20"
+kotlin = "1.7.21"
 kotlin-coroutines = "1.6.4"
 kotlin-serialization = "1.4.1"
+dokka = "1.7.20"
 
-microutils = "0.13.2"
+microutils = "0.14.4"
 kslog = "0.5.3"
-uuid = "0.5.0"
+uuid = "0.6.0"
 
 dexcount = "3.1.0"
 junit_version = "4.12"
@@ -54,7 +55,7 @@ android-tools-build = { module = "com.android.tools.build:gradle", version.ref =
 android-dexcount = { module = "com.getkeepsafe.dexcount:dexcount-gradle-plugin", version.ref = "dexcount" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-serialization-plugin = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlin" }
-kotlin-dokka-plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "kotlin" }
+kotlin-dokka-plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 github-release = { module = "com.github.breadmoirai:github-release", version.ref = "github-release" }
 
 [plugins]

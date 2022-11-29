@@ -59,7 +59,9 @@ class NavigationChain<Base>(
     }
 
     fun pop(): NavigationNode<out Base, Base>? {
-        val removed = stack.removeLastOrNull() ?.apply {
+        if (stack.isEmpty()) return null
+
+        val removed = stack.removeAt(stack.lastIndex).apply {
             nodesIds.remove(id)
             state = NavigationNodeState.NEW
             _stackFlow.value = stack.toList()

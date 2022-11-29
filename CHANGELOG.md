@@ -2,6 +2,12 @@
 
 ## 0.0.7
 
+* `NevigationChain` now uses regular `removeAt` with `lastIndex` in `pop`
+* `Versions`:
+  * `Kotlin`: `1.7.21`
+  * `MicroUtils`: `0.14.4`
+  * `UUID`: `0.6.0`
+
 ## 0.0.6
 
 * `Versions`:
