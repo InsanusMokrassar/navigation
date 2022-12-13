@@ -1,5 +1,7 @@
 # Navigation Changelog
 
+## 0.0.8
+
 ## 0.0.7
 
 * `NevigationChain` now uses regular mutable list instead of array deque
