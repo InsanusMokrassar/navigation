@@ -1,5 +1,13 @@
 # Navigation Changelog
 
+## 0.0.8
+
+* Extended support of JS platform:
+  * Extensions `NavigationNodeDefaultConfig#htmlElement` (`orNull`/`orThrow`)
+  * `CookiesNavigationConfigsRepo`
+  * `initNavigation` function for simple navigation enabling
+  * `JsNavigationNode` abstraction as an analogue of android navigation node
+
 ## 0.0.7
 
 * `NevigationChain` now uses regular mutable list instead of array deque
