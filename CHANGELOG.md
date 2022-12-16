@@ -1,5 +1,7 @@
 # Navigation Changelog
 
+## 0.0.9
+
 ## 0.0.8
 
 * Extended support of JS platform:
