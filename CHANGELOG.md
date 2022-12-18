@@ -1,5 +1,10 @@
 # Navigation Changelog
 
+## 0.0.9
+
+* `JS`:
+  * `initNavigation` got variant with opportunity to pass root chain
+
 ## 0.0.8
 
 * Extended support of JS platform:
