@@ -1,5 +1,7 @@
 package dev.inmo.navigation.core
 
+import dev.inmo.kslog.common.TagLogger
+import dev.inmo.kslog.common.d
 import dev.inmo.micro_utils.coroutines.LinkedSupervisorScope
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 import dev.inmo.navigation.core.repo.ConfigHolder
@@ -26,9 +28,11 @@ inline fun <reified T : Base, reified Base : NavigationNodeDefaultConfig> initNa
     rootChain: NavigationChain<Base>,
     nodesFactory: NavigationNodeFactory<Base>
 ): Job {
+    val logger = TagLogger("NavigationJob")
     val subscope = scope.LinkedSupervisorScope()
 
     return subscope.launch {
+        logger.d { "Start enable saving of hierarchy" }
         configsRepo.enableSavingHierarchy(
             rootChain,
             this,
@@ -42,9 +46,20 @@ inline fun <reified T : Base, reified Base : NavigationNodeDefaultConfig> initNa
                 )
             }
         }
+        logger.d { "Hierarchy saving enabled" }
+
+        val existsChain = configsRepo.get()
+
+        logger.d {
+            if (existsChain == null) {
+                "Can't find exists chain. Using default one: $startChain"
+            } else {
+                "Took exists stored chain $existsChain"
+            }
+        }
 
         restoreHierarchy<Base>(
-            configsRepo.get() ?: startChain,
+            existsChain ?: startChain,
             factory = resultNodesFactory
         ) ?.start(subscope)
     }

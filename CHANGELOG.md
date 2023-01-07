@@ -4,6 +4,8 @@
 
 * `Versions`:
   * `MicroUtils`: `0.16.5`
+* `JS`:
+  * Add more logs in `initNavigation`
 
 ## 0.0.9
 
