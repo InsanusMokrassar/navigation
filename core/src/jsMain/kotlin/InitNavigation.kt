@@ -60,7 +60,8 @@ inline fun <reified T : Base, reified Base : NavigationNodeDefaultConfig> initNa
 
         restoreHierarchy<Base>(
             existsChain ?: startChain,
-            factory = resultNodesFactory
+            factory = resultNodesFactory,
+            rootChain = rootChain
         ) ?.start(subscope)
     }
 }

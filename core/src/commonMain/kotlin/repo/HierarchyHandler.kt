@@ -1,9 +1,6 @@
 package dev.inmo.navigation.core.repo
 
 import dev.inmo.navigation.core.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.takeWhile
 
 suspend fun <Base> ConfigHolder.Chain<Base>.restoreHierarchy(
     node: NavigationNode<out Base, Base>
@@ -16,13 +13,12 @@ suspend fun <Base> ConfigHolder.Chain<Base>.restoreHierarchy(
 }
 
 suspend fun <Base> ConfigHolder.Chain<Base>.restoreHierarchy(
-    factory: NavigationNodeFactory<Base>
+    factory: NavigationNodeFactory<Base>,
+    chainToRestore: NavigationChain<Base> = NavigationChain(null, factory)
 ): NavigationChain<Base> {
-    val subchain = NavigationChain(null, factory)
+    firstNodeConfig.restoreHierarchy(chainToRestore)
 
-    firstNodeConfig.restoreHierarchy(subchain)
-
-    return subchain
+    return chainToRestore
 }
 
 suspend fun <Base> ConfigHolder.Node<Base>.restoreHierarchy(
@@ -57,17 +53,19 @@ suspend fun <Base> NavigationNode<out Base, Base>.restoreHierarchy(
 
 suspend fun <T> restoreHierarchy(
     holder: ConfigHolder<T>,
-    factory: NavigationNodeFactory<T>
+    factory: NavigationNodeFactory<T>,
+    rootChain: NavigationChain<T> = NavigationChain(null, factory)
 ): NavigationChain<T>? {
     return when (holder) {
         is ConfigHolder.Chain -> {
             holder.restoreHierarchy(
-                factory
+                factory,
+                rootChain
             )
         }
         is ConfigHolder.Node -> {
             holder.restoreHierarchy(
-                NavigationChain(null, factory)
+                rootChain
             ) ?.chain
         }
     }

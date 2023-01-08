@@ -4,6 +4,7 @@
 
 * `Versions`:
   * `MicroUtils`: `0.16.5`
+* Fixes in using of `rootChain` in `restoreHierarchy`
 * `JS`:
   * Add more logs in `initNavigation`
 
