@@ -1,5 +1,13 @@
 # Navigation Changelog
 
+## 0.0.10
+
+* `Versions`:
+  * `MicroUtils`: `0.16.5`
+* Fixes in using of `rootChain` in `restoreHierarchy`
+* `JS`:
+  * Add more logs in `initNavigation`
+
 ## 0.0.9
 
 * `JS`:
