@@ -1,5 +1,10 @@
 # Navigation Changelog
 
+## 0.0.11
+
+* `JS`:
+  * `JsNavigationNode` got `htmlElementStateFlow` which is automatically updated when node is in resume state
+
 ## 0.0.10
 
 * `Versions`:
