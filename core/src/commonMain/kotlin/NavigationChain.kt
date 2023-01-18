@@ -14,7 +14,6 @@ class NavigationChain<Base>(
     internal val nodeFactory: NavigationNodeFactory<Base>
 ) {
     private val log = logger
-    internal val stack = mutableListOf<NavigationNode<out Base, Base>>()
     private val nodesIds = mutableMapOf<NavigationNodeId, NavigationNode<out Base, Base>>()
 
     private val parentNodeState: NavigationNodeState
@@ -22,6 +21,8 @@ class NavigationChain<Base>(
 
     private val _stackFlow = MutableStateFlow<List<NavigationNode<out Base, Base>>>(emptyList())
     val stackFlow: StateFlow<List<NavigationNode<out Base, Base>>> = _stackFlow.asStateFlow()
+    internal val stack
+        get() = stackFlow.value
 
     private val actualizeMutex = Mutex()
     private suspend fun actualizeStackStates() {
@@ -52,27 +53,26 @@ class NavigationChain<Base>(
 
     fun push(config: Base): NavigationNode<out Base, Base>? {
         val newNode = nodeFactory.createNode(this, config) ?: return null
-        stack.add(newNode)
+        _stackFlow.value += newNode
         nodesIds[newNode.id] = newNode
-        _stackFlow.value = stack.toList()
         return newNode
     }
 
     fun pop(): NavigationNode<out Base, Base>? {
-        val removed = stack.removeLastOrNull() ?.apply {
-            nodesIds.remove(id)
-            state = NavigationNodeState.NEW
-            _stackFlow.value = stack.toList()
+        return stack.lastOrNull() ?.apply {
+            drop(id)
         }
-        return removed
     }
 
     fun drop(id: NavigationNodeId): NavigationNode<out Base, Base>? {
         val i = stack.indexOfFirst { it.id == id }.takeIf { it != -1 } ?: return null
-        val oldNode = stack.removeAt(i)
+        val oldNode = stack[i]
+        _stackFlow.value -= oldNode
         nodesIds.remove(id)
         oldNode.state = NavigationNodeState.NEW
-        _stackFlow.value = stack.toList()
+        if (stack.isEmpty()) {
+            parentNode ?.removeChain(this)
+        }
         return oldNode
     }
     fun drop(id: String) = drop(NavigationNodeId(id))
@@ -81,14 +81,14 @@ class NavigationChain<Base>(
         val i = stack.indexOfFirst { it.id == id }.takeIf { it != -1 } ?: return null
 
         val newNode = nodeFactory.createNode(this, config) ?: return null
-        val oldNode = stack.set(i, newNode)
+        val oldNode = stack[i]
+        _stackFlow.value = _stackFlow.value.take(i) + newNode + _stackFlow.value.drop(i + 1)
 
         nodesIds.remove(id)
         nodesIds[newNode.id] = newNode
 
         oldNode.state = NavigationNodeState.NEW
 
-        _stackFlow.value = stack.toList()
         return oldNode to newNode
     }
 

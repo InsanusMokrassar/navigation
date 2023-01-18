@@ -88,14 +88,16 @@ abstract class NavigationNode<Config : Base, Base> {
         }
     }
 
-    protected fun removeChain(chain: NavigationChain<Base>) {
-        _subchainsFlow.value -= chain
+    internal fun removeChain(chain: NavigationChain<Base>) {
+        log.d { "Removing chain $chain" }
+        _subchainsFlow.value = _subchainsFlow.value.filter { it == chain }
+        log.d { "Removed chain $chain" }
     }
 
     fun createSubChain(config: Base): Pair<NavigationNode<out Base, Base>, NavigationChain<Base>>? {
         val newSubChain = createEmptySubChain()
         val createdNode = newSubChain.push(config) ?: return null
-        log.d { "Stack after adding of $config subchain: ${subchains.joinToString { it.stackFlow.value.joinToString { it.id.string } }}" }
+        log.d { "Stack after adding of $config subchain: ${subchains.joinToString("; ") { it.stackFlow.value.joinToString { it.id.string } }}" }
         return createdNode to newSubChain
     }
 
@@ -108,11 +110,6 @@ abstract class NavigationNode<Config : Base, Base> {
         onChainAddedFlow.flatten().subscribeSafelyWithoutExceptions(subscope) {
             chainToJobMutex.withLock {
                 chainToJob[it.value] = it.value.start(subscope)
-                it.value.onNodeRemovedFlow.subscribeSafelyWithoutExceptions(subscope) { _ ->
-                    if (it.value.stackFlow.value.isEmpty()) {
-                        removeChain(it.value)
-                    }
-                }
             }
         }
         onChainRemovedFlow.flatten().subscribeSafelyWithoutExceptions(subscope) {
