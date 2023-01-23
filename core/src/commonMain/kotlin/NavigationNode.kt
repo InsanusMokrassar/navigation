@@ -109,19 +109,23 @@ abstract class NavigationNode<Config : Base, Base> {
         val chainToJob = mutableMapOf<NavigationChain<Base>, Job>()
         val chainToJobMutex = Mutex()
 
-        onChainAddedFlow.flatten().subscribeSafelyWithoutExceptions(subscope) {
+        (onChainAddedFlow + onChainReplacedFlow.map { it.map { it.second } }).flatten().subscribeSafelyWithoutExceptions(subscope) {
             chainToJobMutex.withLock {
                 log.d { "Starting ${it.value}" }
                 chainToJob[it.value] = it.value.start(subscope)
                 log.d { "Started ${it.value}" }
             }
         }
-        onChainRemovedFlow.flatten().subscribeSafelyWithoutExceptions(subscope) {
+        (onChainRemovedFlow + onChainReplacedFlow.map { it.map { it.first } }).flatten().subscribeSafelyWithoutExceptions(subscope) {
             chainToJobMutex.withLock {
                 log.d { "Cancelling and removing ${it.value}" }
                 chainToJob.remove(it.value) ?.cancel()
                 log.d { "Cancelled and removed ${it.value}" }
             }
+        }
+
+        onChainsStackDiffFlow.subscribeSafelyWithoutExceptions(subscope) {
+            log.d { it }
         }
 
         subscope.launch {
