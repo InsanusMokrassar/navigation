@@ -86,22 +86,17 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
                 flowOnHierarchyChangeListener.onChildViewAdded.filterNot {
                     it.second.navigationTag != viewTag
                 }.subscribeSafelyWithoutExceptions(subsubscope) {
-                    if (placeFragment()) {
-                        subsubscope.cancel()
-                    }
+                    placeFragment()
                 }
 
-                (flowOf(state) + statesFlow).filterNot {
-                    it == NavigationNodeState.RESUMED
-                }.take(1).subscribeSafelyWithoutExceptions(subsubscope) {
+                onDestroyFlow.subscribeSafelyWithoutExceptions(subsubscope) {
                     subsubscope.cancel()
                 }
 
                 subsubscope.launchSafelyWithoutExceptions {
                     while (state == NavigationNodeState.RESUMED && fragment ?.isAdded == false) {
-                        if (placeFragment()) {
-                            subsubscope.cancel()
-                            break
+                        if (fragment ?.isAdded == false) {
+                            placeFragment()
                         }
 
                         delay(manualHierarchyCheckerDelayMillis ?: break)
