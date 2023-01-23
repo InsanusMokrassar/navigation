@@ -11,7 +11,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 abstract class NavigationNode<Config : Base, Base> {
-    protected val log by lazy {
+    protected open val log by lazy {
         logger
     }
     open val id: NavigationNodeId = NavigationNodeId()

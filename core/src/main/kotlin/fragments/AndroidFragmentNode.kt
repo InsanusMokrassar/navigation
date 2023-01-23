@@ -3,6 +3,8 @@ package dev.inmo.navigation.core.fragments
 import android.view.View
 import android.view.ViewGroup.NO_ID
 import androidx.fragment.app.FragmentManager
+import dev.inmo.kslog.common.KSLog
+import dev.inmo.kslog.common.TagLogger
 import dev.inmo.kslog.common.d
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.*
@@ -22,6 +24,9 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
     private val manualHierarchyCheckerDelayMillis: Long? = 100L,
     override val id: NavigationNodeId = NavigationNodeId()
 ) : NavigationNode<Config, Base>() {
+    override val log: KSLog by lazy {
+        TagLogger("${this::class.simpleName}/${fragmentKClass.simpleName}")
+    }
     private var fragment: NodeFragment<Config, Base>? = null
     private val _configState = MutableStateFlow(config)
     override val configState: StateFlow<Config> = _configState.asStateFlow()
