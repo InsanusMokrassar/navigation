@@ -90,7 +90,7 @@ abstract class NavigationNode<Config : Base, Base> {
 
     internal fun removeChain(chain: NavigationChain<Base>) {
         log.d { "Removing chain $chain" }
-        _subchainsFlow.value = _subchainsFlow.value.filter { it == chain }
+        _subchainsFlow.value = _subchainsFlow.value.filter { it != chain }
         log.d { "Removed chain $chain" }
     }
 
