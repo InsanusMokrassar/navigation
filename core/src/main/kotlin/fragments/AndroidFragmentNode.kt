@@ -107,4 +107,8 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
             subscope.coroutineContext.job
         }
     }
+
+    override fun toString(): String {
+        return "${super.toString()}/${fragmentKClass.simpleName}"
+    }
 }
