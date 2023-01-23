@@ -53,8 +53,8 @@ class NavigationChain<Base>(
 
     fun push(config: Base): NavigationNode<out Base, Base>? {
         val newNode = nodeFactory.createNode(this, config) ?: return null
-        _stackFlow.value += newNode
         nodesIds[newNode.id] = newNode
+        _stackFlow.value += newNode
         return newNode
     }
 
@@ -65,15 +65,14 @@ class NavigationChain<Base>(
     }
 
     fun drop(id: NavigationNodeId): NavigationNode<out Base, Base>? {
-        val i = stack.indexOfFirst { it.id == id }.takeIf { it != -1 } ?: return null
-        val oldNode = stack[i]
-        _stackFlow.value -= oldNode
+        val node = nodesIds[id] ?: return null
+        _stackFlow.value -= node
         nodesIds.remove(id)
-        oldNode.state = NavigationNodeState.NEW
+        node.state = NavigationNodeState.NEW
         if (stack.isEmpty()) {
             parentNode ?.removeChain(this)
         }
-        return oldNode
+        return node
     }
     fun drop(id: String) = drop(NavigationNodeId(id))
 
