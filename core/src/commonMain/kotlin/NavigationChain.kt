@@ -13,7 +13,9 @@ class NavigationChain<Base>(
     internal val parentNode: NavigationNode<out Base, Base>?,
     internal val nodeFactory: NavigationNodeFactory<Base>
 ) {
-    private val log = logger
+    private val log by lazy {
+        TagLogger(toString())
+    }
     private val nodesIds = mutableMapOf<NavigationNodeId, NavigationNode<out Base, Base>>()
 
     private val parentNodeState: NavigationNodeState
@@ -32,6 +34,7 @@ class NavigationChain<Base>(
             }
         }
         actualizeMutex.withLock {
+            log.d { "Start actualization of stack $stack" }
             runCatchingSafely {
                 stack.forEachIndexed { i, node ->
                     node.state = minOf(
@@ -52,9 +55,14 @@ class NavigationChain<Base>(
     }
 
     fun push(config: Base): NavigationNode<out Base, Base>? {
-        val newNode = nodeFactory.createNode(this, config) ?: return null
+        val newNode = nodeFactory.createNode(this, config) ?: let {
+            log.d { "Unable to create node for $config" }
+            return null
+        }
+        log.d { "Adding node $newNode with config $config" }
         nodesIds[newNode.id] = newNode
         _stackFlow.value += newNode
+        log.d { "$newNode now in stack: $stack" }
         return newNode
     }
 
@@ -69,9 +77,6 @@ class NavigationChain<Base>(
         node.state = NavigationNodeState.NEW
         _stackFlow.value = _stackFlow.value.filterNot { it.id == id }
         nodesIds.remove(id)
-        if (stack.isEmpty()) {
-            parentNode ?.removeChain(this)
-        }
         return node
     }
     fun drop(id: String) = drop(NavigationNodeId(id))
@@ -177,6 +182,8 @@ class NavigationChain<Base>(
     fun start(scope: CoroutineScope): Job {
         val subscope = scope.LinkedSupervisorScope()
 
+        log.d { "Starting chain" }
+
         parentNode ?.run {
             (flowOf(state) + stateChangesFlow).subscribeSafelyWithoutExceptions(subscope) {
                 log.d { "Start update of state due to parent state update to $it" }
@@ -184,12 +191,14 @@ class NavigationChain<Base>(
             }
         }
 
-        stackFlow.dropWhile { it.isEmpty() }.subscribeSafelyWithoutExceptions(subscope) {
-            if (it.isEmpty()) {
-                subscope.cancel()
-            } else {
-                actualizeStackStates()
-            }
+        parentNode ?.subchainsFlow ?.dropWhile { this in it } ?.subscribeSafelyWithoutExceptions(subscope) {
+            log.d { "Cancelling subscope" }
+            subscope.cancel()
+            log.d { "Cancelled subscope" }
+        }
+
+        stackFlow.subscribeSafelyWithoutExceptions(subscope) {
+            actualizeStackStates()
         }
 
         val nodeToJob = mutableMapOf<NavigationNodeId, Job>()
@@ -204,6 +213,11 @@ class NavigationChain<Base>(
             nodeToJobMutex.withLock {
                 nodeToJob.remove(it.value.id) ?.cancel()
             }
+        }
+        onNodeRemovedFlow.dropWhile { stack.isNotEmpty() }.subscribeSafelyWithoutExceptions(subscope) {
+            log.d { "Dropping myself from parent node $parentNode" }
+            parentNode ?.removeChain(this)
+            log.d { "Dropped myself from parent node $parentNode" }
         }
 
         subscope.launch {

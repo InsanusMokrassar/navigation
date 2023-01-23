@@ -1,18 +1,19 @@
 package dev.inmo.navigation.core.extensions
 
+import dev.inmo.micro_utils.common.Diff
 import dev.inmo.micro_utils.common.applyDiff
 import dev.inmo.micro_utils.common.diff
 import dev.inmo.navigation.core.NavigationChain
 import dev.inmo.navigation.core.NavigationNode
 import kotlinx.coroutines.flow.*
 
-val <Base> NavigationNode<out Base, Base>.onChainsStackDiffFlow
+val <Base> NavigationNode<out Base, Base>.onChainsStackDiffFlow: Flow<Diff<NavigationChain<Base>>>
     get() = flow {
-        val previous = mutableListOf<NavigationChain<Base>>()
-        emit(previous.applyDiff(subchainsFlow.value, strictComparison = true))
+        var previous = emptyList<NavigationChain<Base>>()
         subchainsFlow.collect {
             val newValue = subchainsFlow.value
-            emit(previous.applyDiff(newValue, strictComparison = true))
+            emit(previous.diff(newValue, strictComparison = true))
+            previous = newValue
         }
     }
 val <Base> NavigationNode<out Base, Base>.onChainAddedFlow

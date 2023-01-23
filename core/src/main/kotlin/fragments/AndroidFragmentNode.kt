@@ -84,9 +84,10 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
             (flowOf(state) + statesFlow).filter { it == NavigationNodeState.RESUMED }.subscribeSafelyWithoutExceptions(subscope) {
                 val subsubscope = subscope.LinkedSupervisorScope()
 
-                if (placeFragment()) {
-                    return@subscribeSafelyWithoutExceptions
-                }
+                placeFragment()
+//                if (placeFragment()) {
+//                    return@subscribeSafelyWithoutExceptions
+//                }
 
                 flowOnHierarchyChangeListener.onChildViewAdded.filterNot {
                     it.second.navigationTag != viewTag
@@ -99,8 +100,8 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
                 }
 
                 subsubscope.launchSafelyWithoutExceptions {
-                    while (state == NavigationNodeState.RESUMED && fragment ?.isAdded == false) {
-                        if (fragment ?.isAdded == false) {
+                    while (state == NavigationNodeState.RESUMED) {
+                        if (fragment ?.isAdded != true) {
                             placeFragment()
                         }
 
