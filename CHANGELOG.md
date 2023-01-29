@@ -2,6 +2,16 @@
 
 ## 0.0.13
 
+* `Common`:
+  * `NavigationChain` now have more useful logs for different methods
+  * Reworked `push`, `drop` and `start` methods of `NavigationChain`
+  * `NavigationNode` now have more useful logs object
+  * Fixes in `NavigationNode.start`
+  * Fixes in `NavigationChain#onNodesStackDiffFlow` and all subsequent diff flows
+  * Fixes in `NavigationNode#onChainsStackDiffFlow` and all subsequent diff flows
+* `Android`:
+  * `AndroidFragmentNode` now will automatically attach to any found view with its navigation tag equal to `Config#id`
+
 ## 0.0.12
 
 * Rewrite chain lists with immutable stacks
