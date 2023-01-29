@@ -1,5 +1,6 @@
 package dev.inmo.navigation.core.extensions
 
+import dev.inmo.micro_utils.common.Diff
 import dev.inmo.micro_utils.common.applyDiff
 import dev.inmo.micro_utils.common.diff
 import dev.inmo.navigation.core.NavigationChain
@@ -7,13 +8,13 @@ import dev.inmo.navigation.core.NavigationNode
 import kotlinx.coroutines.flow.*
 
 
-val <Base> NavigationChain<Base>.onNodesStackDiffFlow
+val <Base> NavigationChain<Base>.onNodesStackDiffFlow: Flow<Diff<NavigationNode<out Base, Base>>>
     get() = flow {
-        val previous = mutableListOf<NavigationNode<out Base, Base>>()
-        emit(previous.applyDiff(stackFlow.value, strictComparison = true))
+        var previous = stack
         stackFlow.collect {
             val newValue = stackFlow.value
-            emit(previous.applyDiff(newValue, strictComparison = true))
+            emit(previous.diff(newValue, strictComparison = true))
+            previous = newValue
         }
     }
 val <Base> NavigationChain<Base>.onNodeAddedFlow

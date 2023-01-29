@@ -3,6 +3,8 @@ package dev.inmo.navigation.core.fragments
 import android.view.View
 import android.view.ViewGroup.NO_ID
 import androidx.fragment.app.FragmentManager
+import dev.inmo.kslog.common.KSLog
+import dev.inmo.kslog.common.TagLogger
 import dev.inmo.kslog.common.d
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.*
@@ -22,6 +24,9 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
     private val manualHierarchyCheckerDelayMillis: Long? = 100L,
     override val id: NavigationNodeId = NavigationNodeId()
 ) : NavigationNode<Config, Base>() {
+    override val log: KSLog by lazy {
+        TagLogger("${this::class.simpleName}/${fragmentKClass.simpleName}")
+    }
     private var fragment: NodeFragment<Config, Base>? = null
     private val _configState = MutableStateFlow(config)
     override val configState: StateFlow<Config> = _configState.asStateFlow()
@@ -79,29 +84,25 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
             (flowOf(state) + statesFlow).filter { it == NavigationNodeState.RESUMED }.subscribeSafelyWithoutExceptions(subscope) {
                 val subsubscope = subscope.LinkedSupervisorScope()
 
-                if (placeFragment()) {
-                    return@subscribeSafelyWithoutExceptions
-                }
+                placeFragment()
+//                if (placeFragment()) {
+//                    return@subscribeSafelyWithoutExceptions
+//                }
 
                 flowOnHierarchyChangeListener.onChildViewAdded.filterNot {
                     it.second.navigationTag != viewTag
                 }.subscribeSafelyWithoutExceptions(subsubscope) {
-                    if (placeFragment()) {
-                        subsubscope.cancel()
-                    }
+                    placeFragment()
                 }
 
-                (flowOf(state) + statesFlow).filterNot {
-                    it == NavigationNodeState.RESUMED
-                }.take(1).subscribeSafelyWithoutExceptions(subsubscope) {
+                onDestroyFlow.subscribeSafelyWithoutExceptions(subsubscope) {
                     subsubscope.cancel()
                 }
 
                 subsubscope.launchSafelyWithoutExceptions {
-                    while (state == NavigationNodeState.RESUMED && fragment ?.isAdded == false) {
-                        if (placeFragment()) {
-                            subsubscope.cancel()
-                            break
+                    while (state == NavigationNodeState.RESUMED) {
+                        if (fragment ?.isAdded != true) {
+                            placeFragment()
                         }
 
                         delay(manualHierarchyCheckerDelayMillis ?: break)
@@ -111,5 +112,9 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
 
             subscope.coroutineContext.job
         }
+    }
+
+    override fun toString(): String {
+        return "${super.toString()}/${fragmentKClass.simpleName}"
     }
 }
