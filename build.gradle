@@ -13,7 +13,6 @@ buildscript {
         classpath libs.kotlin.serialization.plugin
         classpath libs.kotlin.dokka.plugin
         classpath libs.github.release
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10'
     }
 }
 
@@ -22,6 +21,7 @@ allprojects {
         mavenLocal()
         mavenCentral()
         google()
+        maven { url "https://git.inmo.dev/api/packages/InsanusMokrassar/maven" }
     }
 }
 
