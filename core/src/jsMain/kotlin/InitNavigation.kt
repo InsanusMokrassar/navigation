@@ -17,7 +17,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 
 @OptIn(InternalSerializationApi::class)
-inline fun <reified T : Base, reified Base : NavigationNodeDefaultConfig> initNavigation(
+inline fun <reified Base : NavigationNodeDefaultConfig> initNavigation(
     startChain: ConfigHolder.Chain<Base>,
     configsRepo: NavigationConfigsRepo<Base> = CookiesNavigationConfigsRepo(
         Json { ignoreUnknownKeys = true },
@@ -67,7 +67,7 @@ inline fun <reified T : Base, reified Base : NavigationNodeDefaultConfig> initNa
 }
 
 @OptIn(InternalSerializationApi::class)
-inline fun <reified T : Base, reified Base : NavigationNodeDefaultConfig> initNavigation(
+inline fun <reified Base : NavigationNodeDefaultConfig> initNavigation(
     startChain: ConfigHolder.Chain<Base>,
     configsRepo: NavigationConfigsRepo<Base> = CookiesNavigationConfigsRepo(
         Json { ignoreUnknownKeys = true },
