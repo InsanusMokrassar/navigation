@@ -5,7 +5,7 @@ kotlin-coroutines = "1.6.4"
 kotlin-serialization = "1.4.1"
 dokka = "1.7.20"
 
-microutils = "0.16.5"
+microutils = "0.16.12"
 kslog = "0.5.4"
 uuid = "0.6.0"
 
@@ -17,7 +17,7 @@ espresso_core = "3.4.0"
 android-gradle-plugin = "7.3.0"
 android-minSdk = "21"
 android-compileSdk = "33"
-android-buildTools = "33.0.0"
+android-buildTools = "33.0.1"
 
 android-core-ktx = "1.9.0"
 android-appcompat = "1.5.1"
