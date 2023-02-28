@@ -1,5 +1,14 @@
 # Navigation Changelog
 
+## 0.0.14
+
+* `Versions`:
+  * `Kotlin`: `1.8.10`
+  * `Serialization`: `1.5.0`
+  * `MicroUtils`: `0.17.0`
+  * `KSLog`: `1.0.0`
+  * `UUID`: `0.7.0`
+
 ## 0.0.13
 
 * `Common`:
