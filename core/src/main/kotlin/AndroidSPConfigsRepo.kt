@@ -21,7 +21,7 @@ class AndroidSPConfigsRepo<T: Any>(
                 @OptIn(InternalSerializationApi::class)
                 polymorphic(Any::class, kclass, kclass.serializer())
             }
-            configKClasses.forEach {
+            for (it in configKClasses) {
                 poly(it)
             }
         }
