@@ -76,8 +76,8 @@ class NavigationChain<Base>(
         val node = nodesIds[id] ?: return null
         node.state = NavigationNodeState.NEW
         log.d { "Stack before removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
-        _stackFlow.value = _stackFlow.value.filter { currentNode ->
-            (currentNode.id != id).also {
+        _stackFlow.value = _stackFlow.value.filterNot { currentNode ->
+            (currentNode.id == id).also {
                 log.d { "Id of $currentNode (${currentNode.id}) is equal to $id: $it" }
             }
         }
