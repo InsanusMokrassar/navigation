@@ -42,5 +42,5 @@ dependencies {
     implementation libs.android.material
     implementation libs.microutils.common
 
-    implementation project(":navigation.mvvm.sample")
+    implementation project(":navigation.sample")
 }

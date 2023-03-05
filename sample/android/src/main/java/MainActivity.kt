@@ -1,11 +1,11 @@
-package dev.inmo.navigation.mvvm.sample.android
+package dev.inmo.navigation.sample.android
 
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import dev.inmo.navigation.core.*
 import dev.inmo.navigation.core.repo.*
-import dev.inmo.navigation.mvvm.sample.android.fragments.TextFragment
+import dev.inmo.navigation.sample.android.fragments.TextFragment
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
