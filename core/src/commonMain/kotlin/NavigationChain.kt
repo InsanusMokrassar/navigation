@@ -75,7 +75,13 @@ class NavigationChain<Base>(
     fun drop(id: NavigationNodeId): NavigationNode<out Base, Base>? {
         val node = nodesIds[id] ?: return null
         node.state = NavigationNodeState.NEW
-        _stackFlow.value = _stackFlow.value.filterNot { it.id == id }
+        log.d { "Stack before removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
+        _stackFlow.value = _stackFlow.value.filter { currentNode ->
+            (currentNode.id != id).also {
+                log.d { "Id of $currentNode (${currentNode.id}) is equal to $id: $it" }
+            }
+        }
+        log.d { "Stack after removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
         nodesIds.remove(id)
         return node
     }
