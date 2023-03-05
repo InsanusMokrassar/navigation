@@ -1,4 +1,4 @@
-package dev.inmo.navigation.mvvm.sample.android.fragments
+package dev.inmo.navigation.sample.android.fragments
 
 import android.os.Bundle
 import android.view.*
@@ -10,8 +10,8 @@ import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.*
 import dev.inmo.navigation.core.extensions.*
 import dev.inmo.navigation.core.fragments.view.NavigationFragmentContainerView
-import dev.inmo.navigation.mvvm.sample.android.SampleConfig
-import dev.inmo.navigation.mvvm.sample.android.R
+import dev.inmo.navigation.sample.android.SampleConfig
+import dev.inmo.navigation.sample.android.R
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 

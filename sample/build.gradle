@@ -10,7 +10,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api project(":navigation.mvvm")
+                api project(":navigation.core")
             }
         }
     }
