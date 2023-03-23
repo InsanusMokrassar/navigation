@@ -84,8 +84,8 @@ abstract class NavigationNode<Config : Base, Base> {
         log.d { "onDestroy" }
     }
 
-    fun createEmptySubChain(): NavigationChain<Base> {
-        return NavigationChain<Base>(this, chain.nodeFactory).also {
+    fun createEmptySubChain(id: NavigationChainId? = null): NavigationChain<Base> {
+        return NavigationChain<Base>(this, chain.nodeFactory, id).also {
             _subchainsFlow.value += it
         }
     }

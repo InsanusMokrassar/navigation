@@ -11,7 +11,8 @@ import kotlinx.coroutines.sync.withLock
 
 class NavigationChain<Base>(
     internal val parentNode: NavigationNode<out Base, Base>?,
-    internal val nodeFactory: NavigationNodeFactory<Base>
+    internal val nodeFactory: NavigationNodeFactory<Base>,
+    val id: NavigationChainId? = null
 ) {
     private val log by lazy {
         TagLogger(toString())

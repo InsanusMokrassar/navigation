@@ -1,5 +1,6 @@
 package dev.inmo.navigation.core.repo
 
+import dev.inmo.navigation.core.NavigationChainId
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -15,6 +16,7 @@ sealed interface ConfigHolder<T> {
     @Serializable
     @SerialName("Chain")
     data class Chain<T>(
-        val firstNodeConfig: Node<T>
+        val firstNodeConfig: Node<T>,
+        val id: NavigationChainId? = null
     ) : ConfigHolder<T>
 }

@@ -75,12 +75,13 @@ inline fun <reified Base : NavigationNodeDefaultConfig> initNavigation(
     ),
     scope: CoroutineScope = CoroutineScope(Dispatchers.Main),
     savingDebounce: Long = 0L,
+    rootChain: NavigationChain<Base>? = null,
     nodesFactory: NavigationNodeFactory<Base>
 ): Job = initNavigation(
     startChain,
     configsRepo,
     scope,
     savingDebounce,
-    NavigationChain<Base>(null, nodesFactory),
+    rootChain ?: NavigationChain<Base>(null, nodesFactory),
     nodesFactory
 )

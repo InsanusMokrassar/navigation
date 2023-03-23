@@ -14,7 +14,7 @@ suspend fun <Base> ConfigHolder.Chain<Base>.restoreHierarchy(
 
 suspend fun <Base> ConfigHolder.Chain<Base>.restoreHierarchy(
     factory: NavigationNodeFactory<Base>,
-    chainToRestore: NavigationChain<Base> = NavigationChain(null, factory)
+    chainToRestore: NavigationChain<Base> = NavigationChain(null, factory, id)
 ): NavigationChain<Base> {
     firstNodeConfig.restoreHierarchy(chainToRestore)
 
