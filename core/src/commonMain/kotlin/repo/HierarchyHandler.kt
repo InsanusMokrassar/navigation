@@ -3,69 +3,89 @@ package dev.inmo.navigation.core.repo
 import dev.inmo.navigation.core.*
 
 suspend fun <Base> ConfigHolder.Chain<Base>.restoreHierarchy(
-    node: NavigationNode<out Base, Base>
+    node: NavigationNode<out Base, Base>,
+    dropRedundantChainsOnRestores: Boolean = false
 ): NavigationChain<Base> {
     val subchain = node.createEmptySubChain()
 
-    firstNodeConfig.restoreHierarchy(subchain)
+    firstNodeConfig.restoreHierarchy(subchain, dropRedundantChainsOnRestores)
 
     return subchain
 }
 
 suspend fun <Base> ConfigHolder.Chain<Base>.restoreHierarchy(
     factory: NavigationNodeFactory<Base>,
-    chainToRestore: NavigationChain<Base> = NavigationChain(null, factory, id)
+    chainToRestore: NavigationChain<Base> = NavigationChain(null, factory, id),
+    dropRedundantChainsOnRestores: Boolean = false
 ): NavigationChain<Base> {
-    firstNodeConfig.restoreHierarchy(chainToRestore)
+    firstNodeConfig.restoreHierarchy(chainToRestore, dropRedundantChainsOnRestores)
 
     return chainToRestore
 }
 
 suspend fun <Base> ConfigHolder.Node<Base>.restoreHierarchy(
     chain: NavigationChain<Base>,
+    dropRedundantChainsOnRestores: Boolean = false
 ): NavigationNode<out Base, Base>? {
     val node = chain.push(config) ?: return null
 
-    subchains.forEach {
-        it.restoreHierarchy(node)
+    val createdSubchains = subchains.map {
+        it.restoreHierarchy(node, dropRedundantChainsOnRestores)
     }
 
-    subnode ?.restoreHierarchy(chain)
+    if (dropRedundantChainsOnRestores) {
+        node.subchains.forEach { subchain ->
+            if (createdSubchains.any { it === subchain }) {
+                return@forEach
+            } else {
+                subchain.clear()
+            }
+        }
+    }
+
+    subnode ?.restoreHierarchy(chain, dropRedundantChainsOnRestores)
 
     return node
 }
 
 suspend fun <Base> NavigationChain<Base>.restoreHierarchy(
-    holder: ConfigHolder.Node<Base>
+    holder: ConfigHolder.Node<Base>,
+    dropRedundantChainsOnRestores: Boolean = false
 ): NavigationNode<out Base, Base>? {
     return holder.restoreHierarchy(
-        this
+        this,
+        dropRedundantChainsOnRestores
     )
 }
 
 suspend fun <Base> NavigationNode<out Base, Base>.restoreHierarchy(
     holder: ConfigHolder.Chain<Base>,
+    dropRedundantChainsOnRestores: Boolean = false,
 ): NavigationChain<Base> {
     return holder.restoreHierarchy(
-        this
+        this,
+        dropRedundantChainsOnRestores
     )
 }
 
 suspend fun <T> restoreHierarchy(
     holder: ConfigHolder<T>,
     factory: NavigationNodeFactory<T>,
-    rootChain: NavigationChain<T> = NavigationChain(null, factory)
+    rootChain: NavigationChain<T> = NavigationChain(null, factory),
+    dropRedundantChainsOnRestore: Boolean = false
 ): NavigationChain<T>? {
     return when (holder) {
         is ConfigHolder.Chain -> {
             holder.restoreHierarchy(
                 factory,
-                rootChain
+                rootChain,
+                dropRedundantChainsOnRestore
             )
         }
         is ConfigHolder.Node -> {
             holder.restoreHierarchy(
-                rootChain
+                rootChain,
+                dropRedundantChainsOnRestore
             ) ?.chain
         }
     }
