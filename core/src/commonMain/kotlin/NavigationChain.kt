@@ -118,6 +118,35 @@ class NavigationChain<Base>(
         }
     }
 
+    @Deprecated("Extracted to the walking API", ReplaceWith("this.dropInSubTree(id)", "dev.inmo.navigation.core.extensions.dropInSubTree"))
+    fun dropInTree(id: NavigationNodeId) = dropInSubTree(id)
+    @Deprecated("Extracted to the walking API", ReplaceWith("this.dropNodeInSubTree(id)", "dev.inmo.navigation.core.extensions.dropNodeInSubTree"))
+    fun dropInTree(id: String) = dropNodeInSubTree(id)
+
+    @Deprecated("Extracted to the walking API", ReplaceWith("this.replaceInSubTree(id, config)", "dev.inmo.navigation.core.extensions.replaceInSubTree"))
+    fun replaceInTree(
+        id: NavigationNodeId,
+        config: Base
+    ) = replaceInSubTree(id, config)
+
+    @Deprecated("Extracted to the walking API", ReplaceWith("this.replaceInSubTree(id, config)", "dev.inmo.navigation.core.extensions.replaceInSubTree"))
+    fun replaceInTree(
+        id: String,
+        config: Base
+    ) = replaceInSubTree(id, config)
+
+    @Deprecated("Extracted to the walking API", ReplaceWith("this.pushInSubTree(id, config)", "dev.inmo.navigation.core.extensions.pushInSubTree"))
+    fun pushInTree(
+        id: NavigationNodeId,
+        config: Base
+    ) = pushInSubTree(id, config)
+
+    @Deprecated("Extracted to the walking API", ReplaceWith("this.pushInSubTreeByNodeId(id, config)", "dev.inmo.navigation.core.extensions.pushInSubTreeByNodeId"))
+    fun pushInTree(
+        id: String,
+        config: Base
+    ) = pushInSubTreeByNodeId(id, config)
+
     fun start(scope: CoroutineScope): Job {
         val subscope = scope.LinkedSupervisorScope()
 
