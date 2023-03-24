@@ -3,6 +3,7 @@ package dev.inmo.navigation.core
 import dev.inmo.kslog.common.*
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.extensions.*
+import dev.inmo.navigation.core.visiter.walk
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
@@ -91,11 +92,12 @@ class NavigationChain<Base>(
         id: NavigationNodeId,
         config: Base
     ): Pair<NavigationNode<out Base, Base>, NavigationNode<out Base, Base>>? {
-        val i = stack.indexOfFirst { it.id == id }.takeIf { it != -1 } ?: return null
+        val i = stack.indexOfFirst { it.id == id }.takeIf { it > -1 } ?: return null
 
         val newNode = nodeFactory.createNode(this, config) ?: return null
         val oldNode = stack[i]
-        _stackFlow.value = _stackFlow.value.take(i) + newNode + _stackFlow.value.drop(i + 1)
+        val currentStack = _stackFlow.value
+        _stackFlow.value = currentStack.take(i) + newNode + currentStack.drop(i + 1)
 
         nodesIds.remove(id)
         nodesIds[newNode.id] = newNode
@@ -115,78 +117,6 @@ class NavigationChain<Base>(
             pop()
         }
     }
-
-    private fun doInTree(
-        id: NavigationNodeId,
-        visitedNodesChains: MutableSet<NavigationNodeId?>,
-        logTag: String,
-        onFound: NavigationChain<Base>.(NavigationNode<out Base, Base>) -> Unit
-    ): Boolean {
-        val log = TagLogger("${log.tag}.$logTag")
-        var found = false
-        if (visitedNodesChains.add(parentNode ?.id)) {
-            log.d { "Start for id $id in chain with stack ${nodesIds.keys.joinToString()} and parent node ${parentNode ?.id}" }
-            stack.firstOrNull { it.id == id } ?.also {
-                log.d { "Do for id $id in chain with stack ${nodesIds.keys.joinToString()} and parent node ${parentNode ?.id}" }
-                onFound(it)
-                found = true
-            } ?: log.d { "Unable to find node id $id in ${nodesIds.keys.joinToString()} for $logTag" }
-
-            (stack.flatMap { it.subchainsFlow.value } + listOfNotNull(parentNode ?.chain)).forEach { chainHolder ->
-                found = chainHolder.doInTree(id, visitedNodesChains, logTag, onFound) || found
-            }
-        } else {
-            log.d { "Visited again node ${parentNode ?.id} chain with id $id to find where to $logTag" }
-        }
-
-        return found
-    }
-
-    private fun dropInTree(
-        id: NavigationNodeId,
-        visitedNodesChains: MutableSet<NavigationNodeId?>
-    ): Boolean = doInTree(id, visitedNodesChains, "drop") {
-        drop(id)
-    }
-
-    fun dropInTree(id: NavigationNodeId) = dropInTree(id, mutableSetOf())
-    fun dropInTree(id: String) = dropInTree(NavigationNodeId(id))
-
-    private fun replaceInTree(
-        id: NavigationNodeId,
-        config: Base,
-        visitedNodesChains: MutableSet<NavigationNodeId?>
-    ): Boolean = doInTree(id, visitedNodesChains, "replace") {
-        replace(id, config)
-    }
-
-    fun replaceInTree(
-        id: NavigationNodeId,
-        config: Base
-    ) = replaceInTree(id, config, mutableSetOf())
-
-    fun replaceInTree(
-        id: String,
-        config: Base
-    ) = replaceInTree(NavigationNodeId(id), config)
-
-    private fun pushInTree(
-        id: NavigationNodeId,
-        config: Base,
-        visitedNodesChains: MutableSet<NavigationNodeId?>
-    ): Boolean = doInTree(id, visitedNodesChains, "push") {
-        push(config)
-    }
-
-    fun pushInTree(
-        id: NavigationNodeId,
-        config: Base
-    ) = pushInTree(id, config, mutableSetOf())
-
-    fun pushInTree(
-        id: String,
-        config: Base
-    ) = pushInTree(NavigationNodeId(id), config)
 
     fun start(scope: CoroutineScope): Job {
         val subscope = scope.LinkedSupervisorScope()

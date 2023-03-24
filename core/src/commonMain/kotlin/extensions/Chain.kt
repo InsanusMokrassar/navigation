@@ -1,14 +1,13 @@
 package dev.inmo.navigation.core.extensions
 
 import dev.inmo.micro_utils.common.Diff
-import dev.inmo.micro_utils.common.applyDiff
 import dev.inmo.micro_utils.common.diff
 import dev.inmo.navigation.core.NavigationChain
 import dev.inmo.navigation.core.NavigationChainId
 import dev.inmo.navigation.core.NavigationNode
 import dev.inmo.navigation.core.NavigationNodeId
+import dev.inmo.navigation.core.chainOrNodeEither
 import kotlinx.coroutines.flow.*
-
 
 val <Base> NavigationChain<Base>.onNodesStackDiffFlow: Flow<Diff<NavigationNode<out Base, Base>>>
     get() = flow {
@@ -37,3 +36,52 @@ fun <Base> NavigationChain<Base>.findChain(id: NavigationChainId): NavigationCha
 } else {
     stackFlow.value.firstNotNullOfOrNull { it.findChain(id) }
 }
+
+
+// Drop/replace/push by node id
+
+fun <Base> NavigationChain<Base>.dropInSubTree(
+    id: NavigationNodeId
+): Boolean = chainOrNodeEither().dropInSubTree(id)
+
+fun <Base> NavigationChain<Base>.dropNodeInSubTree(id: String) = chainOrNodeEither().dropNodeInSubTree(id)
+
+fun <Base> NavigationChain<Base>.replaceInSubTree(
+    id: NavigationNodeId,
+    config: Base,
+): Boolean = chainOrNodeEither().replaceInSubTree(id, config)
+
+fun <Base> NavigationChain<Base>.replaceInSubTree(
+    id: String,
+    config: Base
+) = chainOrNodeEither().replaceInSubTree(id, config)
+
+fun <Base> NavigationChain<Base>.pushInSubTree(
+    inChainWith: NavigationNodeId,
+    config: Base
+): Boolean = chainOrNodeEither().pushInSubTree(inChainWith, config)
+
+fun <Base> NavigationChain<Base>.pushInSubTreeByNodeId(
+    inChainWithNodeId: String,
+    config: Base
+) = chainOrNodeEither().pushInSubTreeByNodeId(inChainWithNodeId, config)
+
+// Drop/push by chain id
+
+fun <Base> NavigationChain<Base>.dropInSubTree(
+    id: NavigationChainId
+) = chainOrNodeEither().dropInSubTree(id)
+
+fun <Base> NavigationChain<Base>.dropChainInSubTree(
+    id: String
+) = chainOrNodeEither().dropChainInSubTree(id)
+
+fun <Base> NavigationChain<Base>.pushInSubTree(
+    inChainWithNodeId: NavigationChainId,
+    config: Base
+) = chainOrNodeEither().pushInSubTree(inChainWithNodeId, config)
+
+fun <Base> NavigationChain<Base>.pushInSubTreeByChainId(
+    inChainWithNodeId: String,
+    config: Base
+) = chainOrNodeEither().pushInSubTreeByChainId(inChainWithNodeId, config)

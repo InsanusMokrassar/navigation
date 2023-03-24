@@ -12,11 +12,12 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-abstract class NavigationNode<Config : Base, Base> {
+abstract class NavigationNode<Config : Base, Base>(
+    open val id: NavigationNodeId = NavigationNodeId()
+) {
     protected open val log: KSLog by lazy {
         TagLogger(toString())
     }
-    open val id: NavigationNodeId = NavigationNodeId()
 
     abstract val chain: NavigationChain<Base>
     abstract val configState: StateFlow<Config>
@@ -139,7 +140,11 @@ abstract class NavigationNode<Config : Base, Base> {
         return subscope.coroutineContext.job
     }
 
-    class Empty<T>(override val chain: NavigationChain<T>, config: T) : NavigationNode<T, T>() {
+    class Empty<T>(
+        override val chain: NavigationChain<T>,
+        config: T,
+        id: NavigationNodeId = NavigationNodeId()
+    ) : NavigationNode<T, T>(id) {
         override val configState: StateFlow<T> = MutableStateFlow(config).asStateFlow()
     }
 }
