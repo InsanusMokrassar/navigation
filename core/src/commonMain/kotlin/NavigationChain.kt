@@ -1,7 +1,6 @@
 package dev.inmo.navigation.core
 
 import dev.inmo.kslog.common.*
-import dev.inmo.micro_utils.common.diff
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.extensions.*
 import kotlinx.coroutines.*
@@ -88,7 +87,10 @@ class NavigationChain<Base>(
     }
     fun drop(id: String) = drop(NavigationNodeId(id))
 
-    fun replace(id: NavigationNodeId, config: Base): Pair<NavigationNode<out Base, Base>, NavigationNode<out Base, Base>>? {
+    fun replace(
+        id: NavigationNodeId,
+        config: Base
+    ): Pair<NavigationNode<out Base, Base>, NavigationNode<out Base, Base>>? {
         val i = stack.indexOfFirst { it.id == id }.takeIf { it != -1 } ?: return null
 
         val newNode = nodeFactory.createNode(this, config) ?: return null
@@ -104,7 +106,8 @@ class NavigationChain<Base>(
     }
 
     fun replace(
-        id: String, config: Base
+        id: String,
+        config: Base
     ) = replace(NavigationNodeId(id), config)
 
     fun clear() {
@@ -116,25 +119,24 @@ class NavigationChain<Base>(
     private fun doInTree(
         id: NavigationNodeId,
         visitedNodesChains: MutableSet<NavigationNodeId?>,
-        actionName: String,
-        onFound: NavigationChain<Base>.() -> Unit
+        logTag: String,
+        onFound: NavigationChain<Base>.(NavigationNode<out Base, Base>) -> Unit
     ): Boolean {
+        val log = TagLogger("${log.tag}.$logTag")
         var found = false
         if (visitedNodesChains.add(parentNode ?.id)) {
-            log.d { "Start $actionName for id $id in chain with stack ${nodesIds.keys.joinToString()} and parent node ${parentNode ?.id}" }
-            if (nodesIds.containsKey(id)) {
-                log.d { "Do $actionName for id $id in chain with stack ${nodesIds.keys.joinToString()} and parent node ${parentNode ?.id}" }
-                onFound()
+            log.d { "Start for id $id in chain with stack ${nodesIds.keys.joinToString()} and parent node ${parentNode ?.id}" }
+            stack.firstOrNull { it.id == id } ?.also {
+                log.d { "Do for id $id in chain with stack ${nodesIds.keys.joinToString()} and parent node ${parentNode ?.id}" }
+                onFound(it)
                 found = true
-            } else {
-                log.d { "Unable to find node id $id in ${nodesIds.keys.joinToString()} for $actionName" }
-            }
+            } ?: log.d { "Unable to find node id $id in ${nodesIds.keys.joinToString()} for $logTag" }
 
             (stack.flatMap { it.subchainsFlow.value } + listOfNotNull(parentNode ?.chain)).forEach { chainHolder ->
-                found = chainHolder.doInTree(id, visitedNodesChains, actionName, onFound) || found
+                found = chainHolder.doInTree(id, visitedNodesChains, logTag, onFound) || found
             }
         } else {
-            log.d { "Visited again node ${parentNode ?.id} chain with id $id to find where to $actionName" }
+            log.d { "Visited again node ${parentNode ?.id} chain with id $id to find where to $logTag" }
         }
 
         return found
