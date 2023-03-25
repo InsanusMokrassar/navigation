@@ -14,7 +14,7 @@ import dev.inmo.navigation.core.visiter.walk
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class WalkingTests {
+class WalkingTests : NavigationTest() {
     private class TestConfig : NavigationNodeDefaultConfig {
         override val id: String = uuid4().toString()
     }
