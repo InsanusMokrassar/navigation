@@ -40,27 +40,45 @@ fun <Base> NavigationNode<*, Base>.findChain(id: NavigationChainId): NavigationC
 
 // Drop/replace/push by node id
 
+/**
+ * Shortcut for method [dev.inmo.navigation.core.ChainOrNodeEither].[dropInSubTree]
+ */
 fun <Base> NavigationNode<*, Base>.dropInSubTree(
     id: NavigationNodeId
 ): Boolean = chainOrNodeEither().dropInSubTree(id)
 
+/**
+ * Shortcut for method [dev.inmo.navigation.core.ChainOrNodeEither].[dropNodeInSubTree]
+ */
 fun <Base> NavigationNode<*, Base>.dropNodeInSubTree(id: String) = chainOrNodeEither().dropNodeInSubTree(id)
 
+/**
+ * Shortcut for method [dev.inmo.navigation.core.ChainOrNodeEither].[replaceInSubTree]
+ */
 fun <Base> NavigationNode<*, Base>.replaceInSubTree(
     id: NavigationNodeId,
     config: Base,
 ): Boolean = chainOrNodeEither().replaceInSubTree(id, config)
 
+/**
+ * Shortcut for method [dev.inmo.navigation.core.ChainOrNodeEither].[replaceInSubTree]
+ */
 fun <Base> NavigationNode<*, Base>.replaceInSubTree(
     id: String,
     config: Base
 ) = chainOrNodeEither().replaceInSubTree(id, config)
 
+/**
+ * Shortcut for method [dev.inmo.navigation.core.ChainOrNodeEither].[pushInSubTree]
+ */
 fun <Base> NavigationNode<*, Base>.pushInSubTree(
     inChainWith: NavigationNodeId,
     config: Base
 ): Boolean = chainOrNodeEither().pushInSubTree(inChainWith, config)
 
+/**
+ * Shortcut for method [dev.inmo.navigation.core.ChainOrNodeEither].[pushInSubTreeByNodeId]
+ */
 fun <Base> NavigationNode<*, Base>.pushInSubTreeByNodeId(
     inChainWithNodeId: String,
     config: Base
@@ -68,19 +86,31 @@ fun <Base> NavigationNode<*, Base>.pushInSubTreeByNodeId(
 
 // Drop/push by chain id
 
+/**
+ * Shortcut for method [dev.inmo.navigation.core.ChainOrNodeEither].[dropInSubTree]
+ */
 fun <Base> NavigationNode<*, Base>.dropInSubTree(
     id: NavigationChainId
 ) = chainOrNodeEither().dropInSubTree(id)
 
+/**
+ * Shortcut for method [dev.inmo.navigation.core.ChainOrNodeEither].[dropChainInSubTree]
+ */
 fun <Base> NavigationNode<*, Base>.dropChainInSubTree(
     id: String
 ) = chainOrNodeEither().dropChainInSubTree(id)
 
+/**
+ * Shortcut for method [dev.inmo.navigation.core.ChainOrNodeEither].[pushInSubTree]
+ */
 fun <Base> NavigationNode<*, Base>.pushInSubTree(
     inChainWithNodeId: NavigationChainId,
     config: Base
 ) = chainOrNodeEither().pushInSubTree(inChainWithNodeId, config)
 
+/**
+ * Shortcut for method [dev.inmo.navigation.core.ChainOrNodeEither].[pushInSubTreeByChainId]
+ */
 fun <Base> NavigationNode<*, Base>.pushInSubTreeByChainId(
     inChainWithNodeId: String,
     config: Base

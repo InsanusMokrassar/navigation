@@ -3,13 +3,17 @@ package dev.inmo.navigation.core.extensions
 import dev.inmo.navigation.core.ChainOrNodeEither
 import dev.inmo.navigation.core.NavigationChainId
 import dev.inmo.navigation.core.NavigationNodeId
-import dev.inmo.navigation.core.visiter.walk
 import dev.inmo.navigation.core.visiter.walkOnChains
 import dev.inmo.navigation.core.visiter.walkOnNodes
 
 
 // Drop/replace/push by chain id
 
+/**
+ * Will drop all nodes in tree with [dev.inmo.navigation.core.NavigationNode.id] == [id]
+ *
+ * **This method will start its work with [this] as a root**
+ */
 fun <Base> ChainOrNodeEither<Base>.dropInSubTree(
     id: NavigationNodeId
 ): Boolean {
@@ -22,8 +26,17 @@ fun <Base> ChainOrNodeEither<Base>.dropInSubTree(
     return deleted
 }
 
+/**
+ * Shortcut for [dropInSubTree]
+ */
 fun <Base> ChainOrNodeEither<Base>.dropNodeInSubTree(id: String) = dropInSubTree(NavigationNodeId(id))
 
+/**
+ * Will [dev.inmo.navigation.core.NavigationChain.replace] all nodes in tree with
+ * [dev.inmo.navigation.core.NavigationNode.id] == [id] by a new one with [config]
+ *
+ * **This method will start its work with [this] as a root**
+ */
 fun <Base> ChainOrNodeEither<Base>.replaceInSubTree(
     id: NavigationNodeId,
     config: Base,
@@ -35,24 +48,36 @@ fun <Base> ChainOrNodeEither<Base>.replaceInSubTree(
     return replaced
 }
 
+/**
+ * Shortcut for method [replaceInSubTree]
+ */
 fun <Base> ChainOrNodeEither<Base>.replaceInSubTree(
     id: String,
     config: Base
 ) = replaceInSubTree(NavigationNodeId(id), config)
 
+/**
+ * Will push on top in all chains with any [dev.inmo.navigation.core.NavigationNode] in
+ * [dev.inmo.navigation.core.NavigationChain.stack] with [dev.inmo.navigation.core.NavigationNode.id] == [id]
+ *
+ * **This method will start its work with [this] as a root**
+ */
 fun <Base> ChainOrNodeEither<Base>.pushInSubTree(
-    inChainWith: NavigationNodeId,
+    id: NavigationNodeId,
     config: Base
 ): Boolean {
     var pushed = false
     walkOnNodes {
-        if (it.id == inChainWith) {
+        if (it.id == id) {
             pushed = it.chain.push(config) != null || pushed
         }
     }
     return pushed
 }
 
+/**
+ * Shortcut for method [pushInSubTree]
+ */
 fun <Base> ChainOrNodeEither<Base>.pushInSubTreeByNodeId(
     inChainWithNodeId: String,
     config: Base
@@ -60,6 +85,11 @@ fun <Base> ChainOrNodeEither<Base>.pushInSubTreeByNodeId(
 
 // Drop/push by chain id
 
+/**
+ * Will drop all chains in tree with [dev.inmo.navigation.core.NavigationChain.id] == [id]
+ *
+ * **This method will start its work with [this] as a root**
+ */
 fun <Base> ChainOrNodeEither<Base>.dropInSubTree(
     id: NavigationChainId
 ): Boolean {
@@ -73,21 +103,32 @@ fun <Base> ChainOrNodeEither<Base>.dropInSubTree(
     return deleted
 }
 
+/**
+ * Shortcut for method [dropInSubTree]
+ */
 fun <Base> ChainOrNodeEither<Base>.dropChainInSubTree(id: String) = dropInSubTree(NavigationChainId(id))
 
+/**
+ * Will push on top in all chains with [dev.inmo.navigation.core.NavigationChain.id] == [id]
+ *
+ * **This method will start its work with [this] as a root**
+ */
 fun <Base> ChainOrNodeEither<Base>.pushInSubTree(
-    inChainWith: NavigationChainId,
+    id: NavigationChainId,
     config: Base
 ): Boolean {
     var pushed = false
     walkOnChains {
-        if (it.id == inChainWith) {
+        if (it.id == id) {
             pushed = it.push(config) != null || pushed
         }
     }
     return pushed
 }
 
+/**
+ * Shortcut for method [pushInSubTree]
+ */
 fun <Base> ChainOrNodeEither<Base>.pushInSubTreeByChainId(
     inChainWithNodeId: String,
     config: Base

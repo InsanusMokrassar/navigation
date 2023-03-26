@@ -2,6 +2,8 @@
 
 ## 0.0.16
 
+* `Versions`:
+  * `MicroUtils`: `0.17.5`
 * `NavigationChain` got its own optional id
 * `NavigationChain` and `NavigationNode` got `findChain` extension
 * `NavigationChain` and `NavigationNode` got `findNode` extension
