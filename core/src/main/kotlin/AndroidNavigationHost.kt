@@ -20,6 +20,7 @@ open class AndroidNavigationHost<T : NavigationNodeDefaultConfig>(
     protected val configsRepo: NavigationConfigsRepo<T>,
     protected val startChain: ConfigHolder<T>,
     protected val manualHierarchyCheckerDelayMillis: Long? = 100L,
+    protected val dropRedundantChainsOnRestore: Boolean = false,
     protected val fragmentsClassesFactory: FragmentsClassesFactory<T>
 ) {
     var job: Job? = null
@@ -58,7 +59,8 @@ open class AndroidNavigationHost<T : NavigationNodeDefaultConfig>(
 
                 restoreHierarchy<T>(
                     configsRepo.get() ?: startChain,
-                    factory = nodesFactory
+                    factory = nodesFactory,
+                    dropRedundantChainsOnRestore = dropRedundantChainsOnRestore
                 ) ?.start(subscope)
             }
         }
@@ -78,11 +80,13 @@ inline fun <reified T : NavigationNodeDefaultConfig> AppCompatActivity.initNavig
         (rootView as ViewGroup).setOnHierarchyChangeListenerRecursively(it)
     },
     manualHierarchyCheckerDelayMillis: Long? = 100L,
+    dropRedundantChainsOnRestore: Boolean = false,
     noinline fragmentsClassesFactory: FragmentsClassesFactory<T>
 ) = AndroidNavigationHost(
     configsRepo,
     startChain,
     manualHierarchyCheckerDelayMillis,
+    dropRedundantChainsOnRestore,
     fragmentsClassesFactory
 ).apply {
     start(scope, fragmentManager, rootView, flowOnHierarchyChangeListener)
@@ -111,6 +115,7 @@ inline fun <reified T : NavigationNodeDefaultConfig> AppCompatActivity.initNavig
         (rootView as ViewGroup).setOnHierarchyChangeListenerRecursively(it)
     },
     manualHierarchyCheckerDelayMillis: Long? = 100L,
+    dropRedundantChainsOnRestore: Boolean = false,
     noinline fragmentsClassesFactory: FragmentsClassesFactory<T>
 ) = initNavigation(
     ConfigHolder.Chain(
@@ -126,5 +131,6 @@ inline fun <reified T : NavigationNodeDefaultConfig> AppCompatActivity.initNavig
     rootView,
     flowOnHierarchyChangeListener,
     manualHierarchyCheckerDelayMillis,
+    dropRedundantChainsOnRestore,
     fragmentsClassesFactory
 )

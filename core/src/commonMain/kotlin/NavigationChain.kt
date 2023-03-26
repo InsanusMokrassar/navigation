@@ -1,9 +1,9 @@
 package dev.inmo.navigation.core
 
 import dev.inmo.kslog.common.*
-import dev.inmo.micro_utils.common.diff
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.extensions.*
+import dev.inmo.navigation.core.visiter.walk
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
@@ -11,7 +11,8 @@ import kotlinx.coroutines.sync.withLock
 
 class NavigationChain<Base>(
     internal val parentNode: NavigationNode<out Base, Base>?,
-    internal val nodeFactory: NavigationNodeFactory<Base>
+    internal val nodeFactory: NavigationNodeFactory<Base>,
+    val id: NavigationChainId? = null
 ) {
     private val log by lazy {
         TagLogger(toString())
@@ -87,12 +88,16 @@ class NavigationChain<Base>(
     }
     fun drop(id: String) = drop(NavigationNodeId(id))
 
-    fun replace(id: NavigationNodeId, config: Base): Pair<NavigationNode<out Base, Base>, NavigationNode<out Base, Base>>? {
-        val i = stack.indexOfFirst { it.id == id }.takeIf { it != -1 } ?: return null
+    fun replace(
+        id: NavigationNodeId,
+        config: Base
+    ): Pair<NavigationNode<out Base, Base>, NavigationNode<out Base, Base>>? {
+        val i = stack.indexOfFirst { it.id == id }.takeIf { it > -1 } ?: return null
 
         val newNode = nodeFactory.createNode(this, config) ?: return null
         val oldNode = stack[i]
-        _stackFlow.value = _stackFlow.value.take(i) + newNode + _stackFlow.value.drop(i + 1)
+        val currentStack = _stackFlow.value
+        _stackFlow.value = currentStack.take(i) + newNode + currentStack.drop(i + 1)
 
         nodesIds.remove(id)
         nodesIds[newNode.id] = newNode
@@ -103,7 +108,8 @@ class NavigationChain<Base>(
     }
 
     fun replace(
-        id: String, config: Base
+        id: String,
+        config: Base
     ) = replace(NavigationNodeId(id), config)
 
     fun clear() {
@@ -112,78 +118,34 @@ class NavigationChain<Base>(
         }
     }
 
-    private fun doInTree(
-        id: NavigationNodeId,
-        visitedNodesChains: MutableSet<NavigationNodeId?>,
-        actionName: String,
-        onFound: NavigationChain<Base>.() -> Unit
-    ): Boolean {
-        var found = false
-        if (visitedNodesChains.add(parentNode ?.id)) {
-            log.d { "Start $actionName for id $id in chain with stack ${nodesIds.keys.joinToString()} and parent node ${parentNode ?.id}" }
-            if (nodesIds.containsKey(id)) {
-                log.d { "Do $actionName for id $id in chain with stack ${nodesIds.keys.joinToString()} and parent node ${parentNode ?.id}" }
-                onFound()
-                found = true
-            } else {
-                log.d { "Unable to find node id $id in ${nodesIds.keys.joinToString()} for $actionName" }
-            }
+    @Deprecated("Extracted to the walking API", ReplaceWith("this.dropInSubTree(id)", "dev.inmo.navigation.core.extensions.dropInSubTree"))
+    fun dropInTree(id: NavigationNodeId) = dropInSubTree(id)
+    @Deprecated("Extracted to the walking API", ReplaceWith("this.dropNodeInSubTree(id)", "dev.inmo.navigation.core.extensions.dropNodeInSubTree"))
+    fun dropInTree(id: String) = dropNodeInSubTree(id)
 
-            (stack.flatMap { it.subchainsFlow.value } + listOfNotNull(parentNode ?.chain)).forEach { chainHolder ->
-                found = chainHolder.doInTree(id, visitedNodesChains, actionName, onFound) || found
-            }
-        } else {
-            log.d { "Visited again node ${parentNode ?.id} chain with id $id to find where to $actionName" }
-        }
-
-        return found
-    }
-
-    private fun dropInTree(
-        id: NavigationNodeId,
-        visitedNodesChains: MutableSet<NavigationNodeId?>
-    ): Boolean = doInTree(id, visitedNodesChains, "drop") {
-        drop(id)
-    }
-
-    fun dropInTree(id: NavigationNodeId) = dropInTree(id, mutableSetOf())
-    fun dropInTree(id: String) = dropInTree(NavigationNodeId(id))
-
-    private fun replaceInTree(
-        id: NavigationNodeId,
-        config: Base,
-        visitedNodesChains: MutableSet<NavigationNodeId?>
-    ): Boolean = doInTree(id, visitedNodesChains, "replace") {
-        replace(id, config)
-    }
-
+    @Deprecated("Extracted to the walking API", ReplaceWith("this.replaceInSubTree(id, config)", "dev.inmo.navigation.core.extensions.replaceInSubTree"))
     fun replaceInTree(
         id: NavigationNodeId,
         config: Base
-    ) = replaceInTree(id, config, mutableSetOf())
+    ) = replaceInSubTree(id, config)
 
+    @Deprecated("Extracted to the walking API", ReplaceWith("this.replaceInSubTree(id, config)", "dev.inmo.navigation.core.extensions.replaceInSubTree"))
     fun replaceInTree(
         id: String,
         config: Base
-    ) = replaceInTree(NavigationNodeId(id), config)
+    ) = replaceInSubTree(id, config)
 
-    private fun pushInTree(
-        id: NavigationNodeId,
-        config: Base,
-        visitedNodesChains: MutableSet<NavigationNodeId?>
-    ): Boolean = doInTree(id, visitedNodesChains, "push") {
-        push(config)
-    }
-
+    @Deprecated("Extracted to the walking API", ReplaceWith("this.pushInSubTree(id, config)", "dev.inmo.navigation.core.extensions.pushInSubTree"))
     fun pushInTree(
         id: NavigationNodeId,
         config: Base
-    ) = pushInTree(id, config, mutableSetOf())
+    ) = pushInSubTree(id, config)
 
+    @Deprecated("Extracted to the walking API", ReplaceWith("this.pushInSubTreeByNodeId(id, config)", "dev.inmo.navigation.core.extensions.pushInSubTreeByNodeId"))
     fun pushInTree(
         id: String,
         config: Base
-    ) = pushInTree(NavigationNodeId(id), config)
+    ) = pushInSubTreeByNodeId(id, config)
 
     fun start(scope: CoroutineScope): Job {
         val subscope = scope.LinkedSupervisorScope()

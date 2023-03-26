@@ -1,5 +1,15 @@
 # Navigation Changelog
 
+## 0.0.16
+
+* `Versions`:
+  * `MicroUtils`: `0.17.5`
+* `NavigationChain` got its own optional id
+* `NavigationChain` and `NavigationNode` got `findChain` extension
+* `NavigationChain` and `NavigationNode` got `findNode` extension
+* On restoring of hierarchy it is possible to remove the chains which do not fit restoring one
+* Add opportunity to walk across whole navigation tree
+
 ## 0.0.15
 
 * `Versions`:

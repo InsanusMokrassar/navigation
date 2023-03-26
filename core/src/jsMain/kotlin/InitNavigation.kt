@@ -26,6 +26,7 @@ inline fun <reified Base : NavigationNodeDefaultConfig> initNavigation(
     scope: CoroutineScope = CoroutineScope(Dispatchers.Main),
     savingDebounce: Long = 0L,
     rootChain: NavigationChain<Base>,
+    dropRedundantChainsOnRestore: Boolean = false,
     nodesFactory: NavigationNodeFactory<Base>
 ): Job {
     val logger = TagLogger("NavigationJob")
@@ -61,7 +62,8 @@ inline fun <reified Base : NavigationNodeDefaultConfig> initNavigation(
         restoreHierarchy<Base>(
             existsChain ?: startChain,
             factory = resultNodesFactory,
-            rootChain = rootChain
+            rootChain = rootChain,
+            dropRedundantChainsOnRestore = dropRedundantChainsOnRestore
         ) ?.start(subscope)
     }
 }
@@ -75,12 +77,15 @@ inline fun <reified Base : NavigationNodeDefaultConfig> initNavigation(
     ),
     scope: CoroutineScope = CoroutineScope(Dispatchers.Main),
     savingDebounce: Long = 0L,
+    rootChain: NavigationChain<Base>? = null,
+    dropRedundantChainsOnRestore: Boolean = false,
     nodesFactory: NavigationNodeFactory<Base>
 ): Job = initNavigation(
     startChain,
     configsRepo,
     scope,
     savingDebounce,
-    NavigationChain<Base>(null, nodesFactory),
+    rootChain ?: NavigationChain<Base>(null, nodesFactory),
+    dropRedundantChainsOnRestore,
     nodesFactory
 )
