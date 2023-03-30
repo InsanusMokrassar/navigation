@@ -104,6 +104,10 @@ abstract class NavigationNode<Config : Base, Base>(
         return createdNode to newSubChain
     }
 
+    fun createSubChain(id: NavigationChainId, config: Base): Pair<NavigationNode<out Base, Base>, NavigationChain<Base>>? {
+        return createSubChain(config, id)
+    }
+
     open fun start(scope: CoroutineScope): Job {
         val subscope = scope.LinkedSupervisorScope()
 
