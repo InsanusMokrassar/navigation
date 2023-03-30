@@ -6,7 +6,7 @@ suspend fun <Base> ConfigHolder.Chain<Base>.restoreHierarchy(
     node: NavigationNode<out Base, Base>,
     dropRedundantChainsOnRestores: Boolean = false
 ): NavigationChain<Base> {
-    val subchain = node.createEmptySubChain()
+    val subchain = node.createEmptySubChain(id)
 
     firstNodeConfig.restoreHierarchy(subchain, dropRedundantChainsOnRestores)
 

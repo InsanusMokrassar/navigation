@@ -2,6 +2,8 @@
 
 ## 0.0.17
 
+* Fixes in `restoreHierarchy`
+
 ## 0.0.16
 
 * `Versions`:
