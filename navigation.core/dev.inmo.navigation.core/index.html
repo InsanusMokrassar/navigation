@@ -1,0 +1,818 @@
+<!doctype html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>dev.inmo.navigation.core</title>
+<link href="../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../";</script>    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/jetbrains-mono.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
+<body>
+<div class="navigation-wrapper" id="navigation-wrapper">
+    <div id="leftToggler"><span class="icon-toggler"></span></div>
+    <div class="library-name">
+<a href="../../index.html">
+<span>navigation</span>            </a>    </div>
+    <div>0.0.17
+    </div>
+    <div class="pull-right d-flex">
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":navigation.core:dokkaHtmlPartial/androidMain">android</button>
+                <button class="platform-tag platform-selector common-like" data-active="" data-filter=":navigation.core:dokkaHtmlPartial/commonMain">common</button>
+                <button class="platform-tag platform-selector js-like" data-active="" data-filter=":navigation.core:dokkaHtmlPartial/jsMain">js</button>
+        </div>
+        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
+        <div id="searchBar"></div>
+    </div>
+</div>
+<div id="container">
+    <div id="leftColumn">
+        <div id="sideMenu"></div>
+    </div>
+    <div id="main">
+<div class="main-content" data-page-type="package" id="content" pageids="navigation.core::dev.inmo.navigation.core////PointingToDeclaration//-752493392">
+  <div class="breadcrumbs"><a href="../index.html">navigation.core</a><span class="delimiter">/</span><span class="current">dev.inmo.navigation.core</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button><button class="section-tab" data-togglable="FUNCTION,EXTENSION_FUNCTION">Functions</button><button class="section-tab" data-togglable="PROPERTY,EXTENSION_PROPERTY">Properties</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="-847606774%2FClasslikes%2F-244228210" anchor-label="AndroidNavigationHost" id="-847606774%2FClasslikes%2F-244228210" data-filterable-set=":navigation.core:dokkaHtmlPartial/androidMain"></a>
+          <div class="table-row" data-filterable-current=":navigation.core:dokkaHtmlPartial/androidMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/androidMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-android-navigation-host/index.html"><span>Android</span><wbr><span>Navigation</span><wbr><span><span>Host</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-847606774%2FClasslikes%2F-244228210"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":navigation.core:dokkaHtmlPartial/androidMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/androidMain" data-active="" data-toggle=":navigation.core:dokkaHtmlPartial/androidMain">android</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/androidMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-android-navigation-host/index.html">AndroidNavigationHost</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-android-navigation-host/index.html">T</a><span class="token operator"> : </span><a href="../../navigation.core/dev.inmo.navigation.core.configs/-navigation-node-default-config/index.html">NavigationNodeDefaultConfig</a><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">configsRepo<span class="token operator">: </span><a href="../../navigation.core/dev.inmo.navigation.core.repo/-navigation-configs-repo/index.html">NavigationConfigsRepo</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-android-navigation-host/index.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">startChain<span class="token operator">: </span><a href="../../navigation.core/dev.inmo.navigation.core.repo/-config-holder/index.html">ConfigHolder</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-android-navigation-host/index.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">manualHierarchyCheckerDelayMillis<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span><span class="token constant">100</span><span class="token punctuation">, </span></span><span class="parameter ">dropRedundantChainsOnRestore<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">fragmentsClassesFactory<span class="token operator">: </span><a href="index.html#-2143237202%2FClasslikes%2F-244228210">FragmentsClassesFactory</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-android-navigation-host/index.html">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2137128322%2FClasslikes%2F-244228210" anchor-label="AndroidNodeConfig" id="2137128322%2FClasslikes%2F-244228210" data-filterable-set=":navigation.core:dokkaHtmlPartial/androidMain"></a>
+          <div class="table-row" data-filterable-current=":navigation.core:dokkaHtmlPartial/androidMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/androidMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#2137128322%2FClasslikes%2F-244228210"><span>Android</span><wbr><span>Node</span><wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2137128322%2FClasslikes%2F-244228210"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":navigation.core:dokkaHtmlPartial/androidMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/androidMain" data-active="" data-toggle=":navigation.core:dokkaHtmlPartial/androidMain">android</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/androidMain"><div class="symbol monospace"><span class="token keyword">typealias </span><strike><a href="index.html#2137128322%2FClasslikes%2F-244228210">AndroidNodeConfig</a></strike><span class="token operator"> = </span><a href="../../navigation.core/dev.inmo.navigation.core.configs/-navigation-node-default-config/index.html">NavigationNodeDefaultConfig</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2133792746%2FClasslikes%2F-244228210" anchor-label="AndroidSPConfigsRepo" id="-2133792746%2FClasslikes%2F-244228210" data-filterable-set=":navigation.core:dokkaHtmlPartial/androidMain"></a>
+          <div class="table-row" data-filterable-current=":navigation.core:dokkaHtmlPartial/androidMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/androidMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-android-s-p-configs-repo/index.html"><span>Android</span><wbr><span>SPConfigs</span><wbr><span><span>Repo</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2133792746%2FClasslikes%2F-244228210"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":navigation.core:dokkaHtmlPartial/androidMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/androidMain" data-active="" data-toggle=":navigation.core:dokkaHtmlPartial/androidMain">android</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/androidMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-android-s-p-configs-repo/index.html">AndroidSPConfigsRepo</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-android-s-p-configs-repo/index.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">sharedPreferences<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/SharedPreferences.html">SharedPreferences</a><span class="token punctuation">, </span></span><span class="parameter ">baseConfigKClass<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.reflect/-k-class/index.html">KClass</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-android-s-p-configs-repo/index.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">configKClasses<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.reflect/-k-class/index.html">KClass</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="-android-s-p-configs-repo/index.html">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">key<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"navigation"</span></span></span><span class="token punctuation">)</span> : <a href="../../navigation.core/dev.inmo.navigation.core.repo/-navigation-configs-repo/index.html">NavigationConfigsRepo</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-android-s-p-configs-repo/index.html">T</a><span class="token operator">&gt; </span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="40428968%2FClasslikes%2F677034188" anchor-label="ChainHolder" id="40428968%2FClasslikes%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#40428968%2FClasslikes%2F677034188"><span>Chain</span><wbr><span><span>Holder</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="40428968%2FClasslikes%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword">typealias </span><strike><a href="index.html#40428968%2FClasslikes%2F677034188">ChainHolder</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#40428968%2FClasslikes%2F677034188">T</a><span class="token operator">&gt;</span></strike><span class="token operator"> = </span><a href="-navigation-chain/index.html">NavigationChain</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#40428968%2FClasslikes%2F677034188">T</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1434002218%2FClasslikes%2F677034188" anchor-label="ChainOrNodeEither" id="1434002218%2FClasslikes%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1434002218%2FClasslikes%2F677034188"><span>Chain</span><wbr><span>Or</span><wbr><span>Node</span><wbr><span><span>Either</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1434002218%2FClasslikes%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword">typealias </span><a href="index.html#1434002218%2FClasslikes%2F677034188">ChainOrNodeEither</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#1434002218%2FClasslikes%2F677034188">Base</a><span class="token operator">&gt;</span><span class="token operator"> = </span><span data-unresolved-link="dev.inmo.micro_utils.common/Either///PointingToDeclaration/">Either</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-navigation-chain/index.html">NavigationChain</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#1434002218%2FClasslikes%2F677034188">Base</a><span class="token operator">&gt;</span><span class="token punctuation">, </span><span class="token keyword"></span><a href="-navigation-node/index.html">NavigationNode</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="index.html#1434002218%2FClasslikes%2F677034188">Base</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="index.html#1434002218%2FClasslikes%2F677034188">Base</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="185236877%2FClasslikes%2F420565614" anchor-label="CookiesNavigationConfigsRepo" id="185236877%2FClasslikes%2F420565614" data-filterable-set=":navigation.core:dokkaHtmlPartial/jsMain"></a>
+          <div class="table-row" data-filterable-current=":navigation.core:dokkaHtmlPartial/jsMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/jsMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-cookies-navigation-configs-repo/index.html"><span>Cookies</span><wbr><span>Navigation</span><wbr><span>Configs</span><wbr><span><span>Repo</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="185236877%2FClasslikes%2F420565614"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":navigation.core:dokkaHtmlPartial/jsMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/jsMain" data-active="" data-toggle=":navigation.core:dokkaHtmlPartial/jsMain">js</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/jsMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-cookies-navigation-configs-repo/index.html">CookiesNavigationConfigsRepo</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-cookies-navigation-configs-repo/index.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">json<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/Json///PointingToDeclaration/">Json</span><span class="token punctuation">, </span></span><span class="parameter ">serializer<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization/KSerializer///PointingToDeclaration/">KSerializer</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../navigation.core/dev.inmo.navigation.core.repo/-config-holder/index.html">ConfigHolder</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-cookies-navigation-configs-repo/index.html">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">key<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"navigation"</span></span></span><span class="token punctuation">)</span> : <a href="../../navigation.core/dev.inmo.navigation.core.repo/-navigation-configs-repo/index.html">NavigationConfigsRepo</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-cookies-navigation-configs-repo/index.html">T</a><span class="token operator">&gt; </span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2143237202%2FClasslikes%2F-244228210" anchor-label="FragmentsClassesFactory" id="-2143237202%2FClasslikes%2F-244228210" data-filterable-set=":navigation.core:dokkaHtmlPartial/androidMain"></a>
+          <div class="table-row" data-filterable-current=":navigation.core:dokkaHtmlPartial/androidMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/androidMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-2143237202%2FClasslikes%2F-244228210"><span>Fragments</span><wbr><span>Classes</span><wbr><span><span>Factory</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2143237202%2FClasslikes%2F-244228210"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":navigation.core:dokkaHtmlPartial/androidMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/androidMain" data-active="" data-toggle=":navigation.core:dokkaHtmlPartial/androidMain">android</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/androidMain"><div class="symbol monospace"><span class="token keyword">typealias </span><a href="index.html#-2143237202%2FClasslikes%2F-244228210">FragmentsClassesFactory</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#-2143237202%2FClasslikes%2F-244228210">T</a><span class="token operator">&gt;</span><span class="token operator"> = </span><span class="token punctuation">(</span><span class="token keyword"></span><a href="index.html#-2143237202%2FClasslikes%2F-244228210">T</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.reflect/-k-class/index.html">KClass</a><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">?</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1553523470%2FClasslikes%2F420565614" anchor-label="JsNavigationNode" id="1553523470%2FClasslikes%2F420565614" data-filterable-set=":navigation.core:dokkaHtmlPartial/jsMain"></a>
+          <div class="table-row" data-filterable-current=":navigation.core:dokkaHtmlPartial/jsMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/jsMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-js-navigation-node/index.html"><span>Js</span><wbr><span>Navigation</span><wbr><span><span>Node</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1553523470%2FClasslikes%2F420565614"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":navigation.core:dokkaHtmlPartial/jsMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/jsMain" data-active="" data-toggle=":navigation.core:dokkaHtmlPartial/jsMain">js</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/jsMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">class </span><a href="-js-navigation-node/index.html">JsNavigationNode</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-js-navigation-node/index.html">Config</a><span class="token operator"> : </span><a href="-js-navigation-node/index.html">Base</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="-js-navigation-node/index.html">Base</a><span class="token operator"> : </span><a href="../dev.inmo.navigation.core.configs/-navigation-node-default-config/index.html#82654341%2FMain%2F420565614">NavigationNodeDefaultConfig</a><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>chain<span class="token operator">: </span><a href="../../navigation.core/dev.inmo.navigation.core/-navigation-chain/index.html">NavigationChain</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-js-navigation-node/index.html">Base</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">config<span class="token operator">: </span><a href="-js-navigation-node/index.html">Config</a></span></span><span class="token punctuation">)</span> : <a href="../../navigation.core/dev.inmo.navigation.core/-navigation-node/index.html">NavigationNode</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-js-navigation-node/index.html">Config</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="-js-navigation-node/index.html">Base</a><span class="token operator">&gt; </span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="238893322%2FClasslikes%2F420565614" anchor-label="JsNavigationNodeFactory" id="238893322%2FClasslikes%2F420565614" data-filterable-set=":navigation.core:dokkaHtmlPartial/jsMain"></a>
+          <div class="table-row" data-filterable-current=":navigation.core:dokkaHtmlPartial/jsMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/jsMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#238893322%2FClasslikes%2F420565614"><span>Js</span><wbr><span>Navigation</span><wbr><span>Node</span><wbr><span><span>Factory</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="238893322%2FClasslikes%2F420565614"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":navigation.core:dokkaHtmlPartial/jsMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/jsMain" data-active="" data-toggle=":navigation.core:dokkaHtmlPartial/jsMain">js</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/jsMain"><div class="symbol monospace"><span class="token keyword">typealias </span><a href="index.html#238893322%2FClasslikes%2F420565614">JsNavigationNodeFactory</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#238893322%2FClasslikes%2F420565614">Config</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="index.html#238893322%2FClasslikes%2F420565614">Base</a><span class="token operator">&gt;</span><span class="token operator"> = </span><span class="token punctuation">(</span><span class="token keyword"></span><a href="index.html#238893322%2FClasslikes%2F420565614">Base</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><span class="token keyword"></span><a href="../../navigation.core/dev.inmo.navigation.core/-navigation-node/index.html">NavigationNode</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#238893322%2FClasslikes%2F420565614">Config</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="index.html#238893322%2FClasslikes%2F420565614">Base</a><span class="token operator">&gt;</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="360713832%2FClasslikes%2F677034188" anchor-label="NavigationChain" id="360713832%2FClasslikes%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-navigation-chain/index.html"><span>Navigation</span><wbr><span><span>Chain</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="360713832%2FClasslikes%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-navigation-chain/index.html">NavigationChain</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-navigation-chain/index.html">Base</a><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">parentNode<span class="token operator">: </span><a href="-navigation-node/index.html">NavigationNode</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="-navigation-chain/index.html">Base</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="-navigation-chain/index.html">Base</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter ">nodeFactory<span class="token operator">: </span><a href="-navigation-node-factory/index.html">NavigationNodeFactory</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-navigation-chain/index.html">Base</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>id<span class="token operator">: </span><a href="-navigation-chain-id/index.html">NavigationChainId</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1745544243%2FClasslikes%2F677034188" anchor-label="NavigationChainId" id="-1745544243%2FClasslikes%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-navigation-chain-id/index.html"><span>Navigation</span><wbr><span>Chain</span><wbr><span><span>Id</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1745544243%2FClasslikes%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-inline/index.html"><span class="token annotation builtin">JvmInline</span></a></div></div><span class="token keyword">value </span><span class="token keyword">class </span><a href="-navigation-chain-id/index.html">NavigationChainId</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>string<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>uuid4().toString()</span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="723783575%2FClasslikes%2F677034188" anchor-label="NavigationNode" id="723783575%2FClasslikes%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-navigation-node/index.html"><span>Navigation</span><wbr><span><span>Node</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="723783575%2FClasslikes%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">class </span><a href="-navigation-node/index.html">NavigationNode</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-navigation-node/index.html">Config</a><span class="token operator"> : </span><a href="-navigation-node/index.html">Base</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="-navigation-node/index.html">Base</a><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>id<span class="token operator">: </span><a href="-navigation-node-id/index.html">NavigationNodeId</a><span class="token operator"> = </span>NavigationNodeId()</span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="680104033%2FClasslikes%2F677034188" anchor-label="NavigationNodeFactory" id="680104033%2FClasslikes%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-navigation-node-factory/index.html"><span>Navigation</span><wbr><span>Node</span><wbr><span><span>Factory</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="680104033%2FClasslikes%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token keyword">interface </span><a href="-navigation-node-factory/index.html">NavigationNodeFactory</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-navigation-node-factory/index.html">Base</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-727872196%2FClasslikes%2F677034188" anchor-label="NavigationNodeId" id="-727872196%2FClasslikes%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-navigation-node-id/index.html"><span>Navigation</span><wbr><span>Node</span><wbr><span><span>Id</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-727872196%2FClasslikes%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-inline/index.html"><span class="token annotation builtin">JvmInline</span></a></div></div><span class="token keyword">value </span><span class="token keyword">class </span><a href="-navigation-node-id/index.html">NavigationNodeId</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>string<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>uuid4().toString()</span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1439099194%2FClasslikes%2F677034188" anchor-label="NavigationNodeState" id="1439099194%2FClasslikes%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-navigation-node-state/index.html"><span>Navigation</span><wbr><span>Node</span><wbr><span><span>State</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1439099194%2FClasslikes%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">interface </span><a href="-navigation-node-state/index.html">NavigationNodeState</a> : <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-comparable/index.html">Comparable</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-navigation-node-state/index.html">NavigationNodeState</a><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1996452984%2FClasslikes%2F677034188" anchor-label="NavigationStateChange" id="-1996452984%2FClasslikes%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-navigation-state-change/index.html"><span>Navigation</span><wbr><span>State</span><wbr><span><span>Change</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1996452984%2FClasslikes%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-inline/index.html"><span class="token annotation builtin">JvmInline</span></a></div></div><span class="token keyword">value </span><span class="token keyword">class </span><a href="-navigation-state-change/index.html">NavigationStateChange</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="-1423077315%2FFunctions%2F677034188" anchor-label="chainOrNodeEither" id="-1423077315%2FFunctions%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="chain-or-node-either.html"><span>chain</span><wbr><span>Or</span><wbr><span>Node</span><wbr><span><span>Either</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1423077315%2FFunctions%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="chain-or-node-either.html">Base</a><span class="token operator">&gt; </span><a href="-navigation-chain/index.html">NavigationChain</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="chain-or-node-either.html">Base</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="chain-or-node-either.html"><span class="token function">chainOrNodeEither</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html#1434002218%2FClasslikes%2F677034188">ChainOrNodeEither</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="chain-or-node-either.html">Base</a><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="chain-or-node-either.html">Base</a><span class="token operator">&gt; </span><a href="-navigation-node/index.html">NavigationNode</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="chain-or-node-either.html">Base</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="chain-or-node-either.html">Base</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="chain-or-node-either.html"><span class="token function">chainOrNodeEither</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html#1434002218%2FClasslikes%2F677034188">ChainOrNodeEither</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="chain-or-node-either.html">Base</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2067339989%2FFunctions%2F677034188" anchor-label="detachJob" id="2067339989%2FFunctions%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="detach-job.html"><span>detach</span><wbr><span><span>Job</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2067339989%2FFunctions%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="detach-job.html">Base</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="detach-job.html">Node</a><span class="token operator"> : </span><a href="-navigation-node/index.html">NavigationNode</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="detach-job.html">Base</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="detach-job.html">Base</a><span class="token operator">&gt;</span><span class="token operator">&gt; </span><a href="detach-job.html">Node</a><span class="token punctuation">.</span><a href="detach-job.html"><span class="token function">detachJob</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">scope<span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines/CoroutineScope///PointingToDeclaration/">CoroutineScope</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines/Job///PointingToDeclaration/">Job</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1032195742%2FFunctions%2F-244228210" anchor-label="findViewsWithNavigationTag" id="1032195742%2FFunctions%2F-244228210" data-filterable-set=":navigation.core:dokkaHtmlPartial/androidMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":navigation.core:dokkaHtmlPartial/androidMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/androidMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="find-views-with-navigation-tag.html"><span>find</span><wbr><span>Views</span><wbr><span>With</span><wbr><span>Navigation</span><wbr><span><span>Tag</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1032195742%2FFunctions%2F-244228210"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":navigation.core:dokkaHtmlPartial/androidMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/androidMain" data-active="" data-toggle=":navigation.core:dokkaHtmlPartial/androidMain">android</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/androidMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a><span class="token punctuation">.</span><a href="find-views-with-navigation-tag.html"><span class="token function">findViewsWithNavigationTag</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">tag<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a><span class="token operator">&gt;</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="831765295%2FFunctions%2F420565614" anchor-label="initNavigation" id="831765295%2FFunctions%2F420565614" data-filterable-set=":navigation.core:dokkaHtmlPartial/jsMain"></a>
+          <div class="table-row" data-filterable-current=":navigation.core:dokkaHtmlPartial/jsMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/jsMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="init-navigation.html"><span>init</span><wbr><span><span>Navigation</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="831765295%2FFunctions%2F420565614"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":navigation.core:dokkaHtmlPartial/jsMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/jsMain" data-active="" data-toggle=":navigation.core:dokkaHtmlPartial/jsMain">js</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/jsMain"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="init-navigation.html">Base</a><span class="token operator"> : </span><a href="../dev.inmo.navigation.core.configs/-navigation-node-default-config/index.html#82654341%2FMain%2F420565614">NavigationNodeDefaultConfig</a><span class="token operator">&gt; </span><a href="init-navigation.html"><span class="token function">initNavigation</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">startChain<span class="token operator">: </span><a href="../../navigation.core/dev.inmo.navigation.core.repo/-config-holder/-chain/index.html">ConfigHolder.Chain</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="init-navigation.html">Base</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">configsRepo<span class="token operator">: </span><a href="../../navigation.core/dev.inmo.navigation.core.repo/-navigation-configs-repo/index.html">NavigationConfigsRepo</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="init-navigation.html">Base</a><span class="token operator">&gt;</span><span class="token operator"> = </span>CookiesNavigationConfigsRepo(
+        Json { ignoreUnknownKeys = true },
+        ConfigHolder.serializer(Base::class.serializer())
+    )<span class="token punctuation">, </span></span><span class="parameter ">scope<span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines/CoroutineScope///PointingToDeclaration/">CoroutineScope</span><span class="token operator"> = </span>CoroutineScope(Dispatchers.Main)<span class="token punctuation">, </span></span><span class="parameter ">savingDebounce<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a><span class="token operator"> = </span><span class="token constant">0</span><span class="token punctuation">, </span></span><span class="parameter ">rootChain<span class="token operator">: </span><a href="../../navigation.core/dev.inmo.navigation.core/-navigation-chain/index.html">NavigationChain</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="init-navigation.html">Base</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">dropRedundantChainsOnRestore<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">nodesFactory<span class="token operator">: </span><a href="../../navigation.core/dev.inmo.navigation.core/-navigation-node-factory/index.html">NavigationNodeFactory</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="init-navigation.html">Base</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines/Job///PointingToDeclaration/">Job</span></div><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="init-navigation.html">Base</a><span class="token operator"> : </span><a href="../dev.inmo.navigation.core.configs/-navigation-node-default-config/index.html#82654341%2FMain%2F420565614">NavigationNodeDefaultConfig</a><span class="token operator">&gt; </span><a href="init-navigation.html"><span class="token function">initNavigation</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">startChain<span class="token operator">: </span><a href="../../navigation.core/dev.inmo.navigation.core.repo/-config-holder/-chain/index.html">ConfigHolder.Chain</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="init-navigation.html">Base</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">configsRepo<span class="token operator">: </span><a href="../../navigation.core/dev.inmo.navigation.core.repo/-navigation-configs-repo/index.html">NavigationConfigsRepo</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="init-navigation.html">Base</a><span class="token operator">&gt;</span><span class="token operator"> = </span>CookiesNavigationConfigsRepo(
+        Json { ignoreUnknownKeys = true },
+        ConfigHolder.serializer(Base::class.serializer())
+    )<span class="token punctuation">, </span></span><span class="parameter ">scope<span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines/CoroutineScope///PointingToDeclaration/">CoroutineScope</span><span class="token operator"> = </span>CoroutineScope(Dispatchers.Main)<span class="token punctuation">, </span></span><span class="parameter ">savingDebounce<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a><span class="token operator"> = </span><span class="token constant">0</span><span class="token punctuation">, </span></span><span class="parameter ">rootChain<span class="token operator">: </span><a href="../../navigation.core/dev.inmo.navigation.core/-navigation-chain/index.html">NavigationChain</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="init-navigation.html">Base</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">dropRedundantChainsOnRestore<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">nodesFactory<span class="token operator">: </span><a href="../../navigation.core/dev.inmo.navigation.core/-navigation-node-factory/index.html">NavigationNodeFactory</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="init-navigation.html">Base</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines/Job///PointingToDeclaration/">Job</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-281360241%2FFunctions%2F-244228210" anchor-label="initNavigation" id="-281360241%2FFunctions%2F-244228210" data-filterable-set=":navigation.core:dokkaHtmlPartial/androidMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":navigation.core:dokkaHtmlPartial/androidMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/androidMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="init-navigation.html"><span>init</span><wbr><span><span>Navigation</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-281360241%2FFunctions%2F-244228210"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":navigation.core:dokkaHtmlPartial/androidMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/androidMain" data-active="" data-toggle=":navigation.core:dokkaHtmlPartial/androidMain">android</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/androidMain"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="init-navigation.html">T</a><span class="token operator"> : </span><a href="../../navigation.core/dev.inmo.navigation.core.configs/-navigation-node-default-config/index.html">NavigationNodeDefaultConfig</a><span class="token operator">&gt; </span><a href="https://developer.android.com/reference/kotlin/androidx/appcompat/app/AppCompatActivity.html">AppCompatActivity</a><span class="token punctuation">.</span><a href="init-navigation.html"><span class="token function">initNavigation</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">startConfig<span class="token operator">: </span><a href="init-navigation.html">T</a><span class="token punctuation">, </span></span><span class="parameter ">configsRepo<span class="token operator">: </span><a href="../../navigation.core/dev.inmo.navigation.core.repo/-navigation-configs-repo/index.html">NavigationConfigsRepo</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="init-navigation.html">T</a><span class="token operator">&gt;</span><span class="token operator"> = </span>AndroidSPConfigsRepo(
+        getSharedPreferences("internal", AppCompatActivity.MODE_PRIVATE),
+        T::class
+    )<span class="token punctuation">, </span></span><span class="parameter ">scope<span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines/CoroutineScope///PointingToDeclaration/">CoroutineScope</span><span class="token operator"> = </span>CoroutineScope(Dispatchers.Main)<span class="token punctuation">, </span></span><span class="parameter ">fragmentManager<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/fragment/app/FragmentManager.html">FragmentManager</a><span class="token operator"> = </span>supportFragmentManager<span class="token punctuation">, </span></span><span class="parameter ">rootView<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a><span class="token operator"> = </span>this.rootView!!<span class="token punctuation">, </span></span><span class="parameter ">flowOnHierarchyChangeListener<span class="token operator">: </span><span data-unresolved-link="dev.inmo.micro_utils.coroutines/FlowOnHierarchyChangeListener///PointingToDeclaration/">FlowOnHierarchyChangeListener</span><span class="token operator"> = </span>FlowOnHierarchyChangeListener(recursive = true).also {
+        (rootView as ViewGroup).setOnHierarchyChangeListenerRecursively(it)
+    }<span class="token punctuation">, </span></span><span class="parameter ">manualHierarchyCheckerDelayMillis<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span><span class="token constant">100</span><span class="token punctuation">, </span></span><span class="parameter ">dropRedundantChainsOnRestore<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">noinline </span>fragmentsClassesFactory<span class="token operator">: </span><a href="index.html#-2143237202%2FClasslikes%2F-244228210">FragmentsClassesFactory</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="init-navigation.html">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-android-navigation-host/index.html">AndroidNavigationHost</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="init-navigation.html">T</a><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="init-navigation.html">T</a><span class="token operator"> : </span><a href="../../navigation.core/dev.inmo.navigation.core.configs/-navigation-node-default-config/index.html">NavigationNodeDefaultConfig</a><span class="token operator">&gt; </span><a href="https://developer.android.com/reference/kotlin/androidx/appcompat/app/AppCompatActivity.html">AppCompatActivity</a><span class="token punctuation">.</span><a href="init-navigation.html"><span class="token function">initNavigation</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">startChain<span class="token operator">: </span><a href="../../navigation.core/dev.inmo.navigation.core.repo/-config-holder/index.html">ConfigHolder</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="init-navigation.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">configsRepo<span class="token operator">: </span><a href="../../navigation.core/dev.inmo.navigation.core.repo/-navigation-configs-repo/index.html">NavigationConfigsRepo</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="init-navigation.html">T</a><span class="token operator">&gt;</span><span class="token operator"> = </span>AndroidSPConfigsRepo(
+        getSharedPreferences("internal", AppCompatActivity.MODE_PRIVATE),
+        T::class
+    )<span class="token punctuation">, </span></span><span class="parameter ">scope<span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines/CoroutineScope///PointingToDeclaration/">CoroutineScope</span><span class="token operator"> = </span>CoroutineScope(Dispatchers.Main)<span class="token punctuation">, </span></span><span class="parameter ">fragmentManager<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/fragment/app/FragmentManager.html">FragmentManager</a><span class="token operator"> = </span>supportFragmentManager<span class="token punctuation">, </span></span><span class="parameter ">rootView<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a><span class="token operator"> = </span>this.rootView!!<span class="token punctuation">, </span></span><span class="parameter ">flowOnHierarchyChangeListener<span class="token operator">: </span><span data-unresolved-link="dev.inmo.micro_utils.coroutines/FlowOnHierarchyChangeListener///PointingToDeclaration/">FlowOnHierarchyChangeListener</span><span class="token operator"> = </span>FlowOnHierarchyChangeListener(recursive = true).also {
+        (rootView as ViewGroup).setOnHierarchyChangeListenerRecursively(it)
+    }<span class="token punctuation">, </span></span><span class="parameter ">manualHierarchyCheckerDelayMillis<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span><span class="token constant">100</span><span class="token punctuation">, </span></span><span class="parameter ">dropRedundantChainsOnRestore<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">noinline </span>fragmentsClassesFactory<span class="token operator">: </span><a href="index.html#-2143237202%2FClasslikes%2F-244228210">FragmentsClassesFactory</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="init-navigation.html">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-android-navigation-host/index.html">AndroidNavigationHost</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="init-navigation.html">T</a><span class="token operator">&gt;</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-891936016%2FFunctions%2F677034188" anchor-label="invokeOn" id="-891936016%2FFunctions%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="invoke-on.html"><span>invoke</span><wbr><span><span>On</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-891936016%2FFunctions%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="invoke-on.html">O</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="invoke-on.html">Base</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="invoke-on.html">Node</a><span class="token operator"> : </span><a href="-navigation-node/index.html">NavigationNode</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="invoke-on.html">Base</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="invoke-on.html">Base</a><span class="token operator">&gt;</span><span class="token operator">&gt; </span><a href="invoke-on.html">Node</a><span class="token punctuation">.</span><a href="invoke-on.html"><span class="token function">invokeOn</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">state<span class="token operator">: </span><a href="-navigation-node-state/index.html">NavigationNodeState</a><span class="token punctuation">, </span></span><span class="parameter ">callback<span class="token operator">: </span><span class="token keyword">suspend </span><span class="token punctuation">(</span><span class="token keyword"></span><a href="invoke-on.html">Node</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><span class="token keyword"></span><a href="invoke-on.html">O</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="invoke-on.html">O</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2135422324%2FFunctions%2F677034188" anchor-label="invokeOnAsync" id="-2135422324%2FFunctions%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="invoke-on-async.html"><span>invoke</span><wbr><span>On</span><wbr><span><span>Async</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2135422324%2FFunctions%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="invoke-on-async.html">O</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="invoke-on-async.html">Base</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="invoke-on-async.html">Node</a><span class="token operator"> : </span><a href="-navigation-node/index.html">NavigationNode</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="invoke-on-async.html">Base</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="invoke-on-async.html">Base</a><span class="token operator">&gt;</span><span class="token operator">&gt; </span><a href="invoke-on-async.html">Node</a><span class="token punctuation">.</span><a href="invoke-on-async.html"><span class="token function">invokeOnAsync</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">state<span class="token operator">: </span><a href="-navigation-node-state/index.html">NavigationNodeState</a><span class="token punctuation">, </span></span><span class="parameter ">scope<span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines/CoroutineScope///PointingToDeclaration/">CoroutineScope</span><span class="token punctuation">, </span></span><span class="parameter ">callback<span class="token operator">: </span><span class="token punctuation">(</span><span class="token keyword"></span><a href="invoke-on-async.html">Node</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><span class="token keyword"></span><a href="invoke-on-async.html">O</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines/Deferred///PointingToDeclaration/">Deferred</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="invoke-on-async.html">O</a><span class="token operator">?</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1731214564%2FFunctions%2F677034188" anchor-label="NavigationStateChange" id="1731214564%2FFunctions%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-navigation-state-change.html"><span>Navigation</span><wbr><span>State</span><wbr><span><span>Change</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1731214564%2FFunctions%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="-navigation-state-change.html"><span class="token function">NavigationStateChange</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">old<span class="token operator">: </span><a href="-navigation-node-state/index.html">NavigationNodeState</a><span class="token punctuation">, </span></span><span class="parameter ">new<span class="token operator">: </span><a href="-navigation-node-state/index.html">NavigationNodeState</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-navigation-state-change/index.html">NavigationStateChange</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1994246878%2FFunctions%2F677034188" anchor-label="NavigationStateChangeList" id="-1994246878%2FFunctions%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-navigation-state-change-list.html"><span>Navigation</span><wbr><span>State</span><wbr><span>Change</span><wbr><span><span>List</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1994246878%2FFunctions%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="-navigation-state-change-list.html"><span class="token function">NavigationStateChangeList</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">old<span class="token operator">: </span><a href="-navigation-node-state/index.html">NavigationNodeState</a><span class="token punctuation">, </span></span><span class="parameter ">new<span class="token operator">: </span><a href="-navigation-node-state/index.html">NavigationNodeState</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-navigation-state-change/index.html">NavigationStateChange</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1684704288%2FFunctions%2F677034188" anchor-label="onChain" id="-1684704288%2FFunctions%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="on-chain.html"><span>on</span><wbr><span><span>Chain</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1684704288%2FFunctions%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="on-chain.html">Base</a><span class="token operator">&gt; </span><a href="index.html#1434002218%2FClasslikes%2F677034188">ChainOrNodeEither</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="on-chain.html">Base</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="on-chain.html"><span class="token function">onChain</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">onChain<span class="token operator">: </span><span class="token punctuation">(</span><span class="token keyword"></span><a href="-navigation-chain/index.html">NavigationChain</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="on-chain.html">Base</a><span class="token operator">&gt;</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html">Unit</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="dev.inmo.micro_utils.common/Either///PointingToDeclaration/">Either</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-navigation-chain/index.html">NavigationChain</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="on-chain.html">Base</a><span class="token operator">&gt;</span><span class="token punctuation">, </span><span class="token keyword"></span><a href="-navigation-node/index.html">NavigationNode</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="on-chain.html">Base</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="on-chain.html">Base</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="903969930%2FFunctions%2F677034188" anchor-label="onNode" id="903969930%2FFunctions%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="on-node.html"><span>on</span><wbr><span><span>Node</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="903969930%2FFunctions%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="on-node.html">Base</a><span class="token operator">&gt; </span><a href="index.html#1434002218%2FClasslikes%2F677034188">ChainOrNodeEither</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="on-node.html">Base</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="on-node.html"><span class="token function">onNode</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">onNode<span class="token operator">: </span><span class="token punctuation">(</span><span class="token keyword"></span><a href="-navigation-node/index.html">NavigationNode</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="on-node.html">Base</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="on-node.html">Base</a><span class="token operator">&gt;</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html">Unit</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="dev.inmo.micro_utils.common/Either///PointingToDeclaration/">Either</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-navigation-chain/index.html">NavigationChain</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="on-node.html">Base</a><span class="token operator">&gt;</span><span class="token punctuation">, </span><span class="token keyword"></span><a href="-navigation-node/index.html">NavigationNode</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="on-node.html">Base</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="on-node.html">Base</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1479892415%2FFunctions%2F677034188" anchor-label="waitDetach" id="-1479892415%2FFunctions%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="wait-detach.html"><span>wait</span><wbr><span><span>Detach</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1479892415%2FFunctions%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="wait-detach.html">Base</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="wait-detach.html">Node</a><span class="token operator"> : </span><a href="-navigation-node/index.html">NavigationNode</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="wait-detach.html">Base</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="wait-detach.html">Base</a><span class="token operator">&gt;</span><span class="token operator">&gt; </span><a href="wait-detach.html">Node</a><span class="token punctuation">.</span><a href="wait-detach.html"><span class="token function">waitDetach</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="1671364764%2FProperties%2F677034188" anchor-label="chainOrNull" id="1671364764%2FProperties%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="chain-or-null.html"><span>chain</span><wbr><span>Or</span><wbr><span><span>Null</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1671364764%2FProperties%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="chain-or-null.html">Base</a><span class="token operator">&gt; </span><a href="index.html#1434002218%2FClasslikes%2F677034188">ChainOrNodeEither</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="chain-or-null.html">Base</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="chain-or-null.html">chainOrNull</a><span class="token operator">: </span><a href="-navigation-chain/index.html">NavigationChain</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="chain-or-null.html">Base</a><span class="token operator">&gt;</span><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1027252305%2FProperties%2F677034188" anchor-label="chainOrThrow" id="-1027252305%2FProperties%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="chain-or-throw.html"><span>chain</span><wbr><span>Or</span><wbr><span><span>Throw</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1027252305%2FProperties%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="chain-or-throw.html">Base</a><span class="token operator">&gt; </span><a href="index.html#1434002218%2FClasslikes%2F677034188">ChainOrNodeEither</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="chain-or-throw.html">Base</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="chain-or-throw.html">chainOrThrow</a><span class="token operator">: </span><a href="-navigation-chain/index.html">NavigationChain</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="chain-or-throw.html">Base</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1897879706%2FProperties%2F420565614" anchor-label="htmlElementOrNull" id="1897879706%2FProperties%2F420565614" data-filterable-set=":navigation.core:dokkaHtmlPartial/jsMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":navigation.core:dokkaHtmlPartial/jsMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/jsMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="html-element-or-null.html"><span>html</span><wbr><span>Element</span><wbr><span>Or</span><wbr><span><span>Null</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1897879706%2FProperties%2F420565614"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":navigation.core:dokkaHtmlPartial/jsMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/jsMain" data-active="" data-toggle=":navigation.core:dokkaHtmlPartial/jsMain">js</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/jsMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="../dev.inmo.navigation.core.configs/-navigation-node-default-config/index.html#82654341%2FMain%2F420565614">NavigationNodeDefaultConfig</a><span class="token punctuation">.</span><a href="html-element-or-null.html">htmlElementOrNull</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/org.w3c.dom/-h-t-m-l-element/index.html">HTMLElement</a><span class="token operator">?</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="208052237%2FProperties%2F420565614" anchor-label="htmlElementOrThrow" id="208052237%2FProperties%2F420565614" data-filterable-set=":navigation.core:dokkaHtmlPartial/jsMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":navigation.core:dokkaHtmlPartial/jsMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/jsMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="html-element-or-throw.html"><span>html</span><wbr><span>Element</span><wbr><span>Or</span><wbr><span><span>Throw</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="208052237%2FProperties%2F420565614"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":navigation.core:dokkaHtmlPartial/jsMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/jsMain" data-active="" data-toggle=":navigation.core:dokkaHtmlPartial/jsMain">js</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/jsMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="../dev.inmo.navigation.core.configs/-navigation-node-default-config/index.html#82654341%2FMain%2F420565614">NavigationNodeDefaultConfig</a><span class="token punctuation">.</span><a href="html-element-or-throw.html">htmlElementOrThrow</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/org.w3c.dom/-h-t-m-l-element/index.html">HTMLElement</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1991457591%2FProperties%2F-244228210" anchor-label="navigationTag" id="-1991457591%2FProperties%2F-244228210" data-filterable-set=":navigation.core:dokkaHtmlPartial/androidMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":navigation.core:dokkaHtmlPartial/androidMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/androidMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="navigation-tag.html"><span>navigation</span><wbr><span><span>Tag</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1991457591%2FProperties%2F-244228210"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":navigation.core:dokkaHtmlPartial/androidMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/androidMain" data-active="" data-toggle=":navigation.core:dokkaHtmlPartial/androidMain">android</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/androidMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a><span class="token punctuation">.</span><a href="navigation-tag.html">navigationTag</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">?</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1827649927%2FProperties%2F-244228210" anchor-label="navigationTagKey" id="-1827649927%2FProperties%2F-244228210" data-filterable-set=":navigation.core:dokkaHtmlPartial/androidMain"></a>
+          <div class="table-row" data-filterable-current=":navigation.core:dokkaHtmlPartial/androidMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/androidMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="navigation-tag-key.html"><span>navigation</span><wbr><span>Tag</span><wbr><span><span>Key</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1827649927%2FProperties%2F-244228210"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":navigation.core:dokkaHtmlPartial/androidMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/androidMain" data-active="" data-toggle=":navigation.core:dokkaHtmlPartial/androidMain">android</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/androidMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="navigation-tag-key.html">navigationTagKey</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1230674729%2FProperties%2F677034188" anchor-label="next" id="-1230674729%2FProperties%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="next.html"><span><span>next</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1230674729%2FProperties%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="-navigation-node-state/index.html">NavigationNodeState</a><span class="token punctuation">.</span><a href="next.html">next</a><span class="token operator">: </span><a href="-navigation-node-state/index.html">NavigationNodeState</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Next state for current one</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2071108217%2FProperties%2F677034188" anchor-label="nextChange" id="-2071108217%2FProperties%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="next-change.html"><span>next</span><wbr><span><span>Change</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2071108217%2FProperties%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="-navigation-node-state/index.html">NavigationNodeState</a><span class="token punctuation">.</span><a href="next-change.html">nextChange</a><span class="token operator">: </span><a href="-navigation-state-change/index.html">NavigationStateChange</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Change from current state to the <a href="next.html">NavigationNodeState.next</a></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-162110011%2FProperties%2F677034188" anchor-label="nodeOrNull" id="-162110011%2FProperties%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="node-or-null.html"><span>node</span><wbr><span>Or</span><wbr><span><span>Null</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-162110011%2FProperties%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="node-or-null.html">Base</a><span class="token operator">&gt; </span><a href="index.html#1434002218%2FClasslikes%2F677034188">ChainOrNodeEither</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="node-or-null.html">Base</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="node-or-null.html">nodeOrNull</a><span class="token operator">: </span><a href="-navigation-node/index.html">NavigationNode</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="node-or-null.html">Base</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="node-or-null.html">Base</a><span class="token operator">&gt;</span><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2030395482%2FProperties%2F677034188" anchor-label="nodeOrThrow" id="-2030395482%2FProperties%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="node-or-throw.html"><span>node</span><wbr><span>Or</span><wbr><span><span>Throw</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2030395482%2FProperties%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="node-or-throw.html">Base</a><span class="token operator">&gt; </span><a href="index.html#1434002218%2FClasslikes%2F677034188">ChainOrNodeEither</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="node-or-throw.html">Base</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="node-or-throw.html">nodeOrThrow</a><span class="token operator">: </span><a href="-navigation-node/index.html">NavigationNode</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="node-or-throw.html">Base</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="node-or-throw.html">Base</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-325789972%2FProperties%2F677034188" anchor-label="onCreateFlow" id="-325789972%2FProperties%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="on-create-flow.html"><span>on</span><wbr><span>Create</span><wbr><span><span>Flow</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-325789972%2FProperties%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="on-create-flow.html">Base</a><span class="token operator">&gt; </span><a href="-navigation-node/index.html">NavigationNode</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="on-create-flow.html">Base</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="on-create-flow.html">Base</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="on-create-flow.html">onCreateFlow</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/Flow///PointingToDeclaration/">Flow</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-navigation-state-change/index.html">NavigationStateChange</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1474532546%2FProperties%2F677034188" anchor-label="onDestroyFlow" id="1474532546%2FProperties%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="on-destroy-flow.html"><span>on</span><wbr><span>Destroy</span><wbr><span><span>Flow</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1474532546%2FProperties%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="on-destroy-flow.html">Base</a><span class="token operator">&gt; </span><a href="-navigation-node/index.html">NavigationNode</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="on-destroy-flow.html">Base</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="on-destroy-flow.html">Base</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="on-destroy-flow.html">onDestroyFlow</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/Flow///PointingToDeclaration/">Flow</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-navigation-state-change/index.html">NavigationStateChange</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1109081798%2FProperties%2F677034188" anchor-label="onPauseFlow" id="1109081798%2FProperties%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="on-pause-flow.html"><span>on</span><wbr><span>Pause</span><wbr><span><span>Flow</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1109081798%2FProperties%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="on-pause-flow.html">Base</a><span class="token operator">&gt; </span><a href="-navigation-node/index.html">NavigationNode</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="on-pause-flow.html">Base</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="on-pause-flow.html">Base</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="on-pause-flow.html">onPauseFlow</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/Flow///PointingToDeclaration/">Flow</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-navigation-state-change/index.html">NavigationStateChange</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-81488293%2FProperties%2F677034188" anchor-label="onResumeFlow" id="-81488293%2FProperties%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="on-resume-flow.html"><span>on</span><wbr><span>Resume</span><wbr><span><span>Flow</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-81488293%2FProperties%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="on-resume-flow.html">Base</a><span class="token operator">&gt; </span><a href="-navigation-node/index.html">NavigationNode</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="on-resume-flow.html">Base</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="on-resume-flow.html">Base</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="on-resume-flow.html">onResumeFlow</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/Flow///PointingToDeclaration/">Flow</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-navigation-state-change/index.html">NavigationStateChange</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="885097434%2FProperties%2F677034188" anchor-label="onStartFlow" id="885097434%2FProperties%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="on-start-flow.html"><span>on</span><wbr><span>Start</span><wbr><span><span>Flow</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="885097434%2FProperties%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="on-start-flow.html">Base</a><span class="token operator">&gt; </span><a href="-navigation-node/index.html">NavigationNode</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="on-start-flow.html">Base</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="on-start-flow.html">Base</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="on-start-flow.html">onStartFlow</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/Flow///PointingToDeclaration/">Flow</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-navigation-state-change/index.html">NavigationStateChange</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1678778074%2FProperties%2F677034188" anchor-label="onStopFlow" id="-1678778074%2FProperties%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="on-stop-flow.html"><span>on</span><wbr><span>Stop</span><wbr><span><span>Flow</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1678778074%2FProperties%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="on-stop-flow.html">Base</a><span class="token operator">&gt; </span><a href="-navigation-node/index.html">NavigationNode</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="on-stop-flow.html">Base</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="on-stop-flow.html">Base</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="on-stop-flow.html">onStopFlow</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/Flow///PointingToDeclaration/">Flow</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-navigation-state-change/index.html">NavigationStateChange</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-767585069%2FProperties%2F677034188" anchor-label="previous" id="-767585069%2FProperties%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="previous.html"><span><span>previous</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-767585069%2FProperties%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="-navigation-node-state/index.html">NavigationNodeState</a><span class="token punctuation">.</span><a href="previous.html">previous</a><span class="token operator">: </span><a href="-navigation-node-state/index.html">NavigationNodeState</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Previous state for current one</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1546299523%2FProperties%2F677034188" anchor-label="previousChange" id="1546299523%2FProperties%2F677034188" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":navigation.core:dokkaHtmlPartial/commonMain" data-filterable-set=":navigation.core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="previous-change.html"><span>previous</span><wbr><span><span>Change</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1546299523%2FProperties%2F677034188"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":navigation.core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="-navigation-node-state/index.html">NavigationNodeState</a><span class="token punctuation">.</span><a href="previous-change.html">previousChange</a><span class="token operator">: </span><a href="-navigation-state-change/index.html">NavigationStateChange</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Change from current state to the <a href="previous.html">NavigationNodeState.previous</a></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2023 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+    </div>
+</div>
+</body>
+</html>
+
