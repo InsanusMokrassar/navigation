@@ -16,6 +16,10 @@ buildscript {
     }
 }
 
+plugins {
+    alias(libs.plugins.kotlin.dokka)
+}
+
 allprojects {
     repositories {
         mavenLocal()
