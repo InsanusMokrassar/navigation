@@ -97,11 +97,15 @@ abstract class NavigationNode<Config : Base, Base>(
         log.d { "Removed chain $chain" }
     }
 
-    fun createSubChain(config: Base): Pair<NavigationNode<out Base, Base>, NavigationChain<Base>>? {
-        val newSubChain = createEmptySubChain()
+    fun createSubChain(config: Base, id: NavigationChainId? = null): Pair<NavigationNode<out Base, Base>, NavigationChain<Base>>? {
+        val newSubChain = createEmptySubChain(id)
         val createdNode = newSubChain.push(config) ?: return null
         log.d { "Stack after adding of $config subchain: ${subchains.joinToString("; ") { it.stackFlow.value.joinToString { it.id.string } }}" }
         return createdNode to newSubChain
+    }
+
+    fun createSubChain(id: NavigationChainId, config: Base): Pair<NavigationNode<out Base, Base>, NavigationChain<Base>>? {
+        return createSubChain(config, id)
     }
 
     open fun start(scope: CoroutineScope): Job {

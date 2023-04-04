@@ -1,5 +1,10 @@
 # Navigation Changelog
 
+## 0.0.17
+
+* Fixes in `restoreHierarchy`
+* Fixes in `createSubChain`
+
 ## 0.0.16
 
 * `Versions`:
