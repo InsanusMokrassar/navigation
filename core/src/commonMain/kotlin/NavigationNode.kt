@@ -3,7 +3,6 @@ package dev.inmo.navigation.core
 import dev.inmo.kslog.common.KSLog
 import dev.inmo.kslog.common.TagLogger
 import dev.inmo.kslog.common.d
-import dev.inmo.kslog.common.logger
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 import dev.inmo.navigation.core.extensions.*
@@ -91,9 +90,14 @@ abstract class NavigationNode<Config : Base, Base>(
         }
     }
 
-    internal fun removeChain(chain: NavigationChain<Base>) {
+    fun removeSubChain(chain: NavigationChain<Base>): Boolean {
         log.d { "Removing chain $chain" }
+        val containsChain = _subchainsFlow.value.any { it === chain }
+        if (containsChain) {
+            chain.clear()
+        }
         _subchainsFlow.value = _subchainsFlow.value.filter { it !== chain }
+        return containsChain && !subchains.contains(chain)
         log.d { "Removed chain $chain" }
     }
 

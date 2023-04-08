@@ -3,7 +3,6 @@ package dev.inmo.navigation.core
 import dev.inmo.kslog.common.*
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.extensions.*
-import dev.inmo.navigation.core.visiter.walk
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
@@ -184,7 +183,7 @@ class NavigationChain<Base>(
         }
         onNodeRemovedFlow.dropWhile { stack.isNotEmpty() }.subscribeSafelyWithoutExceptions(subscope) {
             log.d { "Dropping myself from parent node $parentNode" }
-            parentNode ?.removeChain(this)
+            parentNode ?.removeSubChain(this)
             log.d { "Dropped myself from parent node $parentNode" }
         }
 
