@@ -88,22 +88,29 @@ class NavigationChain<Base>(
     fun drop(id: String) = drop(NavigationNodeId(id))
 
     fun replace(
-        id: NavigationNodeId,
+        node: NavigationNode<*, Base>,
         config: Base
     ): Pair<NavigationNode<out Base, Base>, NavigationNode<out Base, Base>>? {
-        val i = stack.indexOfFirst { it.id == id }.takeIf { it > -1 } ?: return null
+        val i = stack.indexOfFirst { it === node }.takeIf { it > -1 } ?: return null
 
         val newNode = nodeFactory.createNode(this, config) ?: return null
         val oldNode = stack[i]
         val currentStack = _stackFlow.value
         _stackFlow.value = currentStack.take(i) + newNode + currentStack.drop(i + 1)
 
-        nodesIds.remove(id)
+        nodesIds.remove(node.id)
         nodesIds[newNode.id] = newNode
 
         oldNode.state = NavigationNodeState.NEW
 
         return oldNode to newNode
+    }
+
+    fun replace(
+        id: NavigationNodeId,
+        config: Base
+    ): Pair<NavigationNode<out Base, Base>, NavigationNode<out Base, Base>>? {
+        return replace(stack.firstOrNull { it.id == id } ?: return null, config)
     }
 
     fun replace(
@@ -115,6 +122,9 @@ class NavigationChain<Base>(
         while (stack.isNotEmpty()) {
             pop()
         }
+    }
+    fun dropItself(): Boolean {
+        return parentNode ?.removeSubChain(this) == true
     }
 
     @Deprecated("Extracted to the walking API", ReplaceWith("this.dropInSubTree(id)", "dev.inmo.navigation.core.extensions.dropInSubTree"))

@@ -1,35 +1,87 @@
 package dev.inmo.navigation.core.extensions
 
-import dev.inmo.navigation.core.ChainOrNodeEither
-import dev.inmo.navigation.core.NavigationChainId
-import dev.inmo.navigation.core.NavigationNodeId
+import dev.inmo.micro_utils.common.onPresented
+import dev.inmo.navigation.core.*
+import dev.inmo.navigation.core.visiter.walk
+import dev.inmo.navigation.core.visiter.walkFlow
 import dev.inmo.navigation.core.visiter.walkOnChains
 import dev.inmo.navigation.core.visiter.walkOnNodes
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.mapNotNull
+
+inline fun <Base> ChainOrNodeEither<Base>.dropInSubTree(
+    filter: (ChainOrNodeEither<Base>) -> Boolean
+): Boolean {
+    var someDropped = false
+    walk {
+        val shouldBeDropped = filter(it)
+        if (shouldBeDropped) {
+            it.optionalT1.onPresented {
+                val dropped = it.dropItself()
+                someDropped = dropped || someDropped
+            }
+            it.optionalT2.onPresented {
+                val dropped = it.chain.drop(it.id) != null
+                someDropped = dropped || someDropped
+            }
+        }
+    }
+    return someDropped
+}
 
 
 // Drop/replace/push by chain id
+
+/**
+ * Will drop all chains in tree with [dev.inmo.navigation.core.NavigationChain.id] == [id]
+ *
+ * **This method will start its work with [this] as a root**
+ */
+inline fun <Base> ChainOrNodeEither<Base>.dropNodeInSubTree(
+    filter: (NavigationNode<*, Base>) -> Boolean
+): Boolean {
+    return dropInSubTree {
+        it.t2OrNull ?.let(filter) == true
+    }
+}
 
 /**
  * Will drop all nodes in tree with [dev.inmo.navigation.core.NavigationNode.id] == [id]
  *
  * **This method will start its work with [this] as a root**
  */
-fun <Base> ChainOrNodeEither<Base>.dropInSubTree(
+inline fun <Base> ChainOrNodeEither<Base>.dropInSubTree(
     id: NavigationNodeId
 ): Boolean {
-    var deleted = false
-    walkOnNodes {
-        if (it.id == id) {
-            deleted = it.chain.drop(id) != null || deleted
-        }
+    return dropNodeInSubTree {
+        it.id == id
     }
-    return deleted
 }
 
 /**
  * Shortcut for [dropInSubTree]
  */
 fun <Base> ChainOrNodeEither<Base>.dropNodeInSubTree(id: String) = dropInSubTree(NavigationNodeId(id))
+
+/**
+ * Will [dev.inmo.navigation.core.NavigationChain.replace] all nodes in tree with
+ * [dev.inmo.navigation.core.NavigationNode.id] == [id] by a new one with [config]
+ *
+ * **This method will start its work with [this] as a root**
+ */
+inline fun <Base> ChainOrNodeEither<Base>.replaceInSubTree(
+    mapper: (NavigationNode<*, Base>) -> Base?
+): Boolean {
+    var replaced = false
+    walkOnNodes {
+        val newConfig = mapper(it)
+        if (newConfig != null) {
+            val currentlyReplaced = it.chain.replace(it, newConfig) != null
+            replaced = currentlyReplaced || replaced
+        }
+    }
+    return replaced
+}
 
 /**
  * Will [dev.inmo.navigation.core.NavigationChain.replace] all nodes in tree with
@@ -90,17 +142,25 @@ fun <Base> ChainOrNodeEither<Base>.pushInSubTreeByNodeId(
  *
  * **This method will start its work with [this] as a root**
  */
+inline fun <Base> ChainOrNodeEither<Base>.dropChainInSubTree(
+    filter: (NavigationChain<Base>) -> Boolean
+): Boolean {
+    return dropInSubTree {
+        it.t1OrNull ?.let(filter) == true
+    }
+}
+
+/**
+ * Will drop all chains in tree with [dev.inmo.navigation.core.NavigationChain.id] == [id]
+ *
+ * **This method will start its work with [this] as a root**
+ */
 fun <Base> ChainOrNodeEither<Base>.dropInSubTree(
     id: NavigationChainId
 ): Boolean {
-    var deleted = false
-    walkOnChains {
-        if (it.id == id) {
-            it.clear()
-            deleted = true
-        }
+    return dropChainInSubTree {
+        it.id == id
     }
-    return deleted
 }
 
 /**
