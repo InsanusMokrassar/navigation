@@ -29,6 +29,20 @@ inline fun <Base> ChainOrNodeEither<Base>.dropInSubTree(
     return someDropped
 }
 
+inline fun <Base> ChainOrNodeEither<Base>.replaceInSubTree(
+    mapper: (NavigationNode<*, Base>) -> Base?
+): Boolean {
+    var replaced = false
+    walkOnNodes {
+        val newConfig = mapper(it)
+        if (newConfig != null) {
+            val currentlyReplaced = it.chain.replace(it, newConfig) != null
+            replaced = currentlyReplaced || replaced
+        }
+    }
+    return replaced
+}
+
 
 // Drop/replace/push by chain id
 
@@ -63,25 +77,9 @@ inline fun <Base> ChainOrNodeEither<Base>.dropInSubTree(
  */
 fun <Base> ChainOrNodeEither<Base>.dropNodeInSubTree(id: String) = dropInSubTree(NavigationNodeId(id))
 
-/**
- * Will [dev.inmo.navigation.core.NavigationChain.replace] all nodes in tree with
- * [dev.inmo.navigation.core.NavigationNode.id] == [id] by a new one with [config]
- *
- * **This method will start its work with [this] as a root**
- */
-inline fun <Base> ChainOrNodeEither<Base>.replaceInSubTree(
+inline fun <Base> NavigationNode<*, Base>.replaceInSubTree(
     mapper: (NavigationNode<*, Base>) -> Base?
-): Boolean {
-    var replaced = false
-    walkOnNodes {
-        val newConfig = mapper(it)
-        if (newConfig != null) {
-            val currentlyReplaced = it.chain.replace(it, newConfig) != null
-            replaced = currentlyReplaced || replaced
-        }
-    }
-    return replaced
-}
+): Boolean = chainOrNodeEither().replaceInSubTree(mapper)
 
 /**
  * Will [dev.inmo.navigation.core.NavigationChain.replace] all nodes in tree with
@@ -167,6 +165,10 @@ fun <Base> ChainOrNodeEither<Base>.dropInSubTree(
  * Shortcut for method [dropInSubTree]
  */
 fun <Base> ChainOrNodeEither<Base>.dropChainInSubTree(id: String) = dropInSubTree(NavigationChainId(id))
+
+inline fun <Base> NavigationChain<Base>.replaceInSubTree(
+    mapper: (NavigationNode<*, Base>) -> Base?
+): Boolean = chainOrNodeEither().replaceInSubTree(mapper)
 
 /**
  * Will push on top in all chains with [dev.inmo.navigation.core.NavigationChain.id] == [id]
