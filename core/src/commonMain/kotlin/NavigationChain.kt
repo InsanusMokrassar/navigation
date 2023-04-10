@@ -188,8 +188,6 @@ class NavigationChain<Base>(
 
         val nodeToJob = mutableMapOf<NavigationNodeId, Job>()
 
-        val nodeToJob = mutableMapOf<NavigationNodeId, Job>()
-        
         merge(
             flow { emit(emptyList<NavigationNode<*, Base>>().diff(stackFlow.value)) },
             onNodesStackDiffFlow
