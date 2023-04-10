@@ -1,5 +1,11 @@
 # Navigation Changelog
 
+## 0.0.18
+
+* `NavigationChain.parentNode` now is public
+* Improvements in CRUD operations in navigation tree
+* Improvements in replacing of nodes and chain diffs handlings
+
 ## 0.0.17
 
 * Fixes in `restoreHierarchy`
