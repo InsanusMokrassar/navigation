@@ -186,13 +186,10 @@ class NavigationChain<Base>(
             log.d { "Cancelled subscope" }
         }
 
-//        stackFlow.subscribeSafelyWithoutExceptions(subscope) {
-//            actualizeStackStates()
-//        }
+        val nodeToJob = mutableMapOf<NavigationNodeId, Job>()
 
         val nodeToJob = mutableMapOf<NavigationNodeId, Job>()
-//        val nodeToJobMutex = Mutex()
-
+        
         merge(
             flow { emit(emptyList<NavigationNode<*, Base>>().diff(stackFlow.value)) },
             onNodesStackDiffFlow
@@ -214,31 +211,7 @@ class NavigationChain<Base>(
                 dropItself()
             }
         }
-//        (onNodeAddedFlow + onNodeReplacedFlow.map { it.map { it.second } }).flatten().subscribeSafelyWithoutExceptions(subscope) {
-//            nodeToJobMutex.withLock {
-//                nodeToJob[it.value.id] = it.value.start(subscope)
-//            }
-//        }
-//        (onNodeRemovedFlow + onNodeReplacedFlow.map { it.map { it.first } }).flatten().subscribeSafelyWithoutExceptions(subscope) {
-//            nodeToJobMutex.withLock {
-//                nodeToJob.remove(it.value.id) ?.cancel()
-//            }
-//        }
-////        onNodeRemovedFlow.dropWhile { stack.isNotEmpty() }.subscribeSafelyWithoutExceptions(subscope) {
-////            log.d { "Dropping myself from parent node $parentNode" }
-////            parentNode ?.removeSubChain(this)
-////            log.d { "Dropped myself from parent node $parentNode" }
-////        }
-//
-//        subscope.launch {
-//            stackFlow.value.forEach {
-//                nodeToJobMutex.withLock {
-//                    nodeToJob[it.id] = it.start(subscope)
-//                }
-//            }
-//            actualizeStackStates()
-//        }
-
+        
         return subscope.coroutineContext.job
     }
 }
