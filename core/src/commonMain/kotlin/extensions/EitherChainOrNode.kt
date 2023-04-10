@@ -1,14 +1,89 @@
 package dev.inmo.navigation.core.extensions
 
+import dev.inmo.micro_utils.common.mapOnFirst
+import dev.inmo.micro_utils.common.mapOnSecond
 import dev.inmo.micro_utils.common.onPresented
 import dev.inmo.navigation.core.*
 import dev.inmo.navigation.core.visiter.walk
-import dev.inmo.navigation.core.visiter.walkFlow
 import dev.inmo.navigation.core.visiter.walkOnChains
 import dev.inmo.navigation.core.visiter.walkOnNodes
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.mapNotNull
 
+// Find
+
+/**
+ * Will find and return FIRST element which will lead to true using [filter]
+ */
+inline fun <Base> ChainOrNodeEither<Base>.findInSubTree(
+    filter: (ChainOrNodeEither<Base>) -> Boolean
+): ChainOrNodeEither<Base>? {
+    walk {
+        if (filter(it)) {
+            return it
+        }
+    }
+    return null
+}
+
+/**
+ * Will find and return FIRST [NavigationNode] which will lead to true using [filter]
+ */
+inline fun <Base> ChainOrNodeEither<Base>.findNodeInSubTree(
+    filter: (NavigationNode<*, Base>) -> Boolean
+): NavigationNode<*, Base>? {
+    walk {
+        return it.t2OrNull ?.takeIf(filter) ?: return@walk
+    }
+    return null
+}
+
+/**
+ * Will find and return FIRST [NavigationChain] which will lead to true using [filter]
+ */
+inline fun <Base> ChainOrNodeEither<Base>.findChainInSubTree(
+    filter: (NavigationChain<Base>) -> Boolean
+): NavigationChain<Base>? {
+    walk {
+        return it.t1OrNull ?.takeIf(filter) ?: return@walk
+    }
+    return null
+}
+
+/**
+ * Will find and return FIRST [NavigationNode] with [NavigationNode.id] == [id]
+ */
+inline fun <Base> ChainOrNodeEither<Base>.findInSubTree(
+    id: NavigationNodeId
+): NavigationNode<*, Base>? = findNodeInSubTree { it.id == id }
+
+/**
+ * Will find and return FIRST [NavigationChain] with [NavigationChain.id] == [id]
+ */
+inline fun <Base> ChainOrNodeEither<Base>.findInSubTree(
+    id: NavigationChainId
+): NavigationChain<Base>? = findChainInSubTree { it.id == id }
+
+/**
+ * Will find and return FIRST [NavigationNode] with [NavigationNode.id] == [id]
+ */
+inline fun <Base> ChainOrNodeEither<Base>.findNodeInSubTree(
+    id: String
+): NavigationNode<*, Base>? = findInSubTree(NavigationNodeId(id))
+
+/**
+ * Will find and return FIRST [NavigationChain] with [NavigationChain.id] == [id]
+ */
+inline fun <Base> ChainOrNodeEither<Base>.findChainInSubTree(
+    id: String
+): NavigationChain<Base>? = findInSubTree(NavigationChainId(id))
+
+// Drop
+
+/**
+ * Will use [filter] to determine which [NavigationNode]/[NavigationChain] should be dropped from navigation tree
+ *
+ * * When [filter] returned true on chain - chain will be dropped (with [NavigationChain.dropItself])
+ * * When [filter] returned true on node - node will be dropped using [NavigationChain.drop] of [NavigationNode.chain]
+ */
 inline fun <Base> ChainOrNodeEither<Base>.dropInSubTree(
     filter: (ChainOrNodeEither<Base>) -> Boolean
 ): Boolean {
@@ -16,182 +91,210 @@ inline fun <Base> ChainOrNodeEither<Base>.dropInSubTree(
     walk {
         val shouldBeDropped = filter(it)
         if (shouldBeDropped) {
-            it.optionalT1.onPresented {
+            it.onChain {
                 val dropped = it.dropItself()
                 someDropped = dropped || someDropped
+                return@walk
             }
-            it.optionalT2.onPresented {
-                val dropped = it.chain.drop(it.id) != null
+            it.onNode {
+                val dropped = it.chain.drop(it) != null
                 someDropped = dropped || someDropped
+                return@walk
             }
         }
     }
     return someDropped
 }
 
+/**
+ * Will use [filter] when [dropInSubTree] pass [ChainOrNodeEither] with [NavigationNode]
+ */
+inline fun <Base> ChainOrNodeEither<Base>.dropNodesInSubTree(
+    filter: (NavigationNode<*, Base>) -> Boolean
+): Boolean = dropInSubTree {
+    it.mapOnSecond(filter) ?: false
+}
+
+/**
+ * Will use [filter] when [dropInSubTree] pass [ChainOrNodeEither] with [NavigationChain]
+ */
+inline fun <Base> ChainOrNodeEither<Base>.dropChainsInSubTree(
+    filter: (NavigationChain<Base>) -> Boolean
+): Boolean = dropInSubTree {
+    it.mapOnFirst(filter) ?: false
+}
+
+/**
+ * Will pass true each time when [dropNodesInSubTree] calls its mapper with [NavigationNode.id] == [id]
+ */
+inline fun <Base> ChainOrNodeEither<Base>.dropInSubTree(
+    id: NavigationNodeId
+): Boolean = dropNodesInSubTree { it.id == id }
+
+/**
+ * Will pass true each time when [dropChainsInSubTree] calls its mapper with [NavigationChain.id] == [id]
+ */
+inline fun <Base> ChainOrNodeEither<Base>.dropInSubTree(
+    id: NavigationChainId
+): Boolean = dropChainsInSubTree { it.id == id }
+
+/**
+ * Shortcut for method [ChainOrNodeEither].[dropInSubTree]
+ */
+fun <Base> ChainOrNodeEither<Base>.dropNodeInSubTree(id: String) = dropInSubTree(NavigationNodeId(id))
+
+/**
+ * Shortcut for method [ChainOrNodeEither].[dropInSubTree]
+ */
+fun <Base> ChainOrNodeEither<Base>.dropChainInSubTree(id: String) = dropInSubTree(NavigationChainId(id))
+
+// Replace
+
+/**
+ * Will use [mapper] to determine in which chains or nodes should be replaced with new config and node
+ *
+ * * When [mapper] returned not null config on chain - chain will be dropped (with [NavigationChain.dropItself]) and new one will be pushed as subchain in parent
+ * * When [mapper] returned not null config on node - node will be replaced with the new one
+ */
 inline fun <Base> ChainOrNodeEither<Base>.replaceInSubTree(
-    mapper: (NavigationNode<*, Base>) -> Base?
+    mapper: (ChainOrNodeEither<Base>) -> Base?
 ): Boolean {
     var replaced = false
-    walkOnNodes {
-        val newConfig = mapper(it)
-        if (newConfig != null) {
-            val currentlyReplaced = it.chain.replace(it, newConfig) != null
-            replaced = currentlyReplaced || replaced
+    walk {
+        val newConfig = mapper(it) ?: return@walk
+
+        it.onChain {
+            val currentlyPushed = it.parentNode ?.createSubChain(newConfig)
+            it.dropItself()
+            replaced = currentlyPushed != null || replaced
+            return@walk
+        }
+        it.onNode {
+            val currentlyPushed = it.chain.replace(it, newConfig)
+            replaced = currentlyPushed != null || replaced
+            return@walk
         }
     }
     return replaced
 }
 
-
-// Drop/replace/push by chain id
-
 /**
- * Will drop all chains in tree with [dev.inmo.navigation.core.NavigationChain.id] == [id]
- *
- * **This method will start its work with [this] as a root**
+ * Shortcut for method [ChainOrNodeEither].[replaceInSubTree]
  */
-inline fun <Base> ChainOrNodeEither<Base>.dropNodeInSubTree(
-    filter: (NavigationNode<*, Base>) -> Boolean
-): Boolean {
-    return dropInSubTree {
-        it.t2OrNull ?.let(filter) == true
-    }
-}
-
-/**
- * Will drop all nodes in tree with [dev.inmo.navigation.core.NavigationNode.id] == [id]
- *
- * **This method will start its work with [this] as a root**
- */
-inline fun <Base> ChainOrNodeEither<Base>.dropInSubTree(
-    id: NavigationNodeId
-): Boolean {
-    return dropNodeInSubTree {
-        it.id == id
-    }
-}
-
-/**
- * Shortcut for [dropInSubTree]
- */
-fun <Base> ChainOrNodeEither<Base>.dropNodeInSubTree(id: String) = dropInSubTree(NavigationNodeId(id))
-
-inline fun <Base> NavigationNode<*, Base>.replaceInSubTree(
+fun <Base> ChainOrNodeEither<Base>.replaceNodesInSubTree(
     mapper: (NavigationNode<*, Base>) -> Base?
-): Boolean = chainOrNodeEither().replaceInSubTree(mapper)
+): Boolean = replaceInSubTree { it.t2OrNull ?.let(mapper) }
 
 /**
- * Will [dev.inmo.navigation.core.NavigationChain.replace] all nodes in tree with
- * [dev.inmo.navigation.core.NavigationNode.id] == [id] by a new one with [config]
- *
- * **This method will start its work with [this] as a root**
+ * Shortcut for method [ChainOrNodeEither].[replaceInSubTree]
+ */
+fun <Base> ChainOrNodeEither<Base>.replaceChainsInSubTree(
+    mapper: (NavigationChain<Base>) -> Base?
+): Boolean = replaceInSubTree { it.t1OrNull ?.let(mapper) }
+
+/**
+ * Will pass [config] each time when [replaceNodesInSubTree] calls its mapper with [NavigationNode.id] == [id]
  */
 fun <Base> ChainOrNodeEither<Base>.replaceInSubTree(
     id: NavigationNodeId,
-    config: Base,
-): Boolean {
-    var replaced = false
-    walkOnChains {
-        replaced = it.replace(id, config) != null || replaced
-    }
-    return replaced
-}
+    config: Base
+): Boolean = replaceNodesInSubTree { config.takeIf { _ -> it.id == id } }
 
 /**
- * Shortcut for method [replaceInSubTree]
+ * Will pass [config] each time when [replaceChainsInSubTree] calls its mapper with [NavigationChain.id] == [id]
  */
 fun <Base> ChainOrNodeEither<Base>.replaceInSubTree(
+    id: NavigationChainId,
+    config: Base
+): Boolean = replaceChainsInSubTree { config.takeIf { _ -> it.id == id } }
+
+/**
+ * Shortcut for method [ChainOrNodeEither].[replaceInSubTree]
+ */
+fun <Base> ChainOrNodeEither<Base>.replaceNodesInSubTree(
     id: String,
     config: Base
 ) = replaceInSubTree(NavigationNodeId(id), config)
 
 /**
- * Will push on top in all chains with any [dev.inmo.navigation.core.NavigationNode] in
- * [dev.inmo.navigation.core.NavigationChain.stack] with [dev.inmo.navigation.core.NavigationNode.id] == [id]
+ * Shortcut for method [ChainOrNodeEither].[replaceInSubTree]
+ */
+fun <Base> ChainOrNodeEither<Base>.replaceChainsInSubTree(
+    id: String,
+    config: Base
+) = replaceInSubTree(NavigationChainId(id), config)
+
+// Push
+
+/**
+ * Will use [mapper] to determine in which chains or nodes subchains push returned config
  *
- * **This method will start its work with [this] as a root**
+ * * When [mapper] returned not null config on chain - new node will be pushed in chain
+ * * When [mapper] returned not null config on node - new node will be pushed in sub chain
+ */
+inline fun <Base> ChainOrNodeEither<Base>.pushInSubTree(
+    mapper: (ChainOrNodeEither<Base>) -> Base?
+): Boolean {
+    var pushed = false
+    walk {
+        val config = mapper(it) ?: return@walk
+
+        it.onChain {
+            val currentlyPushed = it.push(config)
+            pushed = currentlyPushed != null || pushed
+            return@walk
+        }
+        it.onNode {
+            val currentlyPushed = it.createSubChain(config)
+            pushed = currentlyPushed != null || pushed
+            return@walk
+        }
+    }
+    return pushed
+}
+
+/**
+ * Shortcut for method [ChainOrNodeEither].[pushInSubTree]
+ */
+fun <Base> ChainOrNodeEither<Base>.pushInNodesInSubTree(
+    mapper: (NavigationNode<*, Base>) -> Base?
+): Boolean = pushInSubTree { it.t2OrNull ?.let(mapper) }
+
+/**
+ * Shortcut for method [ChainOrNodeEither].[pushInSubTree]
+ */
+fun <Base> ChainOrNodeEither<Base>.pushInChainsInSubTree(
+    mapper: (NavigationChain<Base>) -> Base?
+): Boolean = pushInSubTree { it.t1OrNull ?.let(mapper) }
+
+/**
+ * Will pass [config] each time when [pushInNodesInSubTree] calls its mapper with [NavigationNode.id] == [id]
  */
 fun <Base> ChainOrNodeEither<Base>.pushInSubTree(
     id: NavigationNodeId,
     config: Base
-): Boolean {
-    var pushed = false
-    walkOnNodes {
-        if (it.id == id) {
-            pushed = it.chain.push(config) != null || pushed
-        }
-    }
-    return pushed
-}
+): Boolean = pushInNodesInSubTree { config.takeIf { _ -> it.id == id } }
 
 /**
- * Shortcut for method [pushInSubTree]
- */
-fun <Base> ChainOrNodeEither<Base>.pushInSubTreeByNodeId(
-    inChainWithNodeId: String,
-    config: Base
-) = pushInSubTree(NavigationNodeId(inChainWithNodeId), config)
-
-// Drop/push by chain id
-
-/**
- * Will drop all chains in tree with [dev.inmo.navigation.core.NavigationChain.id] == [id]
- *
- * **This method will start its work with [this] as a root**
- */
-inline fun <Base> ChainOrNodeEither<Base>.dropChainInSubTree(
-    filter: (NavigationChain<Base>) -> Boolean
-): Boolean {
-    return dropInSubTree {
-        it.t1OrNull ?.let(filter) == true
-    }
-}
-
-/**
- * Will drop all chains in tree with [dev.inmo.navigation.core.NavigationChain.id] == [id]
- *
- * **This method will start its work with [this] as a root**
- */
-fun <Base> ChainOrNodeEither<Base>.dropInSubTree(
-    id: NavigationChainId
-): Boolean {
-    return dropChainInSubTree {
-        it.id == id
-    }
-}
-
-/**
- * Shortcut for method [dropInSubTree]
- */
-fun <Base> ChainOrNodeEither<Base>.dropChainInSubTree(id: String) = dropInSubTree(NavigationChainId(id))
-
-inline fun <Base> NavigationChain<Base>.replaceInSubTree(
-    mapper: (NavigationNode<*, Base>) -> Base?
-): Boolean = chainOrNodeEither().replaceInSubTree(mapper)
-
-/**
- * Will push on top in all chains with [dev.inmo.navigation.core.NavigationChain.id] == [id]
- *
- * **This method will start its work with [this] as a root**
+ * Will pass [config] each time when [pushInChainsInSubTree] calls its mapper with [NavigationChain.id] == [id]
  */
 fun <Base> ChainOrNodeEither<Base>.pushInSubTree(
     id: NavigationChainId,
     config: Base
-): Boolean {
-    var pushed = false
-    walkOnChains {
-        if (it.id == id) {
-            pushed = it.push(config) != null || pushed
-        }
-    }
-    return pushed
-}
+): Boolean = pushInChainsInSubTree { config.takeIf { _ -> it.id == id } }
 
 /**
- * Shortcut for method [pushInSubTree]
+ * Shortcut for method [ChainOrNodeEither].[pushInSubTree]
  */
-fun <Base> ChainOrNodeEither<Base>.pushInSubTreeByChainId(
-    inChainWithNodeId: String,
+fun <Base> ChainOrNodeEither<Base>.pushInNodesInSubTree(
+    id: String,
     config: Base
-) = pushInSubTree(NavigationChainId(inChainWithNodeId), config)
+) = pushInSubTree(NavigationNodeId(id), config)
+
+/**
+ * Shortcut for method [ChainOrNodeEither].[pushInSubTree]
+ */
+fun <Base> ChainOrNodeEither<Base>.pushInChainsInSubTree(
+    id: String,
+    config: Base
+) = pushInSubTree(NavigationChainId(id), config)

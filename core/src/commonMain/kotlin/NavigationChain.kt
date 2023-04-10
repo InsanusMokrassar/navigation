@@ -9,7 +9,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 class NavigationChain<Base>(
-    internal val parentNode: NavigationNode<out Base, Base>?,
+    val parentNode: NavigationNode<out Base, Base>?,
     internal val nodeFactory: NavigationNodeFactory<Base>,
     val id: NavigationChainId? = null
 ) {
@@ -72,18 +72,31 @@ class NavigationChain<Base>(
         }
     }
 
-    fun drop(id: NavigationNodeId): NavigationNode<out Base, Base>? {
-        val node = nodesIds[id] ?: return null
-        node.state = NavigationNodeState.NEW
-        log.d { "Stack before removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
-        _stackFlow.value = _stackFlow.value.filterNot { currentNode ->
-            (currentNode.id == id).also {
-                log.d { "Id of $currentNode (${currentNode.id}) is equal to $id: $it" }
+    fun drop(node: NavigationNode<*, Base>): NavigationNode<out Base, Base>? {
+        var dropped = false
+
+        val newStack = _stackFlow.value.filterNot { currentNode ->
+            (currentNode === node).also {
+                dropped = true
+                log.d { "$currentNode (${currentNode.id}) is equal to ${node}: $it" }
             }
         }
+        if (!dropped) {
+            return null
+        }
+
+        node.state = NavigationNodeState.NEW
+
+        log.d { "Stack before removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
+        _stackFlow.value = newStack
         log.d { "Stack after removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
-        nodesIds.remove(id)
+
+        nodesIds.remove(node.id)
         return node
+    }
+
+    fun drop(id: NavigationNodeId): NavigationNode<out Base, Base>? {
+        return drop(nodesIds[id] ?: return null)
     }
     fun drop(id: String) = drop(NavigationNodeId(id))
 
@@ -138,11 +151,11 @@ class NavigationChain<Base>(
         config: Base
     ) = replaceInSubTree(id, config)
 
-    @Deprecated("Extracted to the walking API", ReplaceWith("this.replaceInSubTree(id, config)", "dev.inmo.navigation.core.extensions.replaceInSubTree"))
+    @Deprecated("Extracted to the walking API", ReplaceWith("this.replaceNodesInSubTree(id, config)", "dev.inmo.navigation.core.extensions.replaceNodesInSubTree"))
     fun replaceInTree(
         id: String,
         config: Base
-    ) = replaceInSubTree(id, config)
+    ) = replaceNodesInSubTree(id, config)
 
     @Deprecated("Extracted to the walking API", ReplaceWith("this.pushInSubTree(id, config)", "dev.inmo.navigation.core.extensions.pushInSubTree"))
     fun pushInTree(
@@ -150,11 +163,11 @@ class NavigationChain<Base>(
         config: Base
     ) = pushInSubTree(id, config)
 
-    @Deprecated("Extracted to the walking API", ReplaceWith("this.pushInSubTreeByNodeId(id, config)", "dev.inmo.navigation.core.extensions.pushInSubTreeByNodeId"))
+    @Deprecated("Extracted to the walking API", ReplaceWith("this.pushInNodesInSubTree(id, config)", "dev.inmo.navigation.core.extensions.pushInNodesInSubTree"))
     fun pushInTree(
         id: String,
         config: Base
-    ) = pushInSubTreeByNodeId(id, config)
+    ) = pushInNodesInSubTree(id, config)
 
     fun start(scope: CoroutineScope): Job {
         val subscope = scope.LinkedSupervisorScope()
