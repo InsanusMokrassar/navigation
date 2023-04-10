@@ -1,6 +1,7 @@
 package dev.inmo.navigation.core
 
 import dev.inmo.kslog.common.*
+import dev.inmo.micro_utils.common.diff
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.extensions.*
 import kotlinx.coroutines.*
@@ -75,7 +76,7 @@ class NavigationChain<Base>(
     fun drop(node: NavigationNode<*, Base>): NavigationNode<out Base, Base>? {
         var dropped = false
 
-        val newStack = _stackFlow.value.filterNot { currentNode ->
+        val newStack = stack.filterNot { currentNode ->
             (currentNode === node).also {
                 dropped = true
                 log.d { "$currentNode (${currentNode.id}) is equal to ${node}: $it" }
@@ -106,17 +107,15 @@ class NavigationChain<Base>(
     ): Pair<NavigationNode<out Base, Base>, NavigationNode<out Base, Base>>? {
         val i = stack.indexOfFirst { it === node }.takeIf { it > -1 } ?: return null
 
-        val newNode = nodeFactory.createNode(this, config) ?: return null
-        val oldNode = stack[i]
-        val currentStack = _stackFlow.value
-        _stackFlow.value = currentStack.take(i) + newNode + currentStack.drop(i + 1)
-
         nodesIds.remove(node.id)
+        node.state = NavigationNodeState.NEW
+
+        val newNode = nodeFactory.createNode(this, config) ?: return null
+
+        _stackFlow.value = (stack.take(i) + newNode) + stack.drop(i + 1)
         nodesIds[newNode.id] = newNode
 
-        oldNode.state = NavigationNodeState.NEW
-
-        return oldNode to newNode
+        return node to newNode
     }
 
     fun replace(
@@ -187,37 +186,58 @@ class NavigationChain<Base>(
             log.d { "Cancelled subscope" }
         }
 
-        stackFlow.subscribeSafelyWithoutExceptions(subscope) {
-            actualizeStackStates()
-        }
+//        stackFlow.subscribeSafelyWithoutExceptions(subscope) {
+//            actualizeStackStates()
+//        }
 
         val nodeToJob = mutableMapOf<NavigationNodeId, Job>()
-        val nodeToJobMutex = Mutex()
+//        val nodeToJobMutex = Mutex()
 
-        (onNodeAddedFlow + onNodeReplacedFlow.map { it.map { it.second } }).flatten().subscribeSafelyWithoutExceptions(subscope) {
-            nodeToJobMutex.withLock {
-                nodeToJob[it.value.id] = it.value.start(subscope)
+        merge(
+            flow { emit(emptyList<NavigationNode<*, Base>>().diff(stackFlow.value)) },
+            onNodesStackDiffFlow
+        ).subscribeSafelyWithoutExceptions(subscope) {
+            it.removed.forEach { (i, it) ->
+                nodeToJob.remove(it.id) ?.cancel()
             }
-        }
-        (onNodeRemovedFlow + onNodeReplacedFlow.map { it.map { it.first } }).flatten().subscribeSafelyWithoutExceptions(subscope) {
-            nodeToJobMutex.withLock {
-                nodeToJob.remove(it.value.id) ?.cancel()
+            it.replaced.forEach { (old, new) ->
+                nodeToJob[new.value.id] = new.value.start(subscope)
+                nodeToJob.remove(old.value.id) ?.cancel()
             }
-        }
-        onNodeRemovedFlow.dropWhile { stack.isNotEmpty() }.subscribeSafelyWithoutExceptions(subscope) {
-            log.d { "Dropping myself from parent node $parentNode" }
-            parentNode ?.removeSubChain(this)
-            log.d { "Dropped myself from parent node $parentNode" }
-        }
+            it.added.forEach { (i, it) ->
+                nodeToJob[it.id] = it.start(subscope)
+            }
 
-        subscope.launch {
-            stackFlow.value.forEach {
-                nodeToJobMutex.withLock {
-                    nodeToJob[it.id] = it.start(subscope)
-                }
-            }
             actualizeStackStates()
+
+            if (stack.isEmpty()) {
+                dropItself()
+            }
         }
+//        (onNodeAddedFlow + onNodeReplacedFlow.map { it.map { it.second } }).flatten().subscribeSafelyWithoutExceptions(subscope) {
+//            nodeToJobMutex.withLock {
+//                nodeToJob[it.value.id] = it.value.start(subscope)
+//            }
+//        }
+//        (onNodeRemovedFlow + onNodeReplacedFlow.map { it.map { it.first } }).flatten().subscribeSafelyWithoutExceptions(subscope) {
+//            nodeToJobMutex.withLock {
+//                nodeToJob.remove(it.value.id) ?.cancel()
+//            }
+//        }
+////        onNodeRemovedFlow.dropWhile { stack.isNotEmpty() }.subscribeSafelyWithoutExceptions(subscope) {
+////            log.d { "Dropping myself from parent node $parentNode" }
+////            parentNode ?.removeSubChain(this)
+////            log.d { "Dropped myself from parent node $parentNode" }
+////        }
+//
+//        subscope.launch {
+//            stackFlow.value.forEach {
+//                nodeToJobMutex.withLock {
+//                    nodeToJob[it.id] = it.start(subscope)
+//                }
+//            }
+//            actualizeStackStates()
+//        }
 
         return subscope.coroutineContext.job
     }
