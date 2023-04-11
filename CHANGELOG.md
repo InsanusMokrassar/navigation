@@ -1,5 +1,12 @@
 # Navigation Changelog
 
+## 0.0.19
+
+**THIS UPDATE CONTAINS DEPRECATIONS REMOVING**
+
+* Fixes for android
+* Add find extensions for chains and nodes
+
 ## 0.0.18
 
 * `NavigationChain.parentNode` now is public

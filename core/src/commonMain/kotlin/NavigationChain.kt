@@ -139,35 +139,6 @@ class NavigationChain<Base>(
         return parentNode ?.removeSubChain(this) == true
     }
 
-    @Deprecated("Extracted to the walking API", ReplaceWith("this.dropInSubTree(id)", "dev.inmo.navigation.core.extensions.dropInSubTree"))
-    fun dropInTree(id: NavigationNodeId) = dropInSubTree(id)
-    @Deprecated("Extracted to the walking API", ReplaceWith("this.dropNodeInSubTree(id)", "dev.inmo.navigation.core.extensions.dropNodeInSubTree"))
-    fun dropInTree(id: String) = dropNodeInSubTree(id)
-
-    @Deprecated("Extracted to the walking API", ReplaceWith("this.replaceInSubTree(id, config)", "dev.inmo.navigation.core.extensions.replaceInSubTree"))
-    fun replaceInTree(
-        id: NavigationNodeId,
-        config: Base
-    ) = replaceInSubTree(id, config)
-
-    @Deprecated("Extracted to the walking API", ReplaceWith("this.replaceNodesInSubTree(id, config)", "dev.inmo.navigation.core.extensions.replaceNodesInSubTree"))
-    fun replaceInTree(
-        id: String,
-        config: Base
-    ) = replaceNodesInSubTree(id, config)
-
-    @Deprecated("Extracted to the walking API", ReplaceWith("this.pushInSubTree(id, config)", "dev.inmo.navigation.core.extensions.pushInSubTree"))
-    fun pushInTree(
-        id: NavigationNodeId,
-        config: Base
-    ) = pushInSubTree(id, config)
-
-    @Deprecated("Extracted to the walking API", ReplaceWith("this.pushInNodesInSubTree(id, config)", "dev.inmo.navigation.core.extensions.pushInNodesInSubTree"))
-    fun pushInTree(
-        id: String,
-        config: Base
-    ) = pushInNodesInSubTree(id, config)
-
     fun start(scope: CoroutineScope): Job {
         val subscope = scope.LinkedSupervisorScope()
 
@@ -187,29 +158,33 @@ class NavigationChain<Base>(
         }
 
         val nodeToJob = mutableMapOf<NavigationNodeId, Job>()
+        val nodeToJobMutex = Mutex()
 
         merge(
             flow { emit(emptyList<NavigationNode<*, Base>>().diff(stackFlow.value)) },
             onNodesStackDiffFlow
         ).subscribeSafelyWithoutExceptions(subscope) {
-            it.removed.forEach { (i, it) ->
-                nodeToJob.remove(it.id) ?.cancel()
-            }
-            it.replaced.forEach { (old, new) ->
-                nodeToJob[new.value.id] = new.value.start(subscope)
-                nodeToJob.remove(old.value.id) ?.cancel()
-            }
-            it.added.forEach { (i, it) ->
-                nodeToJob[it.id] = it.start(subscope)
-            }
-
             actualizeStackStates()
+            nodeToJobMutex.withLock {
+                it.removed.forEach { (i, it) ->
+                    nodeToJob.remove(it.id) ?.cancel()
+                }
+                it.replaced.forEach { (old, new) ->
+                    nodeToJob.remove(new.value.id) ?.cancel()
+                    nodeToJob[new.value.id] = new.value.start(subscope)
+                    nodeToJob.remove(old.value.id) ?.cancel()
+                }
+                it.added.forEach { (i, it) ->
+                    nodeToJob.remove(it.id) ?.cancel()
+                    nodeToJob[it.id] = it.start(subscope)
+                }
+            }
 
             if (stack.isEmpty()) {
                 dropItself()
             }
         }
-        
+
         return subscope.coroutineContext.job
     }
 }

@@ -35,6 +35,56 @@ fun <Base> NavigationNode<*, Base>.findChain(id: NavigationChainId): NavigationC
     it.findChain(id)
 }
 
+// find
+
+/**
+ * Shortcut for [ChainOrNodeEither].[findInSubTree]
+ */
+inline fun <Base> NavigationNode<*, Base>.findInSubTree(
+    filter: (ChainOrNodeEither<Base>) -> Boolean
+): ChainOrNodeEither<Base>? = chainOrNodeEither().findInSubTree(filter)
+
+/**
+ * Shortcut for [ChainOrNodeEither].[findNodeInSubTree]
+ */
+inline fun <Base> NavigationNode<*, Base>.findNodeInSubTree(
+    filter: (NavigationNode<*, Base>) -> Boolean
+): NavigationNode<*, Base>? = chainOrNodeEither().findNodeInSubTree(filter)
+
+/**
+ * Shortcut for [ChainOrNodeEither].[findChainInSubTree]
+ */
+inline fun <Base> NavigationNode<*, Base>.findChainInSubTree(
+    filter: (NavigationChain<Base>) -> Boolean
+): NavigationChain<Base>? = chainOrNodeEither().findChainInSubTree(filter)
+
+/**
+ * Shortcut for [ChainOrNodeEither].[findInSubTree]
+ */
+inline fun <Base> NavigationNode<*, Base>.findInSubTree(
+    id: NavigationNodeId
+): NavigationNode<*, Base>? = chainOrNodeEither().findInSubTree(id)
+
+/**
+ * Shortcut for [ChainOrNodeEither].[findInSubTree]
+ */
+inline fun <Base> NavigationNode<*, Base>.findInSubTree(
+    id: NavigationChainId
+): NavigationChain<Base>? = chainOrNodeEither().findInSubTree(id)
+
+/**
+ * Shortcut for [ChainOrNodeEither].[findNodeInSubTree]
+ */
+inline fun <Base> NavigationNode<*, Base>.findNodeInSubTree(
+    id: String
+): NavigationNode<*, Base>? = chainOrNodeEither().findNodeInSubTree(id)
+
+/**
+ * Shortcut for [ChainOrNodeEither].[findChainInSubTree]
+ */
+inline fun <Base> NavigationNode<*, Base>.findChainInSubTree(
+    id: String
+): NavigationChain<Base>? = chainOrNodeEither().findChainInSubTree(id)
 
 // Drop
 
