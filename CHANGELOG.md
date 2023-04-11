@@ -2,6 +2,8 @@
 
 ## 0.0.19
 
+* Fixes for android
+
 ## 0.0.18
 
 * `NavigationChain.parentNode` now is public

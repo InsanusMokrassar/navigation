@@ -187,29 +187,33 @@ class NavigationChain<Base>(
         }
 
         val nodeToJob = mutableMapOf<NavigationNodeId, Job>()
+        val nodeToJobMutex = Mutex()
 
         merge(
             flow { emit(emptyList<NavigationNode<*, Base>>().diff(stackFlow.value)) },
             onNodesStackDiffFlow
         ).subscribeSafelyWithoutExceptions(subscope) {
-            it.removed.forEach { (i, it) ->
-                nodeToJob.remove(it.id) ?.cancel()
-            }
-            it.replaced.forEach { (old, new) ->
-                nodeToJob[new.value.id] = new.value.start(subscope)
-                nodeToJob.remove(old.value.id) ?.cancel()
-            }
-            it.added.forEach { (i, it) ->
-                nodeToJob[it.id] = it.start(subscope)
-            }
-
             actualizeStackStates()
+            nodeToJobMutex.withLock {
+                it.removed.forEach { (i, it) ->
+                    nodeToJob.remove(it.id) ?.cancel()
+                }
+                it.replaced.forEach { (old, new) ->
+                    nodeToJob.remove(new.value.id) ?.cancel()
+                    nodeToJob[new.value.id] = new.value.start(subscope)
+                    nodeToJob.remove(old.value.id) ?.cancel()
+                }
+                it.added.forEach { (i, it) ->
+                    nodeToJob.remove(it.id) ?.cancel()
+                    nodeToJob[it.id] = it.start(subscope)
+                }
+            }
 
             if (stack.isEmpty()) {
                 dropItself()
             }
         }
-        
+
         return subscope.coroutineContext.job
     }
 }

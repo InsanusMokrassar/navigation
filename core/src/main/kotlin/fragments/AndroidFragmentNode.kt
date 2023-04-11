@@ -85,9 +85,6 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
                 val subsubscope = subscope.LinkedSupervisorScope()
 
                 placeFragment()
-//                if (placeFragment()) {
-//                    return@subscribeSafelyWithoutExceptions
-//                }
 
                 flowOnHierarchyChangeListener.onChildViewAdded.filterNot {
                     it.second.navigationTag != viewTag
