@@ -3,6 +3,7 @@
 ## 0.0.19
 
 * Fixes for android
+* Add find extensions for chains and nodes
 
 ## 0.0.18
 
