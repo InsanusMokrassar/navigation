@@ -25,10 +25,6 @@ abstract class NavigationNode<Config : Base, Base>(
     open val storableInNavigationHierarchy: Boolean
         get() = (config as? NavigationNodeDefaultConfig) ?.storableInNavigationHierarchy ?: true
 
-    @Deprecated("Renamed", ReplaceWith("chain"))
-    val chainHolder
-        get() = chain
-
     internal val _subchainsFlow = MutableStateFlow<List<NavigationChain<Base>>>(emptyList())
     val subchainsFlow: StateFlow<List<NavigationChain<Base>>> = _subchainsFlow.asStateFlow()
     val subchains: List<NavigationChain<Base>>

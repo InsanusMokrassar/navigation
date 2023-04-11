@@ -2,6 +2,8 @@
 
 ## 0.0.19
 
+**THIS UPDATE CONTAINS DEPRECATIONS REMOVING**
+
 * Fixes for android
 * Add find extensions for chains and nodes
 
