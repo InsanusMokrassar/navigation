@@ -1,5 +1,7 @@
 # Navigation Changelog
 
+## 0.1.0
+
 ## 0.0.19
 
 **THIS UPDATE CONTAINS DEPRECATIONS REMOVING**
