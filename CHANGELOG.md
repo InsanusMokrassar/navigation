@@ -2,6 +2,8 @@
 
 ## 0.1.0
 
+* Fix of bug in start of chain
+
 ## 0.0.19
 
 **THIS UPDATE CONTAINS DEPRECATIONS REMOVING**
