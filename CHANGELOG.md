@@ -3,6 +3,10 @@
 ## 0.1.0
 
 * Fix of bug in start of chain
+* `Versions`:
+  * `Kotlin`: `1.8.20`
+  * `MicroUtils`: `0.17.6`
+  * `KSLog`: `1.1.1`
 
 ## 0.0.19
 
