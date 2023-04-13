@@ -180,7 +180,7 @@ class NavigationChain<Base>(
                 }
             }
 
-            if (stack.isEmpty()) {
+            if (stack.isEmpty() && it.removed.isNotEmpty()) {
                 dropItself()
             }
         }
