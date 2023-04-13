@@ -163,7 +163,7 @@ class NavigationChain<Base>(
         merge(
             flow { emit(emptyList<NavigationNode<*, Base>>().diff(stackFlow.value)) },
             onNodesStackDiffFlow
-        ).subscribeSafelyWithoutExceptions(subscope) {
+        ).filter { !it.isEmpty() }.subscribeSafelyWithoutExceptions(subscope) {
             actualizeStackStates()
             nodeToJobMutex.withLock {
                 it.removed.forEach { (i, it) ->
