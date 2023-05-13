@@ -51,8 +51,7 @@ open class AndroidNavigationHost<T : NavigationNodeDefaultConfig>(
                     surrogateFactory.createNode(navigationChain, config) ?.also {
                         it.chain.enableSavingHierarchy(
                             configsRepo,
-                            subscope,
-                            debounce = 1000L
+                            subscope
                         )
                     }
                 }

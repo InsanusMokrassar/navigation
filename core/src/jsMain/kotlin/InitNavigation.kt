@@ -24,7 +24,6 @@ inline fun <reified Base : NavigationNodeDefaultConfig> initNavigation(
         ConfigHolder.serializer(Base::class.serializer())
     ),
     scope: CoroutineScope = CoroutineScope(Dispatchers.Main),
-    savingDebounce: Long = 0L,
     rootChain: NavigationChain<Base>,
     dropRedundantChainsOnRestore: Boolean = false,
     nodesFactory: NavigationNodeFactory<Base>
@@ -42,8 +41,7 @@ inline fun <reified Base : NavigationNodeDefaultConfig> initNavigation(
             nodesFactory.createNode(navigationChain, config) ?.also {
                 it.chain.enableSavingHierarchy(
                     configsRepo,
-                    subscope,
-                    debounce = savingDebounce
+                    subscope
                 )
             }
         }
@@ -76,7 +74,6 @@ inline fun <reified Base : NavigationNodeDefaultConfig> initNavigation(
         ConfigHolder.serializer(Base::class.serializer())
     ),
     scope: CoroutineScope = CoroutineScope(Dispatchers.Main),
-    savingDebounce: Long = 0L,
     rootChain: NavigationChain<Base>? = null,
     dropRedundantChainsOnRestore: Boolean = false,
     nodesFactory: NavigationNodeFactory<Base>
@@ -84,7 +81,6 @@ inline fun <reified Base : NavigationNodeDefaultConfig> initNavigation(
     startChain,
     configsRepo,
     scope,
-    savingDebounce,
     rootChain ?: NavigationChain<Base>(null, nodesFactory),
     dropRedundantChainsOnRestore,
     nodesFactory

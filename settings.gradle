@@ -2,8 +2,9 @@ rootProject.name = 'navigation'
 
 String[] includes = [
     ":core",
+    ":mvvm",
     ":sample",
-    ":sample:android",
+    ":sample:android_client",
 ]
 
 

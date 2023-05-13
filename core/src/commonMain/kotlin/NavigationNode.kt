@@ -80,8 +80,12 @@ abstract class NavigationNode<Config : Base, Base>(
         log.d { "onDestroy" }
     }
 
+    private fun createEmptySubChainWithoutAttaching(id: NavigationChainId? = null): NavigationChain<Base> {
+        return NavigationChain<Base>(this, chain.nodeFactory, id)
+    }
+
     fun createEmptySubChain(id: NavigationChainId? = null): NavigationChain<Base> {
-        return NavigationChain<Base>(this, chain.nodeFactory, id).also {
+        return createEmptySubChainWithoutAttaching(id).also {
             _subchainsFlow.value += it
         }
     }
@@ -98,8 +102,9 @@ abstract class NavigationNode<Config : Base, Base>(
     }
 
     fun createSubChain(config: Base, id: NavigationChainId? = null): Pair<NavigationNode<out Base, Base>, NavigationChain<Base>>? {
-        val newSubChain = createEmptySubChain(id)
+        val newSubChain = createEmptySubChainWithoutAttaching(id)
         val createdNode = newSubChain.push(config) ?: return null
+        _subchainsFlow.value += newSubChain
         log.d { "Stack after adding of $config subchain: ${subchains.joinToString("; ") { it.stackFlow.value.joinToString { it.id.string } }}" }
         return createdNode to newSubChain
     }
