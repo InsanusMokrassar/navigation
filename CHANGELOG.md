@@ -1,5 +1,7 @@
 # Navigation Changelog
 
+## 0.2.0
+
 ## 0.1.0
 
 * Fix of bug in start of chain
