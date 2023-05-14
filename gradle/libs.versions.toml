@@ -5,7 +5,7 @@ kotlin-coroutines = "1.6.4"
 kotlin-serialization = "1.5.0"
 dokka = "1.8.10"
 
-microutils = "0.18.3"
+microutils = "0.18.4"
 kslog = "1.1.1"
 uuid = "0.7.0"
 
@@ -22,7 +22,7 @@ android-minSdk = "21"
 android-compileSdk = "33"
 android-buildTools = "33.0.1"
 
-android-core-ktx = "1.9.0"
+android-core-ktx = "1.10.1"
 android-appcompat = "1.6.1"
 android-material = "1.6.1"
 android-compose-material3 = "1.0.1"
@@ -47,6 +47,7 @@ microutils-coroutines = { module = "dev.inmo:micro_utils.coroutines", version.re
 microutils-coroutines-compose = { module = "dev.inmo:micro_utils.coroutines.compose", version.ref = "microutils" }
 microutils-startup-plugin = { module = "dev.inmo:micro_utils.startup.plugin", version.ref = "microutils" }
 microutils-startup-launcher = { module = "dev.inmo:micro_utils.startup.launcher", version.ref = "microutils" }
+microutils-koin = { module = "dev.inmo:micro_utils.koin", version.ref = "microutils" }
 kslog = { module = "dev.inmo:kslog", version.ref = "kslog" }
 uuid = { module = "com.benasher44:uuid", version.ref = "uuid" }
 

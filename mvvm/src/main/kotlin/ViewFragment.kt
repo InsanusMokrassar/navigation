@@ -13,10 +13,10 @@ import androidx.compose.ui.platform.ComposeView
 import dev.inmo.kslog.common.d
 import dev.inmo.kslog.common.logger
 import dev.inmo.micro_utils.coroutines.compose.asComposeState
+import dev.inmo.micro_utils.koin.lazyInject
 import dev.inmo.navigation.core.NavigationNodeState
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 import dev.inmo.navigation.core.fragments.NodeFragment
-import dev.inmo.navigation.mvvm.utils.inject
 import kotlinx.coroutines.CoroutineScope
 import org.koin.core.parameter.parametersOf
 import kotlin.reflect.KClass
@@ -43,7 +43,7 @@ abstract class ViewFragment<ViewModel: dev.inmo.navigation.mvvm.ViewModel, Confi
         }
     }
 
-    val viewModel: ViewModel by inject(kClassFactory = ::viewModelClass) {
+    val viewModel: ViewModel by lazyInject(kClassFactory = ::viewModelClass) {
         Log.d { "Retrieving view model" }
         parametersOf(node)
     }
