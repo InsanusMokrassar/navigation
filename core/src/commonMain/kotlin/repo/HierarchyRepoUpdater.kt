@@ -39,6 +39,9 @@ fun <T> NavigationConfigsRepo<T>.enableSavingHierarchy(
 
     fun NavigationChain<T>.enableListeningUpdates() {
         val currentSubscope = subscope.LinkedSupervisorScope()
+        onNodesStackDiffFlow.filter { it.isEmpty() }.subscribeSafelyWithoutExceptions(currentSubscope) {
+            save("initialization")
+        }
         onNodeAddedFlow.flatten().subscribeSafelyWithoutExceptions(currentSubscope) { (_, it) ->
             save("node adding")
             it.enableListeningUpdates(currentSubscope)
