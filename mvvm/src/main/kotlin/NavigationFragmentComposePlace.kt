@@ -7,6 +7,11 @@ import androidx.compose.ui.viewinterop.NoOpUpdate
 import dev.inmo.navigation.core.fragments.view.NavigationFragmentContainerView
 import dev.inmo.navigation.core.navigationTag
 
+/**
+ * Creates [AndroidView] with [NavigationFragmentContainerView]
+ *
+ * @param id Target tag of [NavigationFragmentContainerView]
+ */
 @Composable
 fun NavigationFragmentComposePlace(
     id: String,

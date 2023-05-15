@@ -9,6 +9,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 
+/**
+ * This is an abstract class of ViewModel for MVVM pattern.
+ *
+ * It has its own scope bind to [NavigationNode] lifecycle: when [NavigationNode] will be destroyed, its
+ * [scope] will be cancelled
+ */
 abstract class ViewModel(
     node: NavigationNode<out NavigationNodeDefaultConfig, NavigationNodeDefaultConfig>
 ) {

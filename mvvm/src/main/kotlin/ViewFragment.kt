@@ -21,7 +21,26 @@ import kotlinx.coroutines.CoroutineScope
 import org.koin.core.parameter.parametersOf
 import kotlin.reflect.KClass
 
+/**
+ * Android variant of View in MVVM architecture. It is receiving [ViewModel] and [Config] as required types
+ * for [NodeFragment]
+ *
+ * There are several important things to view in context of this abstract class:
+ *
+ * * [backIsPop]
+ * * [Log]
+ * * [viewModelClass]
+ * * [contentBoxModifier]
+ * * [SetContent]
+ *
+ * This class handling the lifecycle of this view automatically: it will create android [View] in [onCreateView],
+ * set the [Content] there and destroy when the view or lifecycle is destroying
+ */
 abstract class ViewFragment<ViewModel: dev.inmo.navigation.mvvm.ViewModel, Config : NavigationNodeDefaultConfig> : NodeFragment<Config, NavigationNodeDefaultConfig>() {
+    /**
+     * If true, [onBackPressedCallback] will be registered to handle the back presses and current [node] will be
+     * popped from its [dev.inmo.navigation.core.NavigationChain] on back press
+     */
     protected open var backIsPop: Boolean = false
         set(value) {
             if (value) {
@@ -36,6 +55,10 @@ abstract class ViewFragment<ViewModel: dev.inmo.navigation.mvvm.ViewModel, Confi
     protected val Log by lazy {
         logger
     }
+
+    /**
+     * This class of [ViewModel] will be used to create [viewModel] with [lazyInject]
+     */
     protected abstract val viewModelClass: KClass<ViewModel>
     protected val onBackPressedCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
@@ -69,6 +92,10 @@ abstract class ViewFragment<ViewModel: dev.inmo.navigation.mvvm.ViewModel, Confi
 
     protected open val contentBoxModifier: Modifier = Modifier.fillMaxSize()
 
+    /**
+     * Draw your content of current view here. It will be called in the [Box] with modifier = [contentBoxModifier]
+     * in the [contentDrawer] which will be used in the [SetContent]
+     */
     @Composable
     protected abstract fun BoxScope.Content()
 

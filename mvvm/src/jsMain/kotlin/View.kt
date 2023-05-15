@@ -10,6 +10,13 @@ import kotlinx.coroutines.Job
 import org.jetbrains.compose.web.renderComposable
 import org.koin.core.component.KoinComponent
 
+/**
+ * Javascript realization of View for MVVM. Uses [Config] as a type of config it retrieves on creation and
+ * [VM] as a type of [ViewModel].
+ *
+ * In case you are using DI, you should create some view factory to allocate realization of [View] based on incoming
+ * config
+ */
 abstract class View<Config: NavigationNodeDefaultConfig, VM: ViewModel> (
     config: Config,
     chain: NavigationChain<NavigationNodeDefaultConfig>,
