@@ -11,15 +11,9 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api project(":navigation.core")
-                api project(":navigation.mvvm")
-                api libs.microutils.startup.launcher
-            }
-        }
-        androidMain {
-            dependencies {
-                api libs.android.compose.material3
+                api project(":esp8266.common")
             }
         }
     }
 }
+

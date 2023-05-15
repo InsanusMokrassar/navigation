@@ -1,5 +1,12 @@
 # Navigation Changelog
 
+## 0.2.0
+
+* `Versions`:
+  * `MicroUtils`: `0.17.6` -> `0.18.3`
+* Get back `mvvm` module with filled abstractions
+* Improve Sample
+
 ## 0.1.0
 
 * Fix of bug in start of chain

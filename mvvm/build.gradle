@@ -2,16 +2,36 @@ plugins {
     id "org.jetbrains.kotlin.multiplatform"
     id "org.jetbrains.kotlin.plugin.serialization"
     id "com.android.library"
+    alias(libs.plugins.compose)
 }
 
 apply from: "$mppProjectWithSerializationPresetPath"
-//apply from: "$publishGradlePath"
+apply from: "$publishGradlePath"
 
 kotlin {
     sourceSets {
         commonMain {
             dependencies {
                 api project(":navigation.core")
+                api libs.microutils.coroutines.compose
+                api libs.microutils.koin
+                api libs.koin.core
+                api compose.runtime
+            }
+        }
+
+        jsMain {
+            dependencies {
+                api compose.web.core
+                api compose.web.svg
+            }
+        }
+
+        androidMain {
+            dependencies {
+                api compose.ui
+                api compose.foundation
+                api libs.koin.android
             }
         }
     }

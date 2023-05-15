@@ -1,0 +1,7 @@
+{
+   "module_path": "sample",
+   "module_package": "{{.module_path.replace(\"/\", \".\")}}",
+   "module_group": "sample.group",
+   "full_module_package": "{{.module_group}}.{{.module_path.replace(\"/\", \".\")}}",
+   "ui_mvvm_name": "Sample"
+}

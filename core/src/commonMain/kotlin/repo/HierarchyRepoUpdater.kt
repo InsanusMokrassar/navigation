@@ -1,5 +1,7 @@
 package dev.inmo.navigation.core.repo
 
+import dev.inmo.kslog.common.TagLogger
+import dev.inmo.kslog.common.d
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.NavigationChain
 import dev.inmo.navigation.core.NavigationNode
@@ -11,40 +13,47 @@ import kotlinx.coroutines.flow.*
 fun <T> NavigationConfigsRepo<T>.enableSavingHierarchy(
     listeningChain: NavigationChain<T>,
     scope: CoroutineScope,
-    chainToSave: NavigationChain<T> = listeningChain.rootChain(),
-    debounce: Long = 0L
+    chainToSave: NavigationChain<T> = listeningChain.rootChain()
 ): Job {
+    val logger = TagLogger("HierarchySaver")
     val subscope = scope.LinkedSupervisorScope()
-    val updatesFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
-    updatesFlow.debounce(debounce).subscribeSafelyWithoutExceptions(subscope) {
-        val hierarchy = chainToSave.storeHierarchy() ?: return@subscribeSafelyWithoutExceptions
-        save(hierarchy)
+    fun save(event: String) {
+        logger.d { "Start saving of hierarchy on $event" }
+        save(chainToSave.storeHierarchy() ?: return)
+        logger.d { "Completed saving of hierarchy on $event" }
     }
 
     fun NavigationNode<out T, T>.enableListeningUpdates(scope: CoroutineScope) {
         configState.subscribeSafelyWithoutExceptions(scope) {
-            save(chainToSave.storeHierarchy() ?: return@subscribeSafelyWithoutExceptions)
+            save("config change")
+        }
+        onChainAddedFlow.subscribeSafelyWithoutExceptions(scope) {
+            save("chain adding")
+            enableListeningUpdates(scope)
+        }
+        onChainRemovedFlow.subscribeSafelyWithoutExceptions(scope) {
+            save("chain removing")
         }
     }
 
     fun NavigationChain<T>.enableListeningUpdates() {
-        stack.forEach {
-            it.subchainsFlow.value.forEach {
-                it.enableListeningUpdates()
-            }
-        }
         val currentSubscope = subscope.LinkedSupervisorScope()
+        onNodesStackDiffFlow.filter { it.isEmpty() }.subscribeSafelyWithoutExceptions(currentSubscope) {
+            save("initialization")
+        }
         onNodeAddedFlow.flatten().subscribeSafelyWithoutExceptions(currentSubscope) { (_, it) ->
-            save(chainToSave.storeHierarchy() ?: return@subscribeSafelyWithoutExceptions)
+            save("node adding")
             it.enableListeningUpdates(currentSubscope)
-            it.onChainAddedFlow.flatten().map { it.value }.subscribeSafelyWithoutExceptions(currentSubscope) {
-                it.enableListeningUpdates()
-            }
         }
         onNodeRemovedFlow.flatten().subscribeSafelyWithoutExceptions(currentSubscope) { _ ->
-            save(chainToSave.storeHierarchy() ?: return@subscribeSafelyWithoutExceptions)
-            currentSubscope.cancel()
+            save("node removing")
+        }
+        stack.forEach {
+            it.enableListeningUpdates(currentSubscope)
+        }
+        if (stack.isNotEmpty()) {
+            save("chain init")
         }
     }
 
@@ -56,6 +65,5 @@ fun <T> NavigationConfigsRepo<T>.enableSavingHierarchy(
 fun <T> NavigationChain<T>.enableSavingHierarchy(
     repo: NavigationConfigsRepo<T>,
     scope: CoroutineScope,
-    chainToSave: NavigationChain<T> = rootChain(),
-    debounce: Long = 0L
-): Job = repo.enableSavingHierarchy(this, scope, chainToSave, debounce)
+    chainToSave: NavigationChain<T> = rootChain()
+): Job = repo.enableSavingHierarchy(this, scope, chainToSave)
