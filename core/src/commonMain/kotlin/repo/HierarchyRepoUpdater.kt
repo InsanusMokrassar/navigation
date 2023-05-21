@@ -28,23 +28,25 @@ fun <T> NavigationConfigsRepo<T>.enableSavingHierarchy(
         configState.subscribeSafelyWithoutExceptions(scope) {
             save("config change")
         }
-        onChainAddedFlow.subscribeSafelyWithoutExceptions(scope) {
-            save("chain adding")
-            enableListeningUpdates(scope)
-        }
-        onChainRemovedFlow.subscribeSafelyWithoutExceptions(scope) {
-            save("chain removing")
-        }
     }
 
-    fun NavigationChain<T>.enableListeningUpdates() {
-        val currentSubscope = subscope.LinkedSupervisorScope()
+    fun NavigationChain<T>.enableListeningUpdates(scope: CoroutineScope) {
+        val currentSubscope = scope.LinkedSupervisorScope()
         onNodesStackDiffFlow.filter { it.isEmpty() }.subscribeSafelyWithoutExceptions(currentSubscope) {
             save("initialization")
         }
-        onNodeAddedFlow.flatten().subscribeSafelyWithoutExceptions(currentSubscope) { (_, it) ->
+        onNodeAddedFlow.flatten().subscribeSafelyWithoutExceptions(currentSubscope) { (_, newNode) ->
             save("node adding")
-            it.enableListeningUpdates(currentSubscope)
+            newNode.enableListeningUpdates(currentSubscope)
+            newNode.onChainAddedFlow.subscribeSafelyWithoutExceptions(scope) { newChains ->
+                save("chain adding")
+                newChains.forEach { newChain ->
+                    newChain.value.enableListeningUpdates(scope)
+                }
+            }
+            newNode.onChainRemovedFlow.subscribeSafelyWithoutExceptions(scope) {
+                save("chain removing")
+            }
         }
         onNodeRemovedFlow.flatten().subscribeSafelyWithoutExceptions(currentSubscope) { _ ->
             save("node removing")
@@ -57,7 +59,7 @@ fun <T> NavigationConfigsRepo<T>.enableSavingHierarchy(
         }
     }
 
-    listeningChain.enableListeningUpdates()
+    listeningChain.enableListeningUpdates(subscope)
 
     return subscope.coroutineContext.job
 }

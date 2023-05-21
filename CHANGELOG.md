@@ -2,6 +2,8 @@
 
 ## 0.2.1
 
+* Fixes in updates listening of chains and nodes
+
 ## 0.2.0
 
 * `Versions`:
