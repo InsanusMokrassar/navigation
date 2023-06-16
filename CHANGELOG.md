@@ -1,5 +1,7 @@
 # Navigation Changelog
 
+## 0.2.2
+
 ## 0.2.1
 
 * Fixes in updates listening of chains and nodes
