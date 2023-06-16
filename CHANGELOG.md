@@ -2,6 +2,12 @@
 
 ## 0.2.2
 
+* `Versions`:
+  * `Kotlin`: `1.8.20`
+  * `Serialization`: `1.5.1`
+  * `MicroUtils`: `0.19.2`
+  * `UUID`: `0.7.1`
+
 ## 0.2.1
 
 * Fixes in updates listening of chains and nodes
