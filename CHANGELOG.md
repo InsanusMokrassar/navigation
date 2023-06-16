@@ -7,6 +7,11 @@
   * `Serialization`: `1.5.1`
   * `MicroUtils`: `0.19.2`
   * `UUID`: `0.7.1`
+* `MVVM`:
+  * Add `NavigationMVVMSingleActivity` as abstract class for single-activity oriented way of navigation
+  * All `initNavigation` variants uses coroutine scope with supervisor job to avoid redundant navigation fails
+    * Add `NavigationFragmentInfoProvider`. Realizations of `NavigationFragmentInfoProvider` can be used for passing in
+      a list into `initNavigation` function for automatization of its parts registration
 
 ## 0.2.1
 

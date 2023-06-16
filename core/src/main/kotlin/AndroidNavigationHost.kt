@@ -72,7 +72,7 @@ inline fun <reified T : NavigationNodeDefaultConfig> AppCompatActivity.initNavig
         getSharedPreferences("internal", AppCompatActivity.MODE_PRIVATE),
         T::class
     ),
-    scope: CoroutineScope = CoroutineScope(Dispatchers.Main),
+    scope: CoroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob()),
     fragmentManager: FragmentManager = supportFragmentManager,
     rootView: View = this.rootView!!,
     flowOnHierarchyChangeListener: FlowOnHierarchyChangeListener = FlowOnHierarchyChangeListener(recursive = true).also {
@@ -107,7 +107,7 @@ inline fun <reified T : NavigationNodeDefaultConfig> AppCompatActivity.initNavig
         getSharedPreferences("internal", AppCompatActivity.MODE_PRIVATE),
         T::class
     ),
-    scope: CoroutineScope = CoroutineScope(Dispatchers.Main),
+    scope: CoroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob()),
     fragmentManager: FragmentManager = supportFragmentManager,
     rootView: View = this.rootView!!,
     flowOnHierarchyChangeListener: FlowOnHierarchyChangeListener = FlowOnHierarchyChangeListener(recursive = true).also {
