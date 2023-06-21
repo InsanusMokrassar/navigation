@@ -11,6 +11,7 @@ import dev.inmo.navigation.core.repo.restoreHierarchy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.json.Json
@@ -23,7 +24,7 @@ inline fun <reified Base : NavigationNodeDefaultConfig> initNavigation(
         Json { ignoreUnknownKeys = true },
         ConfigHolder.serializer(Base::class.serializer())
     ),
-    scope: CoroutineScope = CoroutineScope(Dispatchers.Main),
+    scope: CoroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob()),
     rootChain: NavigationChain<Base>,
     dropRedundantChainsOnRestore: Boolean = false,
     nodesFactory: NavigationNodeFactory<Base>
@@ -73,7 +74,7 @@ inline fun <reified Base : NavigationNodeDefaultConfig> initNavigation(
         Json { ignoreUnknownKeys = true },
         ConfigHolder.serializer(Base::class.serializer())
     ),
-    scope: CoroutineScope = CoroutineScope(Dispatchers.Main),
+    scope: CoroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob()),
     rootChain: NavigationChain<Base>? = null,
     dropRedundantChainsOnRestore: Boolean = false,
     nodesFactory: NavigationNodeFactory<Base>
