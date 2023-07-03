@@ -25,8 +25,10 @@ fun <T> NavigationConfigsRepo<T>.enableSavingHierarchy(
     }
 
     fun NavigationNode<out T, T>.enableListeningUpdates(scope: CoroutineScope) {
-        configState.subscribeSafelyWithoutExceptions(scope) {
-            save("config change")
+        if (storableInNavigationHierarchy) {
+            configState.subscribeSafelyWithoutExceptions(scope) {
+                save("config change")
+            }
         }
     }
 
@@ -36,20 +38,24 @@ fun <T> NavigationConfigsRepo<T>.enableSavingHierarchy(
             save("initialization")
         }
         onNodeAddedFlow.flatten().subscribeSafelyWithoutExceptions(currentSubscope) { (_, newNode) ->
-            save("node adding")
-            newNode.enableListeningUpdates(currentSubscope)
-            newNode.onChainAddedFlow.subscribeSafelyWithoutExceptions(scope) { newChains ->
-                save("chain adding")
-                newChains.forEach { newChain ->
-                    newChain.value.enableListeningUpdates(scope)
+            if (newNode.storableInNavigationHierarchy) {
+                save("node adding")
+                newNode.enableListeningUpdates(currentSubscope)
+                newNode.onChainAddedFlow.subscribeSafelyWithoutExceptions(scope) { newChains ->
+                    save("chain adding")
+                    newChains.forEach { newChain ->
+                        newChain.value.enableListeningUpdates(scope)
+                    }
+                }
+                newNode.onChainRemovedFlow.subscribeSafelyWithoutExceptions(scope) {
+                    save("chain removing")
                 }
             }
-            newNode.onChainRemovedFlow.subscribeSafelyWithoutExceptions(scope) {
-                save("chain removing")
-            }
         }
-        onNodeRemovedFlow.flatten().subscribeSafelyWithoutExceptions(currentSubscope) { _ ->
-            save("node removing")
+        onNodeRemovedFlow.flatten().subscribeSafelyWithoutExceptions(currentSubscope) { (i, node) ->
+            if (node.storableInNavigationHierarchy) {
+                save("node removing")
+            }
         }
         stack.forEach {
             it.enableListeningUpdates(currentSubscope)
