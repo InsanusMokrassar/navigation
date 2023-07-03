@@ -35,7 +35,13 @@ fun <T> NavigationConfigsRepo<T>.enableSavingHierarchy(
     fun NavigationChain<T>.enableListeningUpdates(scope: CoroutineScope) {
         val currentSubscope = scope.LinkedSupervisorScope()
         onNodesStackDiffFlow.filter { it.isEmpty() }.subscribeSafelyWithoutExceptions(currentSubscope) {
-            save("initialization")
+            var needSave = false
+            needSave = it.added.any { it.value.storableInNavigationHierarchy } || needSave
+            needSave = it.replaced.any { it.first.value.storableInNavigationHierarchy || it.second.value.storableInNavigationHierarchy } || needSave
+            needSave = it.removed.any { it.value.storableInNavigationHierarchy } || needSave
+            if (needSave) {
+                save("initialization")
+            }
         }
         onNodeAddedFlow.flatten().subscribeSafelyWithoutExceptions(currentSubscope) { (_, newNode) ->
             if (newNode.storableInNavigationHierarchy) {
