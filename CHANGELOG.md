@@ -2,6 +2,8 @@
 
 ## 0.2.4
 
+* Fixes in part of non-storable nodes in hierarchy saving
+
 ## 0.2.3
 
 * `Versions`:
