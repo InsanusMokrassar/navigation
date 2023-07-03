@@ -5,6 +5,7 @@
 * `Versions`:
   * `Coroutines`: `1.7.2`
   * `MicroUtils`: `0.19.7`
+  * `Compose`: `1.4.1`
 * Fix in `NavigationChain` saving
 
 ## 0.2.2
