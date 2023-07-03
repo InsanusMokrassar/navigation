@@ -1,7 +1,6 @@
 package dev.inmo.navigation.core.repo
 
 import dev.inmo.navigation.core.NavigationChainId
-import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
