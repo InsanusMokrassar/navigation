@@ -93,7 +93,8 @@ suspend fun <T> restoreHierarchy(
 
 fun <T> NavigationChain<T>.storeHierarchy(): ConfigHolder.Chain<T>? {
     return ConfigHolder.Chain(
-        stack.firstOrNull() ?.storeHierarchy() ?: return null // skip empty chains
+        stack.firstOrNull() ?.storeHierarchy() ?: return null, // skip empty chains
+        id
     )
 }
 

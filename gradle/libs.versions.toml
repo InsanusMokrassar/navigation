@@ -1,16 +1,16 @@
 [versions]
 
 kotlin = "1.8.20"
-kotlin-coroutines = "1.6.4"
+kotlin-coroutines = "1.7.2"
 kotlin-serialization = "1.5.1"
 dokka = "1.8.20"
 
-microutils = "0.19.5"
+microutils = "0.19.7"
 kslog = "1.1.1"
 uuid = "0.7.1"
 
 koin = "3.4.2"
-compose = "1.4.0"
+compose = "1.4.1"
 
 dexcount = "4.0.0"
 junit_version = "4.12"
