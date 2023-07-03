@@ -2,6 +2,8 @@
 
 ## 0.2.3
 
+* Fix in `NavigationChain` saving
+
 ## 0.2.2
 
 * `Versions`:
