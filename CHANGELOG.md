@@ -2,6 +2,12 @@
 
 ## 0.2.5
 
+* `Versions`:
+  * `Kotlin`: `1.8.22`
+  * `Coroutines`: `1.7.3`
+  * `MicroUtils`: `0.19.8`
+  * `Compose`: `1.4.3`
+
 ## 0.2.4
 
 * Fixes in part of non-storable nodes in hierarchy saving
