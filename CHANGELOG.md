@@ -2,6 +2,11 @@
 
 ## 0.2.6
 
+* `Versions`:
+  * `MicroUtils`: `0.19.9`
+  * `Koin`: `1.4.3`
+  * `KSLog`: `1.1.2`
+
 ## 0.2.5
 
 * `Versions`:
