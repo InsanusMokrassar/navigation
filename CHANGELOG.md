@@ -2,6 +2,8 @@
 
 ## 0.2.6
 
+* `Core`:
+  * `AndroidFragmentNode` and `NodeFragment` will try to restore their link
 * `Versions`:
   * `MicroUtils`: `0.19.9`
   * `Koin`: `1.4.3`

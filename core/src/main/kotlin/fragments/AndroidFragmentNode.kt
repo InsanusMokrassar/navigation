@@ -28,6 +28,10 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
         TagLogger("${this::class.simpleName}/${fragmentKClass.simpleName}")
     }
     private var fragment: NodeFragment<Config, Base>? = null
+        set(value) {
+            field = value
+            field ?.setNode(this, _configState)
+        }
     private val _configState = MutableStateFlow(config)
     override val configState: StateFlow<Config> = _configState.asStateFlow()
     private val viewTag
@@ -35,10 +39,11 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
 
     override fun onCreate() {
         super.onCreate()
-        fragment = (fragmentKClass.objectInstance ?: fragmentKClass.constructors.first {
+        fragment = fragmentManager.fragments.firstNotNullOfOrNull {
+            (it as? NodeFragment<Config, Base>) ?.takeIf { it.configId == config.id }
+        } ?: (fragmentKClass.objectInstance ?: fragmentKClass.constructors.first {
             it.parameters.isEmpty()
         }.call()) as NodeFragment<Config, Base>
-        fragment ?.setNode(this, _configState)
     }
 
     private fun placeFragment(view: View) {
