@@ -2,6 +2,10 @@
 
 ## 0.3.1
 
+**This update contains upgrade up to gradle 8+. Be careful during to use of this library**
+
+**This update have set up `compatibility` and `target` JDK versions to 17**
+
 * `Versions`:
   * `Kotlin`: `1.9.0` -> `1.9.20`
   * `MicroUtils`: `0.20.0` -> `0.20.11`
