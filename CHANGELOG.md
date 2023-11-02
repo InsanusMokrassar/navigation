@@ -1,5 +1,18 @@
 # Navigation Changelog
 
+## 0.3.1
+
+**This update contains upgrade up to gradle 8+. Be careful during to use of this library**
+
+**This update have set up `compatibility` and `target` JDK versions to 17**
+
+* `Versions`:
+  * `Kotlin`: `1.9.0` -> `1.9.20`
+  * `MicroUtils`: `0.20.0` -> `0.20.11`
+  * `KSLog`: `1.2.0` -> `1.2.3`
+  * `Koin`: `3.4.3` -> `3.5.0`
+  * `Compose`: `1.5.1` -> `1.5.10`
+
 ## 0.3.0
 
 * `Versions`:

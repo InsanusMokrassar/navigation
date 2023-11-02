@@ -28,6 +28,7 @@ android {
 
     compileSdkVersion libs.versions.android.compileSdk.get().toInteger()
     buildToolsVersion libs.versions.android.buildTools.get()
+    namespace "${group}.${project.name}"
 
     defaultConfig {
         minSdkVersion libs.versions.android.minSdk.get().toInteger()
@@ -51,12 +52,19 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     sourceSets {
         String sep = File.separator
         main.java.srcDirs += "src${sep}main${sep}kotlin"
+    }
+
+    publishing {
+        multipleVariants {
+            allVariants()
+            withJavadocJar()
+        }
     }
 }
