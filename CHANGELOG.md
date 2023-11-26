@@ -1,5 +1,7 @@
 # Navigation Changelog
 
+## 0.3.2
+
 ## 0.3.1
 
 **This update contains upgrade up to gradle 8+. Be careful during to use of this library**
