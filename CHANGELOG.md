@@ -2,6 +2,14 @@
 
 ## 0.3.2
 
+* `Versions`:
+  * `Kotlin`: `1.9.20` -> `1.9.21`
+  * `Serialization`: `1.6.0` -> `1.6.1`
+  * `MicroUtils`: `0.20.12` -> `0.20.15`
+  * `KSLog`: `1.2.4` -> `1.3.1`
+  * `UUID`: `0.8.1` -> `0.8.2`
+  * `Compose`: `1.5.10` -> `1.5.11`
+
 ## 0.3.1
 
 **This update contains upgrade up to gradle 8+. Be careful during to use of this library**
