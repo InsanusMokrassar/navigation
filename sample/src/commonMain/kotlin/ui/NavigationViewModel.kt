@@ -11,7 +11,9 @@ import dev.inmo.navigation.mvvm.ViewModel
 import dev.inmo.navigation.core.NavigationNode
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 import dev.inmo.navigation.core.extensions.onChainAddedFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.withContext
 
 class NavigationViewModel (
@@ -25,9 +27,9 @@ class NavigationViewModel (
         node.stateChangesFlow.subscribeSafelyWithoutExceptions(scope) {
             logger.i { "Current state change of node $node is ${it.type}" }
         }
-        node.onChainAddedFlow.subscribeSafelyWithoutExceptions(scope) {
+        node.onChainAddedFlow(emptyList()).map { it.map { it.value } }.subscribeSafelyWithoutExceptions(scope) {
             it.forEach {
-                it.value.stackFlow.subscribeSafelyWithoutExceptions(scope) {
+                it.stackFlow.subscribeSafelyWithoutExceptions(scope) {
                     val id = it.firstOrNull() ?.config ?.id ?: return@subscribeSafelyWithoutExceptions
                     doInUI {
                         if (id !in _subnodesIds) {

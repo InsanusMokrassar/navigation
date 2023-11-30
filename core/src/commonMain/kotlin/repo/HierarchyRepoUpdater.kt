@@ -33,34 +33,46 @@ fun <T> NavigationConfigsRepo<T>.enableSavingHierarchy(
 
     fun NavigationChain<T>.enableListeningUpdates(scope: CoroutineScope) {
         val currentSubscope = scope.LinkedSupervisorScope()
-        onNodesStackDiffFlow.filter { it.isEmpty() }.subscribeSafelyWithoutExceptions(currentSubscope) {
-            var needSave = false
-            needSave = needSave || it.added.any { it.value.storableInNavigationHierarchy }
-            needSave = needSave || it.replaced.any { it.first.value.storableInNavigationHierarchy || it.second.value.storableInNavigationHierarchy }
-            needSave = needSave || it.removed.any { it.value.storableInNavigationHierarchy }
-            if (needSave) {
-                save("initialization")
-            }
-        }
-        onNodeAddedFlow.flatten().subscribeSafelyWithoutExceptions(currentSubscope) { (_, newNode) ->
-            val mustBeSaved = newNode.storableInNavigationHierarchy
-            if (mustBeSaved) {
-                save("node adding")
-                newNode.enableListeningUpdates(currentSubscope)
-                newNode.onChainAddedFlow.subscribeSafelyWithoutExceptions(scope) { newChains ->
-                    save("chain adding")
-                    newChains.forEach { newChain ->
-                        newChain.value.enableListeningUpdates(scope)
+        onNodesStackDiffFlow(stack).subscribeSafelyWithoutExceptions(currentSubscope) {
+            val eventsForSave = mutableSetOf<String>()
+            it.added.forEach { (_, newNode) ->
+                runCatching {
+                    val mustBeSaved = newNode.storableInNavigationHierarchy
+                    if (mustBeSaved) {
+                        eventsForSave.add("node adding")
+                        newNode.enableListeningUpdates(currentSubscope)
+                        newNode.onChainAddedFlow(emptyList()).subscribeSafelyWithoutExceptions(scope) { newChains ->
+                            save("chain adding")
+                            newChains.forEach { newChain ->
+                                newChain.value.enableListeningUpdates(scope)
+                            }
+                        }
+                        newNode.onChainRemovedFlow(emptyList()).subscribeSafelyWithoutExceptions(scope) {
+                            save("chain removing")
+                        }
                     }
                 }
-                newNode.onChainRemovedFlow.subscribeSafelyWithoutExceptions(scope) {
-                    save("chain removing")
+            }
+            it.removed.forEach { (i, node) ->
+                runCatching {
+                    if (node.storableInNavigationHierarchy) {
+                        eventsForSave.add("node removing")
+                    }
                 }
             }
-        }
-        onNodeRemovedFlow.flatten().subscribeSafelyWithoutExceptions(currentSubscope) { (i, node) ->
-            if (node.storableInNavigationHierarchy) {
-                save("node removing")
+            runCatching {
+                var needSave = false
+                needSave = needSave || it.added.any { it.value.storableInNavigationHierarchy }
+                needSave = needSave || it.replaced.any { it.first.value.storableInNavigationHierarchy || it.second.value.storableInNavigationHierarchy }
+                needSave = needSave || it.removed.any { it.value.storableInNavigationHierarchy }
+                if (needSave) {
+                    eventsForSave.add("initialization")
+                }
+            }
+            runCatching {
+                if (eventsForSave.isNotEmpty()) {
+                    save(eventsForSave.joinToString("|"))
+                }
             }
         }
         stack.forEach {
