@@ -2,6 +2,8 @@ package dev.inmo.navigation.sample.ui
 
 import androidx.compose.runtime.mutableStateListOf
 import com.benasher44.uuid.uuid4
+import dev.inmo.kslog.common.i
+import dev.inmo.kslog.common.logger
 import dev.inmo.micro_utils.coroutines.compose.asComposeList
 import dev.inmo.micro_utils.coroutines.doInUI
 import dev.inmo.micro_utils.coroutines.subscribeSafelyWithoutExceptions
@@ -20,6 +22,9 @@ class NavigationViewModel (
     val subnodesIds: List<String> = _subnodesIds
 
     init {
+        node.stateChangesFlow.subscribeSafelyWithoutExceptions(scope) {
+            logger.i { "Current state change of node $node is ${it.type}" }
+        }
         node.onChainAddedFlow.subscribeSafelyWithoutExceptions(scope) {
             it.forEach {
                 it.value.stackFlow.subscribeSafelyWithoutExceptions(scope) {

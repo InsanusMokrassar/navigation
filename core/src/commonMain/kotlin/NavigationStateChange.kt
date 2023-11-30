@@ -12,17 +12,17 @@ value class NavigationStateChange internal constructor(
     @Serializable
     sealed interface Type {
         @Serializable
-        object CREATE : Type
+        data object CREATE : Type
         @Serializable
-        object START : Type
+        data object START : Type
         @Serializable
-        object RESUME : Type
+        data object RESUME : Type
         @Serializable
-        object PAUSE : Type
+        data object PAUSE : Type
         @Serializable
-        object STOP : Type
+        data object STOP : Type
         @Serializable
-        object DESTROY : Type
+        data object DESTROY : Type
     }
     val from: NavigationNodeState
         get() = pair.first
