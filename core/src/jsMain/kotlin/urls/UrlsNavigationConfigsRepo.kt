@@ -8,7 +8,7 @@ class UrlsNavigationConfigsRepo<T>(
 ) : NavigationConfigsRepo<T> {
     interface
 
-    override fun save(holder: ConfigHolder<T>) {
+    override override fun save(holder: ConfigHolder<T>) {
         TODO("Not yet implemented")
     }
 
