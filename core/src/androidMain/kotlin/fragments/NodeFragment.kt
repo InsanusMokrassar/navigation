@@ -12,11 +12,19 @@ abstract class NodeFragment<Config : Base, Base : NavigationNodeDefaultConfig> :
         get() = _configState.value
         set(value) { _configState.value = value }
 
+    protected open fun onSetNode(
+        node: AndroidFragmentNode<Config, Base>,
+        configStateFlow: MutableStateFlow<Config>
+    ) {
+
+    }
+
     internal fun setNode(
         node: AndroidFragmentNode<Config, Base>,
         configStateFlow: MutableStateFlow<Config>
     ) {
         this.node = node
         this._configState = configStateFlow
+        onSetNode(node, configStateFlow)
     }
 }

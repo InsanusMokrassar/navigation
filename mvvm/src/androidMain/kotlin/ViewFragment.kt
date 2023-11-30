@@ -16,8 +16,10 @@ import dev.inmo.micro_utils.coroutines.compose.asComposeState
 import dev.inmo.micro_utils.koin.lazyInject
 import dev.inmo.navigation.core.NavigationNodeState
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
+import dev.inmo.navigation.core.fragments.AndroidFragmentNode
 import dev.inmo.navigation.core.fragments.NodeFragment
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.koin.core.parameter.parametersOf
 import kotlin.reflect.KClass
 
@@ -151,5 +153,13 @@ abstract class ViewFragment<ViewModel: dev.inmo.navigation.mvvm.ViewModel, Confi
         if (backIsPop) {
             unregisterBackListener()
         }
+    }
+
+    protected override fun onSetNode(
+        node: AndroidFragmentNode<Config, NavigationNodeDefaultConfig>,
+        configStateFlow: MutableStateFlow<Config>
+    ) {
+        super.onSetNode(node, configStateFlow)
+        viewModel // just init view model
     }
 }

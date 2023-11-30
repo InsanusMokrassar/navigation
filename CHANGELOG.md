@@ -2,6 +2,9 @@
 
 ## 0.3.3
 
+* `MVVM`:
+  * New `ViewFragment#onSetNode` hook
+
 ## 0.3.2
 
 * `Versions`:

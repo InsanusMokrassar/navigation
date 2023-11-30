@@ -16,6 +16,11 @@ class NavigationView(
         parametersOf(this)
     }
 
+    override fun onCreate() {
+        super.onCreate()
+        viewModel // just init viewModel
+    }
+
     @Composable
     override fun onDraw() {
         super.onDraw()
