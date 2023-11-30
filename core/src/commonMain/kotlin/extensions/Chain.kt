@@ -7,24 +7,41 @@ import dev.inmo.micro_utils.common.mapOnSecond
 import dev.inmo.navigation.core.*
 import kotlinx.coroutines.flow.*
 
-val <Base> NavigationChain<Base>.onNodesStackDiffFlow: Flow<Diff<NavigationNode<out Base, Base>>>
-    get() {
-        var previous = stack.toList()
-        return flow {
-            stackFlow.collect {
-                val newValue = stack
-                val diff = previous.diff(newValue, strictComparison = true)
-                emit(diff)
-                previous = newValue.toList()
-            }
+/**
+ * Start listening the nodes list changes. Result [Flow] is **cold** flow, so, you should be noticed
+ * that the first state of this [Flow] is equal to [initial] OR (if null) the state of receiver
+ * [NavigationChain.stack]
+ *
+ * If you want to receive info about changes including **current** state of
+ * [NavigationChain.stack], you should pass [emptyList] into [initial] argument
+ *
+ * If you want in result [Flow] to always start from the creation time stack, pass
+ * [NavigationChain.stack] of receiver as [initial] argument
+ */
+fun <Base> NavigationChain<Base>.onNodesStackDiffFlow(
+    initial: List<NavigationNode<out Base, Base>>? = null
+): Flow<Diff<NavigationNode<out Base, Base>>> {
+    return flow {
+        var previous: List<NavigationNode<out Base, Base>> = initial ?: stack.toList()
+        stackFlow.collect {
+            val newValue = stack
+            val diff = previous.diff(newValue, strictComparison = true)
+            emit(diff)
+            previous = newValue.toList()
         }
     }
+}
+val <Base> NavigationChain<Base>.onNodesStackDiffFlow: Flow<Diff<NavigationNode<out Base, Base>>>
+    get() = onNodesStackDiffFlow()
+fun <Base> NavigationChain<Base>.onNodeAddedFlow(initial: List<NavigationNode<out Base, Base>>? = null) = onNodesStackDiffFlow(initial).map { it.added }.filter { it.isNotEmpty() }
 val <Base> NavigationChain<Base>.onNodeAddedFlow
-    get() = onNodesStackDiffFlow.map { it.added }.filter { it.isNotEmpty() }
+    get() = onNodeAddedFlow()
+fun <Base> NavigationChain<Base>.onNodeRemovedFlow(initial: List<NavigationNode<out Base, Base>>? = null) = onNodesStackDiffFlow(initial).map { it.removed }.filter { it.isNotEmpty() }
 val <Base> NavigationChain<Base>.onNodeRemovedFlow
-    get() = onNodesStackDiffFlow.map { it.removed }.filter { it.isNotEmpty() }
+    get() = onNodeRemovedFlow()
+fun <Base> NavigationChain<Base>.onNodeReplacedFlow(initial: List<NavigationNode<out Base, Base>>? = null) = onNodesStackDiffFlow(initial).map { it.replaced }.filter { it.isNotEmpty() }
 val <Base> NavigationChain<Base>.onNodeReplacedFlow
-    get() = onNodesStackDiffFlow.map { it.replaced }.filter { it.isNotEmpty() }
+    get() = onNodeReplacedFlow()
 
 fun <Base> NavigationChain<Base>.rootChain(): NavigationChain<Base> = parentNode ?.chain ?.rootChain() ?: this
 
