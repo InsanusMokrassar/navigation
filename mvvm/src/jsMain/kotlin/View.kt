@@ -34,6 +34,11 @@ abstract class View<Config: NavigationNodeDefaultConfig, VM: ViewModel> (
     @Composable
     protected open fun onDraw() {}
 
+    override fun onCreate() {
+        super.onCreate()
+        viewModel // just init viewModel
+    }
+
     override fun onStart() {
         super.onStart()
 

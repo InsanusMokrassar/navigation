@@ -7,7 +7,6 @@ import dev.inmo.navigation.core.NavigationChain
 import dev.inmo.navigation.core.NavigationNode
 import dev.inmo.navigation.core.extensions.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 
 fun <T> NavigationConfigsRepo<T>.enableSavingHierarchy(
@@ -36,15 +35,16 @@ fun <T> NavigationConfigsRepo<T>.enableSavingHierarchy(
         val currentSubscope = scope.LinkedSupervisorScope()
         onNodesStackDiffFlow.filter { it.isEmpty() }.subscribeSafelyWithoutExceptions(currentSubscope) {
             var needSave = false
-            needSave = it.added.any { it.value.storableInNavigationHierarchy } || needSave
-            needSave = it.replaced.any { it.first.value.storableInNavigationHierarchy || it.second.value.storableInNavigationHierarchy } || needSave
-            needSave = it.removed.any { it.value.storableInNavigationHierarchy } || needSave
+            needSave = needSave || it.added.any { it.value.storableInNavigationHierarchy }
+            needSave = needSave || it.replaced.any { it.first.value.storableInNavigationHierarchy || it.second.value.storableInNavigationHierarchy }
+            needSave = needSave || it.removed.any { it.value.storableInNavigationHierarchy }
             if (needSave) {
                 save("initialization")
             }
         }
         onNodeAddedFlow.flatten().subscribeSafelyWithoutExceptions(currentSubscope) { (_, newNode) ->
-            if (newNode.storableInNavigationHierarchy) {
+            val mustBeSaved = newNode.storableInNavigationHierarchy
+            if (mustBeSaved) {
                 save("node adding")
                 newNode.enableListeningUpdates(currentSubscope)
                 newNode.onChainAddedFlow.subscribeSafelyWithoutExceptions(scope) { newChains ->
