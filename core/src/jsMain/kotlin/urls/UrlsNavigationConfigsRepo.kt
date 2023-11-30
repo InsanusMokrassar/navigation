@@ -6,9 +6,7 @@ import dev.inmo.navigation.core.repo.NavigationConfigsRepo
 class UrlsNavigationConfigsRepo<T>(
 
 ) : NavigationConfigsRepo<T> {
-    interface
-
-    override override fun save(holder: ConfigHolder<T>) {
+    override fun save(holder: ConfigHolder<T>) {
         TODO("Not yet implemented")
     }
 
