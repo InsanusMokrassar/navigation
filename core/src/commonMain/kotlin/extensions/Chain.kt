@@ -8,12 +8,15 @@ import dev.inmo.navigation.core.*
 import kotlinx.coroutines.flow.*
 
 val <Base> NavigationChain<Base>.onNodesStackDiffFlow: Flow<Diff<NavigationNode<out Base, Base>>>
-    get() = flow {
-        var previous = stack
-        stackFlow.collect {
-            val newValue = stackFlow.value
-            emit(previous.diff(newValue, strictComparison = true))
-            previous = newValue
+    get() {
+        var previous = stack.toList()
+        return flow {
+            stackFlow.collect {
+                val newValue = stack
+                val diff = previous.diff(newValue, strictComparison = true)
+                emit(diff)
+                previous = newValue.toList()
+            }
         }
     }
 val <Base> NavigationChain<Base>.onNodeAddedFlow

@@ -1,5 +1,14 @@
 # Navigation Changelog
 
+## 0.3.4
+
+* `Core`:
+  * `Common`:
+    * Fixes in hierarchy saver/loader
+    * All `restoreHierarchy` extensions now not suspendable
+  * `JS`:
+    * Experimentally added `OneParameterUrlNavigationConfigsRepo`
+
 ## 0.3.3
 
 * `MVVM`:

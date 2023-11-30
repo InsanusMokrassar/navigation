@@ -8,6 +8,10 @@ plugins {
 apply from: "$mppProjectWithSerializationPresetPath"
 
 kotlin {
+    js(IR) {
+        binaries.executable()
+    }
+
     sourceSets {
         commonMain {
             dependencies {

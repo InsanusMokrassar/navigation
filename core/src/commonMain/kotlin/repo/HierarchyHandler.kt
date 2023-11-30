@@ -2,7 +2,7 @@ package dev.inmo.navigation.core.repo
 
 import dev.inmo.navigation.core.*
 
-suspend fun <Base> ConfigHolder.Chain<Base>.restoreHierarchy(
+fun <Base> ConfigHolder.Chain<Base>.restoreHierarchy(
     node: NavigationNode<out Base, Base>,
     dropRedundantChainsOnRestores: Boolean = false
 ): NavigationChain<Base> {
@@ -13,7 +13,7 @@ suspend fun <Base> ConfigHolder.Chain<Base>.restoreHierarchy(
     return subchain
 }
 
-suspend fun <Base> ConfigHolder.Chain<Base>.restoreHierarchy(
+fun <Base> ConfigHolder.Chain<Base>.restoreHierarchy(
     factory: NavigationNodeFactory<Base>,
     chainToRestore: NavigationChain<Base> = NavigationChain(null, factory, id),
     dropRedundantChainsOnRestores: Boolean = false
@@ -23,7 +23,7 @@ suspend fun <Base> ConfigHolder.Chain<Base>.restoreHierarchy(
     return chainToRestore
 }
 
-suspend fun <Base> ConfigHolder.Node<Base>.restoreHierarchy(
+fun <Base> ConfigHolder.Node<Base>.restoreHierarchy(
     chain: NavigationChain<Base>,
     dropRedundantChainsOnRestores: Boolean = false
 ): NavigationNode<out Base, Base>? {
@@ -48,7 +48,7 @@ suspend fun <Base> ConfigHolder.Node<Base>.restoreHierarchy(
     return node
 }
 
-suspend fun <Base> NavigationChain<Base>.restoreHierarchy(
+fun <Base> NavigationChain<Base>.restoreHierarchy(
     holder: ConfigHolder.Node<Base>,
     dropRedundantChainsOnRestores: Boolean = false
 ): NavigationNode<out Base, Base>? {
@@ -58,7 +58,7 @@ suspend fun <Base> NavigationChain<Base>.restoreHierarchy(
     )
 }
 
-suspend fun <Base> NavigationNode<out Base, Base>.restoreHierarchy(
+fun <Base> NavigationNode<out Base, Base>.restoreHierarchy(
     holder: ConfigHolder.Chain<Base>,
     dropRedundantChainsOnRestores: Boolean = false,
 ): NavigationChain<Base> {
@@ -68,7 +68,7 @@ suspend fun <Base> NavigationNode<out Base, Base>.restoreHierarchy(
     )
 }
 
-suspend fun <T> restoreHierarchy(
+fun <T> restoreHierarchy(
     holder: ConfigHolder<T>,
     factory: NavigationNodeFactory<T>,
     rootChain: NavigationChain<T> = NavigationChain(null, factory),
