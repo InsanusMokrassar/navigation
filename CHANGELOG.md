@@ -2,6 +2,11 @@
 
 ## 0.3.5
 
+* `Core`:
+  * A lot of different urgent fixes in `Chain`/`Node` flow extensions
+    * Also added `fun`ctional variants of flow getter which allow to setup initial value of result
+    flow
+
 ## 0.3.4
 
 * `Core`:
