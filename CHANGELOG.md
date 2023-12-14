@@ -2,6 +2,9 @@
 
 ## 0.3.6
 
+* `Versions`:
+  * `Serialization`: `1.6.1` -> `1.6.2`
+  * `MicroUtils`: `0.20.15` -> `0.20.22`
 * `Core`:
   * Add opportunity to use `onChangesInSubTree`/`onChangesInSubChains`/`onChangesInSubNodes`
   * Rewrite saving algorithm basing 
