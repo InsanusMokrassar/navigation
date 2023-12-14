@@ -20,7 +20,7 @@ fun <Base> NavigationChain<Base>.onChangesInSubTree(
 ): Job {
     val subscope = scope.LinkedSupervisorScope()
     val listeningJobs = mutableMapOf<NavigationNodeId, Job>()
-    onNodesStackDiffFlow.subscribeSafelyWithoutExceptions(subscope) {
+    onNodesStackDiffFlow(emptyList()).subscribeSafelyWithoutExceptions(subscope) {
         it.removed.forEach { (_, it) ->
             listeningJobs.remove(it.id) ?.cancel()
         }
@@ -31,7 +31,7 @@ fun <Base> NavigationChain<Base>.onChangesInSubTree(
         )
         onChangeInSubChain(this@onChangesInSubTree, it)
     }
-    parentNode ?.onChainRemovedFlow ?.filter {
+    parentNode ?.onChainRemovedFlow(emptyList()) ?.filter {
         it.any { it.value === this@onChangesInSubTree }
     } ?.subscribeSafelyWithoutExceptions(subscope) {
         subscope.cancel()
@@ -48,7 +48,7 @@ fun <Config : Base, Base> NavigationNode<Config, Base>.onChangesInSubTree(
     val subscope = scope.LinkedSupervisorScope()
     val listeningJobs = mutableMapOf<NavigationChain<Base>, Job>()
 
-    onChainsStackDiffFlow.subscribeSafelyWithoutExceptions(subscope) {
+    onChainsStackDiffFlow(emptyList()).subscribeSafelyWithoutExceptions(subscope) {
         it.removed.forEach { (_, it) ->
             listeningJobs.remove(it) ?.cancel()
         }
@@ -156,3 +156,23 @@ fun <Base> NavigationNode<out Base, Base>.onChangesInSubTree(
     scope,
     onChangeInSubChainOrNode
 )
+
+fun <Base> NavigationChain<Base>.onChangesInSubChains(
+    scope: CoroutineScope,
+    onChangeInSubChain: (NavigationChain<Base>, Diff<NavigationNode<out Base, Base>>) -> Unit
+) = onChangesInSubTree(scope, onChangeInSubChain, { _, _ -> /* do nothing */})
+
+fun <Base> NavigationChain<Base>.onChangesInSubNodes(
+    scope: CoroutineScope,
+    onChangeInSubNode: (NavigationNode<out Base, Base>, Diff<NavigationChain<Base>>) -> Unit
+) = onChangesInSubTree(scope, { _, _ -> /* do nothing */}, onChangeInSubNode)
+
+fun <Base> NavigationNode<out Base, Base>.onChangesInSubChains(
+    scope: CoroutineScope,
+    onChangeInSubChain: (NavigationChain<Base>, Diff<NavigationNode<out Base, Base>>) -> Unit
+) = onChangesInSubTree(scope, { _, _ -> /* do nothing */}, onChangeInSubChain)
+
+fun <Base> NavigationNode<out Base, Base>.onChangesInSubNodes(
+    scope: CoroutineScope,
+    onChangeInSubNode: (NavigationNode<out Base, Base>, Diff<NavigationChain<Base>>) -> Unit
+) = onChangesInSubTree(scope, onChangeInSubNode, { _, _ -> /* do nothing */})

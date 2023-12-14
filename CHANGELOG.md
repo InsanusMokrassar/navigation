@@ -3,7 +3,8 @@
 ## 0.3.6
 
 * `Core`:
-  * Add opportunity to use `onChangesInSubTree`
+  * Add opportunity to use `onChangesInSubTree`/`onChangesInSubChains`/`onChangesInSubNodes`
+  * Rewrite saving algorithm basing 
 
 ## 0.3.5
 
