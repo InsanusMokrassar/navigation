@@ -2,6 +2,9 @@
 
 ## 0.3.6
 
+* `Core`:
+  * Add opportunity to use `onChangesInSubTree`
+
 ## 0.3.5
 
 * `Core`:

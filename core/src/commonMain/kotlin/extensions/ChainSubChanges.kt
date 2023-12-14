@@ -1,8 +1,6 @@
 package dev.inmo.navigation.core.extensions
 
-import dev.inmo.micro_utils.common.Diff
-import dev.inmo.micro_utils.common.Either
-import dev.inmo.micro_utils.common.either
+import dev.inmo.micro_utils.common.*
 import dev.inmo.micro_utils.coroutines.LinkedSupervisorScope
 import dev.inmo.micro_utils.coroutines.subscribeSafelyWithoutExceptions
 import dev.inmo.navigation.core.NavigationChain
@@ -69,19 +67,92 @@ fun <Config : Base, Base> NavigationNode<Config, Base>.onChangesInSubTree(
     return subscope.coroutineContext.job
 }
 
+fun <Base> Either<NavigationChain<Base>, NavigationNode<out Base, Base>>.onChangesInSubTree(
+    scope: CoroutineScope,
+    onChangeInSubChainOrNode: (Either<NavigationChain<Base>, NavigationNode<out Base, Base>>, Diff<Either<NavigationChain<Base>, NavigationNode<out Base, Base>>>) -> Unit
+): Job {
+    val onChangeInSubChain: (NavigationChain<Base>, Diff<NavigationNode<out Base, Base>>) -> Unit = { chain, diff ->
+        onChangeInSubChainOrNode(
+            chain.either(),
+            Diff(
+                removed = diff.removed.map {
+                    IndexedValue(
+                        it.index,
+                        it.value.either()
+                    )
+                },
+                added = diff.added.map {
+                    IndexedValue(
+                        it.index,
+                        it.value.either()
+                    )
+                },
+                replaced = diff.replaced.map {
+                    Pair(
+                        IndexedValue(
+                            it.second.index,
+                            it.second.value.either()
+                        ),
+                        IndexedValue(
+                            it.second.index,
+                            it.second.value.either()
+                        )
+                    )
+                }
+            )
+        )
+    }
+    val onChangeInSubNode: (NavigationNode<out Base, Base>, Diff<NavigationChain<Base>>) -> Unit = { node, diff ->
+        onChangeInSubChainOrNode(
+            node.either(),
+            Diff(
+                removed = diff.removed.map {
+                    IndexedValue(
+                        it.index,
+                        it.value.either()
+                    )
+                },
+                added = diff.added.map {
+                    IndexedValue(
+                        it.index,
+                        it.value.either()
+                    )
+                },
+                replaced = diff.replaced.map {
+                    Pair(
+                        IndexedValue(
+                            it.second.index,
+                            it.second.value.either()
+                        ),
+                        IndexedValue(
+                            it.second.index,
+                            it.second.value.either()
+                        )
+                    )
+                }
+            )
+        )
+    }
+
+    return mapOnFirst {
+        it.onChangesInSubTree(scope, onChangeInSubChain, onChangeInSubNode)
+    } ?: mapOnSecond {
+        it.onChangesInSubTree(scope, onChangeInSubNode, onChangeInSubChain)
+    } ?: error("$this must contains node or chain")
+}
+
 fun <Base> NavigationChain<Base>.onChangesInSubTree(
     scope: CoroutineScope,
     onChangeInSubChainOrNode: (Either<NavigationChain<Base>, NavigationNode<out Base, Base>>, Diff<Either<NavigationChain<Base>, NavigationNode<out Base, Base>>>) -> Unit
-): Job = onChangesInSubTree(
-    scope = scope,
-    onChangeInSubChain = { chain, diff ->
-        onChangeInSubChainOrNode(
-            chain.either(),
-            Diff(diff.added)
-        )
-    },
-    onChangeInSubNode = { node, diff ->
-
-    }
+) = either<NavigationChain<Base>, NavigationNode<out Base, Base>>().onChangesInSubTree(
+    scope,
+    onChangeInSubChainOrNode
 )
 
+fun <Base> NavigationNode<out Base, Base>.onChangesInSubTree(
+    scope: CoroutineScope,
+    onChangeInSubChainOrNode: (Either<NavigationChain<Base>, NavigationNode<out Base, Base>>, Diff<Either<NavigationChain<Base>, NavigationNode<out Base, Base>>>) -> Unit
+) = this.either<NavigationChain<Base>, NavigationNode<out Base, Base>>().onChangesInSubTree(
+    scope,
+    onChangeInSubChainOrNode
+)
