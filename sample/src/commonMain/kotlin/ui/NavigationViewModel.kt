@@ -66,12 +66,13 @@ class NavigationViewModel (
         )
     }
 
-    fun createNextNode() {
+    fun createNextNode(storable: Boolean) {
         val config = node.config
 
         node.chain.push(
             config.copy(
-                text = ".${config.text}"
+                text = "${if (storable) "+" else "-"}${config.text}",
+                storableInNavigationHierarchy = storable
             )
         )
     }

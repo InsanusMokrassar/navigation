@@ -48,11 +48,19 @@ class NavigationViewFragment : ViewFragment<NavigationViewModel, NavigationViewC
                 }
                 IconButton(
                     {
-                        viewModel.createNextNode()
+                        viewModel.createNextNode(true)
                     },
                     Modifier.align(Alignment.CenterVertically)
                 ) {
                     Text(stringResource(R.string.forward), color = MaterialTheme.colorScheme.primary)
+                }
+                IconButton(
+                    {
+                        viewModel.createNextNode(false)
+                    },
+                    Modifier.align(Alignment.CenterVertically)
+                ) {
+                    Text(stringResource(R.string.forwardUnstorable), color = MaterialTheme.colorScheme.primary)
                 }
             }
             Column {

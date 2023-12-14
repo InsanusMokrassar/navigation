@@ -6,5 +6,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class NavigationViewConfig(
     override val id: String,
-    val text: String
+    val text: String,
+    override val storableInNavigationHierarchy: Boolean = true
 ) : NavigationNodeDefaultConfig

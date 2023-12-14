@@ -2,5 +2,6 @@
     <string name="app_name">NavigationMVVMSample</string>
     <string name="back">◀</string>
     <string name="forward">▶</string>
+    <string name="forwardUnstorable">▷</string>
     <string name="subchain">▼</string>
 </resources>
