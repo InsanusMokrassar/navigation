@@ -32,7 +32,7 @@ fun <T> NavigationConfigsRepo<T>.enableSavingHierarchy(
         val eventsForSave = mutableSetOf<String>()
 
         diff.added.forEach { (_, it) ->
-            if ((it.config as? NavigationNodeDefaultConfig) ?.storableInNavigationHierarchy != false) {
+            if (it.stackStorableInNavigationHierarchy()) {
                 eventsForSave.add("node adding (${it.config})")
             }
         }

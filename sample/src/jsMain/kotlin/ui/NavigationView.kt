@@ -52,11 +52,20 @@ class NavigationView(
                 Button(
                     {
                         onClick {
-                            viewModel.createNextNode()
+                            viewModel.createNextNode(true)
                         }
                     },
                 ) {
-                    Text(">")
+                    Text("+>")
+                }
+                Button(
+                    {
+                        onClick {
+                            viewModel.createNextNode(false)
+                        }
+                    },
+                ) {
+                    Text("->")
                 }
             }
             Div {
