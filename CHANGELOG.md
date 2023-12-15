@@ -2,6 +2,9 @@
 
 ## 0.3.7
 
+* `Core`:
+  * All callbacks in `onChangesInSubTree`/`onChangesInSubChains`/`onChangesInSubNodes` suspendable
+
 ## 0.3.6
 
 * `Versions`:
