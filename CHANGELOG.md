@@ -1,5 +1,10 @@
 # Navigation Changelog
 
+## 0.3.8
+
+* `Core`:
+  * Fixes in saving of hierarchy: now changes in configs taking in care
+
 ## 0.3.7
 
 * `Core`:

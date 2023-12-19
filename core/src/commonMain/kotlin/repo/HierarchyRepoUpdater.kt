@@ -22,6 +22,9 @@ fun <T> NavigationConfigsRepo<T>.enableSavingHierarchy(
         save(chainToSave.storeHierarchy() ?: return)
         logger.d { "Completed saving of hierarchy on $event" }
     }
+
+    val nodeConfigsChangesJobs = mutableMapOf<NavigationNode<out T, T>, Job>()
+
     return listeningChain.onChangesInSubChains(
         scope = scope
     ) { chain, diff ->
@@ -34,12 +37,18 @@ fun <T> NavigationConfigsRepo<T>.enableSavingHierarchy(
         diff.added.forEach { (_, it) ->
             if (it.stackStorableInNavigationHierarchy()) {
                 eventsForSave.add("node adding (${it.config})")
+                nodeConfigsChangesJobs[it] = it.configState.subscribeSafelyWithoutExceptions(scope) { _ ->
+                    if (it.stackStorableInNavigationHierarchy()) {
+                        save("config change")
+                    }
+                }
             }
         }
 
         diff.removed.forEach { (_, it) ->
             if ((it.config as? NavigationNodeDefaultConfig) ?.storableInNavigationHierarchy != false) {
                 eventsForSave.add("node removing (${it.config})")
+                nodeConfigsChangesJobs.remove(it) ?.cancel()
             }
         }
 
