@@ -1,5 +1,16 @@
 # Navigation Changelog
 
+## 0.3.9
+
+* `Versions`:
+  * `Kotlin`: `1.9.21` -> `1.9.22`
+  * `MicroUtils`: `0.20.22` -> `0.20.31`
+  * `KSLog`: `1.3.1` -> `1.3.2`
+* `Core`:
+  * Rename `CookiesNavigationConfigsRepo` to `StorageNavigationConfigsRepo`
+  * Add opportunity to set the `Storage` in `StorageNavigationConfigsRepo`
+  * New configs repo `UrlParametersNavigationConfigsRepo`
+
 ## 0.3.8
 
 * `Core`:
