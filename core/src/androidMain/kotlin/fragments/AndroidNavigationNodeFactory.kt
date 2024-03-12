@@ -7,6 +7,7 @@ import dev.inmo.micro_utils.coroutines.FlowOnHierarchyChangeListener
 import dev.inmo.micro_utils.coroutines.setOnHierarchyChangeListenerRecursively
 import dev.inmo.navigation.core.*
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
+import dev.inmo.navigation.core.fragments.transactions.FragmentTransactionConfigurator
 
 class AndroidNavigationNodeFactory<T : NavigationNodeDefaultConfig>(
     private val fragmentManager: FragmentManager,
@@ -15,6 +16,7 @@ class AndroidNavigationNodeFactory<T : NavigationNodeDefaultConfig>(
         (rootView as ViewGroup).setOnHierarchyChangeListenerRecursively(it)
     },
     private val manualHierarchyCheckerDelayMillis: Long? = 100L,
+    private val fragmentTransactionConfigurator: FragmentTransactionConfigurator<T>? = null,
     private val fragmentKClassResolver: FragmentsClassesFactory<T>
 ) : NavigationNodeFactory<T> {
     override fun createNode(navigationChain: NavigationChain<T>, config: T): NavigationNode<out T, T>? {
@@ -25,7 +27,8 @@ class AndroidNavigationNodeFactory<T : NavigationNodeDefaultConfig>(
             fragmentManager,
             rootView,
             flowOnHierarchyChangeListener,
-            manualHierarchyCheckerDelayMillis
+            manualHierarchyCheckerDelayMillis,
+            fragmentTransactionConfigurator = fragmentTransactionConfigurator
         )
     }
 }

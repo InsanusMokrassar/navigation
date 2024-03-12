@@ -11,22 +11,33 @@ import kotlin.reflect.KClass
 class AndroidSPConfigsRepo<T: Any>(
     private val sharedPreferences: SharedPreferences,
     baseConfigKClass: KClass<T>,
-    configKClasses: List<KClass<out T>>,
-    private val key: String = "navigation"
+    private val key: String = "navigation",
+    private val json: Json
 ) : NavigationConfigsRepo<T> {
-    private val json: Json = Json(Json.Default) {
-        ignoreUnknownKeys = true
-        serializersModule = SerializersModule {
-            fun <T : Any> poly(kclass: KClass<T>) {
-                @OptIn(InternalSerializationApi::class)
-                polymorphic(Any::class, kclass, kclass.serializer())
-            }
-            for (it in configKClasses) {
-                poly(it)
+    private val serializer = ConfigHolder.serializer(PolymorphicSerializer<T>(baseConfigKClass))
+
+    constructor(
+        sharedPreferences: SharedPreferences,
+        baseConfigKClass: KClass<T>,
+        configKClasses: List<KClass<out T>>,
+        key: String = "navigation",
+    ) : this(
+        sharedPreferences,
+        baseConfigKClass,
+        key,
+        Json(Json.Default) {
+            ignoreUnknownKeys = true
+            serializersModule = SerializersModule {
+                fun <T : Any> poly(kclass: KClass<T>) {
+                    @OptIn(InternalSerializationApi::class)
+                    polymorphic(Any::class, kclass, kclass.serializer())
+                }
+                for (it in configKClasses) {
+                    poly(it)
+                }
             }
         }
-    }
-    private val serializer = ConfigHolder.serializer(PolymorphicSerializer<T>(baseConfigKClass))
+    )
 
     constructor(
         sharedPreferences: SharedPreferences,
@@ -52,5 +63,18 @@ class AndroidSPConfigsRepo<T: Any>(
         return sharedPreferences.getString(key, null) ?.let {
             json.decodeFromString(serializer, it)
         }
+    }
+
+    companion object {
+        inline operator fun <reified T : Any>invoke(
+            sharedPreferences: SharedPreferences,
+            key: String = "navigation",
+            json: Json
+        ) = AndroidSPConfigsRepo(sharedPreferences, T::class, key, json)
+        inline operator fun <reified T : Any>invoke(
+            sharedPreferences: SharedPreferences,
+            configKClasses: List<KClass<out T>>,
+            key: String = "navigation",
+        ) = AndroidSPConfigsRepo(sharedPreferences, T::class, configKClasses, key)
     }
 }

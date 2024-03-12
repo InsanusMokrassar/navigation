@@ -10,6 +10,7 @@ import dev.inmo.micro_utils.coroutines.setOnHierarchyChangeListenerRecursively
 import dev.inmo.navigation.core.AndroidSPConfigsRepo
 import dev.inmo.navigation.core.FragmentsClassesFactory
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
+import dev.inmo.navigation.core.fragments.transactions.FragmentTransactionConfigurator
 import dev.inmo.navigation.core.initNavigation
 import dev.inmo.navigation.core.repo.NavigationConfigsRepo
 import kotlinx.coroutines.CoroutineScope
@@ -43,6 +44,7 @@ inline fun <reified T : NavigationNodeDefaultConfig> AppCompatActivity.initNavig
     },
     manualHierarchyCheckerDelayMillis: Long? = 100L,
     dropRedundantChainsOnRestore: Boolean = false,
+    fragmentTransactionConfigurator: FragmentTransactionConfigurator<T>? = null,
     noinline fragmentsClassesFactory: FragmentsClassesFactory<T> = { config ->
         navigationFragmentInfoProviders.firstNotNullOfOrNull { it.resolveFragmentKClass(config) }
     }
@@ -55,5 +57,6 @@ inline fun <reified T : NavigationNodeDefaultConfig> AppCompatActivity.initNavig
     flowOnHierarchyChangeListener = flowOnHierarchyChangeListener,
     manualHierarchyCheckerDelayMillis = manualHierarchyCheckerDelayMillis,
     dropRedundantChainsOnRestore = dropRedundantChainsOnRestore,
+    fragmentTransactionConfigurator = fragmentTransactionConfigurator,
     fragmentsClassesFactory = fragmentsClassesFactory
 )
