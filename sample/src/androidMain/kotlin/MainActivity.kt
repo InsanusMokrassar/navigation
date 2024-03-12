@@ -8,6 +8,7 @@ import dev.inmo.micro_utils.startup.launcher.Config
 import dev.inmo.micro_utils.startup.launcher.StartLauncherPlugin
 import dev.inmo.micro_utils.startup.plugin.StartPlugin
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
+import dev.inmo.navigation.core.fragments.transactions.FragmentTransactionConfigurator
 import dev.inmo.navigation.mvvm.NavigationMVVMSingleActivity
 import dev.inmo.navigation.sample.ui.LoadingFragment
 import dev.inmo.navigation.sample.ui.NavigationViewConfig
@@ -23,6 +24,15 @@ class MainActivity : NavigationMVVMSingleActivity() {
             single<Resources> { mainActivity.resources }
             single<Application> { mainActivity.application }
         }
+    }
+
+    override val fragmentTransactionConfigurator: FragmentTransactionConfigurator<NavigationNodeDefaultConfig>? = FragmentTransactionConfigurator.Default {
+        setCustomAnimations(
+            /* enter = */ R.anim.slide_in,
+            /* exit = */ R.anim.fade_out,
+            /* popEnter = */ R.anim.fade_in,
+            /* popExit = */ R.anim.slide_out,
+        )
     }
     private val plugins: List<StartPlugin> by lazy {
         listOf(

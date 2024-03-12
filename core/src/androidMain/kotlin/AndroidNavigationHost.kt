@@ -10,6 +10,7 @@ import dev.inmo.micro_utils.common.rootView
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 import dev.inmo.navigation.core.fragments.AndroidNavigationNodeFactory
+import dev.inmo.navigation.core.fragments.transactions.FragmentTransactionConfigurator
 import dev.inmo.navigation.core.repo.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
@@ -21,6 +22,7 @@ open class AndroidNavigationHost<T : NavigationNodeDefaultConfig>(
     protected val startChain: ConfigHolder<T>,
     protected val manualHierarchyCheckerDelayMillis: Long? = 100L,
     protected val dropRedundantChainsOnRestore: Boolean = false,
+    protected val fragmentTransactionConfigurator: FragmentTransactionConfigurator<T>? = null,
     protected val fragmentsClassesFactory: FragmentsClassesFactory<T>
 ) {
     var job: Job? = null
@@ -45,6 +47,7 @@ open class AndroidNavigationHost<T : NavigationNodeDefaultConfig>(
                     rootView,
                     flowOnHierarchyChangeListener,
                     manualHierarchyCheckerDelayMillis,
+                    fragmentTransactionConfigurator,
                     fragmentsClassesFactory
                 )
                 val nodesFactory = NavigationNodeFactory<T> { navigationChain, config ->
@@ -80,12 +83,14 @@ inline fun <reified T : NavigationNodeDefaultConfig> AppCompatActivity.initNavig
     },
     manualHierarchyCheckerDelayMillis: Long? = 100L,
     dropRedundantChainsOnRestore: Boolean = false,
+    fragmentTransactionConfigurator: FragmentTransactionConfigurator<T>? = null,
     noinline fragmentsClassesFactory: FragmentsClassesFactory<T>
 ) = AndroidNavigationHost(
     configsRepo,
     startChain,
     manualHierarchyCheckerDelayMillis,
     dropRedundantChainsOnRestore,
+    fragmentTransactionConfigurator,
     fragmentsClassesFactory
 ).apply {
     start(scope, fragmentManager, rootView, flowOnHierarchyChangeListener)
@@ -115,6 +120,7 @@ inline fun <reified T : NavigationNodeDefaultConfig> AppCompatActivity.initNavig
     },
     manualHierarchyCheckerDelayMillis: Long? = 100L,
     dropRedundantChainsOnRestore: Boolean = false,
+    fragmentTransactionConfigurator: FragmentTransactionConfigurator<T>? = null,
     noinline fragmentsClassesFactory: FragmentsClassesFactory<T>
 ) = initNavigation(
     ConfigHolder.Chain(
@@ -131,5 +137,6 @@ inline fun <reified T : NavigationNodeDefaultConfig> AppCompatActivity.initNavig
     flowOnHierarchyChangeListener,
     manualHierarchyCheckerDelayMillis,
     dropRedundantChainsOnRestore,
+    fragmentTransactionConfigurator,
     fragmentsClassesFactory
 )

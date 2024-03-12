@@ -1,5 +1,7 @@
 package dev.inmo.navigation.sample.ui
 
+import android.os.Bundle
+import android.transition.TransitionInflater
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import dev.inmo.kslog.common.d
 import dev.inmo.navigation.core.NavigationNodeState
 import dev.inmo.navigation.mvvm.NavigationFragmentComposePlace
 import dev.inmo.navigation.mvvm.ViewFragment
@@ -64,10 +67,18 @@ class NavigationViewFragment : ViewFragment<NavigationViewModel, NavigationViewC
                 }
             }
             Column {
+                Log.d { "Current list of subnodes: ${viewModel.subnodesIds.joinToString { it }}" }
                 for (it in viewModel.subnodesIds) {
                     NavigationFragmentComposePlace(it)
                 }
             }
         }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val inflater = TransitionInflater.from(requireContext())
+        enterTransition = inflater.inflateTransition(R.transition.slide_right)
+        exitTransition = inflater.inflateTransition(R.transition.fade)
     }
 }

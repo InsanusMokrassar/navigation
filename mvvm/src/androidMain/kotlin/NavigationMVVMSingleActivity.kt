@@ -9,12 +9,14 @@ import dev.inmo.micro_utils.coroutines.doInUI
 import dev.inmo.micro_utils.coroutines.launchSafelyWithoutExceptions
 import dev.inmo.micro_utils.koin.getAllDistinct
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
+import dev.inmo.navigation.core.fragments.transactions.FragmentTransactionConfigurator
 import dev.inmo.navigation.core.navigationTag
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.koin.core.component.KoinComponent
 
 abstract class NavigationMVVMSingleActivity : AppCompatActivity(), KoinComponent {
+    protected open val fragmentTransactionConfigurator: FragmentTransactionConfigurator<NavigationNodeDefaultConfig>? = null
     protected open fun allocateLoadingFragment(): Fragment? = null
     protected abstract fun createInitialConfig(rootFragmentTag: String): NavigationNodeDefaultConfig
 
@@ -49,6 +51,7 @@ abstract class NavigationMVVMSingleActivity : AppCompatActivity(), KoinComponent
                 createInitialConfig(rootFragmentTag),
                 getKoin().getAllDistinct<NavigationFragmentInfoProvider>(),
                 manualHierarchyCheckerDelayMillis = 20L,
+                fragmentTransactionConfigurator = fragmentTransactionConfigurator,
                 dropRedundantChainsOnRestore = true
             )
         }

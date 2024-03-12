@@ -9,7 +9,7 @@ import dev.inmo.kslog.common.d
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.*
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
-import dev.inmo.navigation.core.fragments.view.NavigationFragmentContainerView
+import dev.inmo.navigation.core.fragments.transactions.FragmentTransactionConfigurator
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.reflect.KClass
@@ -22,7 +22,8 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
     private val rootView: View,
     private val flowOnHierarchyChangeListener: FlowOnHierarchyChangeListener,
     private val manualHierarchyCheckerDelayMillis: Long? = 100L,
-    override val id: NavigationNodeId = NavigationNodeId()
+    override val id: NavigationNodeId = NavigationNodeId(),
+    private val fragmentTransactionConfigurator: FragmentTransactionConfigurator<Base>? = null
 ) : NavigationNode<Config, Base>() {
     override val log: KSLog by lazy {
         TagLogger("${this::class.simpleName}/${fragmentKClass.simpleName}")
@@ -46,6 +47,9 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
             view.id = view.id.takeIf { it != NO_ID } ?: View.generateViewId()
             fragmentManager.beginTransaction().apply {
                 runCatching {
+                    fragmentTransactionConfigurator ?.apply {
+                        onPlace(this@AndroidFragmentNode)
+                    }
                     replace(view.id, it)
                 }.onSuccess {
                     commit()
@@ -64,6 +68,9 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
         fragment ?.let {
             fragmentManager.beginTransaction().apply {
                 runCatching {
+                    fragmentTransactionConfigurator ?.apply {
+                        onRemove(this@AndroidFragmentNode)
+                    }
                     remove(it)
                 }.onSuccess {
                     commit()
@@ -84,10 +91,11 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
             (flowOf(state) + statesFlow).filter { it == NavigationNodeState.RESUMED }.subscribeSafelyWithoutExceptions(subscope) {
                 val subsubscope = subscope.LinkedSupervisorScope()
 
-                placeFragment()
+//                placeFragment()
 
-                flowOnHierarchyChangeListener.onChildViewAdded.filterNot {
-                    it.second.navigationTag != viewTag
+                flowOnHierarchyChangeListener.onChildViewAdded.filter {
+                    log.d { "Added views: ${it}, subview navigation tag: ${it.second.navigationTag}" }
+                    it.second.navigationTag == viewTag
                 }.subscribeSafelyWithoutExceptions(subsubscope) {
                     placeFragment()
                 }
