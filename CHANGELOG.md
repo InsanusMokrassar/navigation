@@ -2,6 +2,12 @@
 
 ## 0.4.0
 
+* `Versions`:
+  * `Kotlin`: `1.9.22` -> `1.9.23`
+  * `Coroutines`: `1.7.3` -> `1.8.0`
+  * `Serialization`: `1.6.2` -> `1.6.3`
+  * `MicroUtils`: `0.20.31` -> `0.20.38`
+
 ## 0.3.9
 
 * `Versions`:
