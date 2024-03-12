@@ -91,8 +91,6 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
             (flowOf(state) + statesFlow).filter { it == NavigationNodeState.RESUMED }.subscribeSafelyWithoutExceptions(subscope) {
                 val subsubscope = subscope.LinkedSupervisorScope()
 
-//                placeFragment()
-
                 flowOnHierarchyChangeListener.onChildViewAdded.filter {
                     log.d { "Added views: ${it}, subview navigation tag: ${it.second.navigationTag}" }
                     it.second.navigationTag == viewTag
