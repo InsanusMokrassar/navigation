@@ -62,7 +62,7 @@ class UrlParametersNavigationConfigsRepo<T : Any>(
         fun buildUrl(
             origin: String = document.location ?.origin ?: ""
         ): String {
-            val pathname = if (pathSegments.isEmpty()) {
+            val pathname = if (pathSegments.isNotEmpty()) {
                 pathSegments.joinToString("/", prefix = "/")
             } else {
                 ""

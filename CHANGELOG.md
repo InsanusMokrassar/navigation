@@ -1,9 +1,17 @@
 # Navigation Changelog
 
-## 0.4.0
+## 0.4.1
 
 * `Versions`:
   * `Kotlin`: `1.9.22` -> `1.9.23`
+  * `MicroUtils`: `0.20.38` -> `0.20.43`
+  * `KSLog`: `1.3.2` -> `1.3.3`
+  * `UUID`: `0.8.2` -> `0.8.4`
+  * `Koin`: `3.5.3` -> `3.5.4`
+
+## 0.4.0
+
+* `Versions`:
   * `Coroutines`: `1.7.3` -> `1.8.0`
   * `Serialization`: `1.6.2` -> `1.6.3`
   * `MicroUtils`: `0.20.31` -> `0.20.38`
