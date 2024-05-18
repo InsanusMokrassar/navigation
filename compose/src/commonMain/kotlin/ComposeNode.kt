@@ -1,6 +1,8 @@
 package dev.inmo.navigation.compose
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import dev.inmo.kslog.common.logger
 import dev.inmo.micro_utils.coroutines.SpecialMutableStateFlow
 import dev.inmo.navigation.core.NavigationChain
 import dev.inmo.navigation.core.NavigationNode
@@ -8,6 +10,7 @@ import dev.inmo.navigation.core.NavigationNodeId
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlin.jvm.JvmName
 
 abstract class ComposeNode<Config : Base, Base>(
     config: Config,
@@ -23,7 +26,7 @@ abstract class ComposeNode<Config : Base, Base>(
 
     override fun onResume() {
         super.onResume()
-        drawerState.value = this::onDraw
+        drawerState.value = @Composable { onDraw() }
     }
 
     override fun onPause() {
@@ -33,4 +36,17 @@ abstract class ComposeNode<Config : Base, Base>(
 
     @Composable
     protected open fun onDraw() {}
+
+    @Composable
+    protected open fun SubchainsHost(filter: (NavigationChain<Base>) -> Boolean) {
+        val subchainsState = subchainsFlow.collectAsState()
+        val rawSubchains = subchainsState.value
+        val filteredSubchains = rawSubchains.filter(filter)
+        filteredSubchains.forEach {
+            it.StartInCompose()
+        }
+    }
+
+    @Composable
+    protected fun SubchainsHost() = SubchainsHost { true }
 }

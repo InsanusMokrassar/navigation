@@ -14,6 +14,8 @@ kotlin {
             dependencies {
                 api project(":navigation.core")
                 api libs.microutils.coroutines.compose
+                api libs.microutils.koin
+                api libs.koin.core
                 api compose.runtime
             }
         }
@@ -21,6 +23,13 @@ kotlin {
         jsMain {
             dependencies {
                 api compose.web.core
+            }
+        }
+
+        androidMain {
+            dependencies {
+                api compose.ui
+                api libs.android.compose.activity
             }
         }
     }

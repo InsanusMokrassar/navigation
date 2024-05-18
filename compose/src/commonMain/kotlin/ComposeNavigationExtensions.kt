@@ -4,9 +4,11 @@ import androidx.compose.runtime.*
 import dev.inmo.micro_utils.coroutines.subscribeSafelyWithoutExceptions
 import dev.inmo.navigation.core.NavigationChain
 import dev.inmo.navigation.core.NavigationNode
+import dev.inmo.navigation.core.extensions.onChainRemovedFlow
 import dev.inmo.navigation.core.extensions.onNodeRemovedFlow
 import dev.inmo.navigation.core.onDestroyFlow
 import kotlinx.coroutines.flow.dropWhile
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.take
 
 @Composable
@@ -22,11 +24,15 @@ internal fun <Base> NavigationChain<Base>.StartInCompose(
 ) {
     key(onDismiss) {
         onDismiss ?.let {
-            val scope = rememberCoroutineScope()
+            key (parentNode) {
+                parentNode ?.let { parentNode ->
+                    val scope = rememberCoroutineScope()
 
-            remember {
-                onNodeRemovedFlow().dropWhile { stackFlow.value.isNotEmpty() }.subscribeSafelyWithoutExceptions(scope) {
-                    onDismiss(this)
+                    remember {
+                        parentNode.onChainRemovedFlow.filter { it.any { it.value === this@StartInCompose } }.subscribeSafelyWithoutExceptions(scope) {
+                            onDismiss(this)
+                        }
+                    }
                 }
             }
         }
@@ -34,12 +40,6 @@ internal fun <Base> NavigationChain<Base>.StartInCompose(
 
     CompositionLocalProvider(LocalNavigationChainProvider<Base>() provides this) {
         block()
-    }
-    DisposableEffect(this) {
-        onDispose {
-            clear()
-            dropItself()
-        }
     }
 }
 
@@ -83,14 +83,6 @@ internal fun <Base> NavigationNode<*, Base>?.StartInCompose(
                         onDismiss(node)
                     }
                 }
-            }
-        }
-    }
-
-    DisposableEffect(this) {
-        onDispose {
-            this@StartInCompose ?.let {
-                this@StartInCompose.chain.drop(this@StartInCompose)
             }
         }
     }

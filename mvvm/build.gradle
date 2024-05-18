@@ -13,6 +13,7 @@ kotlin {
         commonMain {
             dependencies {
                 api project(":navigation.core")
+                api project(":navigation.compose")
                 api libs.microutils.coroutines.compose
                 api libs.microutils.koin
                 api libs.koin.core

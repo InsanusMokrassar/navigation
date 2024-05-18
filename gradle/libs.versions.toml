@@ -26,6 +26,7 @@ android-multidex = "2.0.1"
 android-core-ktx = "1.12.0"
 android-appcompat = "1.6.1"
 android-material = "1.11.0"
+android-compose-activity = "1.9.0"
 android-compose-material3 = "1.2.1"
 
 github-release = "2.5.2"
@@ -60,6 +61,7 @@ android-core-ktx = { module = "androidx.core:core-ktx", version.ref = "android-c
 android-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "android-appcompat" }
 android-material = { module = "com.google.android.material:material", version.ref = "android-material" }
 android-compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "android-compose-material3" }
+android-compose-activity = { module = "androidx.activity:activity-compose", version.ref = "android-compose-activity" }
 
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }

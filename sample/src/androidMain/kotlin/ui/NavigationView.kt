@@ -1,35 +1,28 @@
 package dev.inmo.navigation.sample.ui
 
-import android.os.Bundle
-import android.transition.TransitionInflater
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import dev.inmo.kslog.common.d
-import dev.inmo.navigation.core.NavigationNodeState
-import dev.inmo.navigation.mvvm.NavigationFragmentComposePlace
-import dev.inmo.navigation.mvvm.ViewFragment
+import dev.inmo.navigation.core.NavigationChain
+import dev.inmo.navigation.core.NavigationNodeId
+import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
+import dev.inmo.navigation.mvvm.JvmComposeView
 import dev.inmo.navigation.sample.R
 import kotlin.reflect.KClass
 
-class NavigationViewFragment : ViewFragment<NavigationViewModel, NavigationViewConfig>() {
+class NavigationView(
+    config: NavigationViewConfig,
+    chain: NavigationChain<NavigationNodeDefaultConfig>,
+    id: NavigationNodeId = NavigationNodeId()
+) : JvmComposeView<NavigationViewConfig, NavigationNodeDefaultConfig, NavigationViewModel>(config, chain, id) {
     override val viewModelClass: KClass<NavigationViewModel>
         get() = NavigationViewModel::class
 
-    override val contentBoxModifier: Modifier = Modifier
-
     @Composable
-    override fun BoxScope.Content() {
+    override fun onDraw() {
         Column {
             Row {
                 Text(config.text, Modifier.align(Alignment.CenterVertically), color = MaterialTheme.colorScheme.primary)
@@ -67,18 +60,15 @@ class NavigationViewFragment : ViewFragment<NavigationViewModel, NavigationViewC
                 }
             }
             Column {
-                Log.d { "Current list of subnodes: ${viewModel.subnodesIds.joinToString { it }}" }
-                for (it in viewModel.subnodesIds) {
-                    NavigationFragmentComposePlace(it)
-                }
+                SubchainsHost()
             }
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        val inflater = TransitionInflater.from(requireContext())
-        enterTransition = inflater.inflateTransition(R.transition.slide_right)
-        exitTransition = inflater.inflateTransition(R.transition.fade)
-    }
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        val inflater = TransitionInflater.from(requireContext())
+//        enterTransition = inflater.inflateTransition(R.transition.slide_right)
+//        exitTransition = inflater.inflateTransition(R.transition.fade)
+//    }
 }

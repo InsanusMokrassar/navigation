@@ -2,11 +2,12 @@ package dev.inmo.navigation.sample.ui
 
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import dev.inmo.navigation.compose.NavigationSubChain
 import dev.inmo.navigation.compose.NavigationSubNode
 import dev.inmo.navigation.core.NavigationChain
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
-import dev.inmo.navigation.mvvm.View
+import dev.inmo.navigation.mvvm.compose.ComposeView
 import org.jetbrains.compose.web.css.DisplayStyle
 import org.jetbrains.compose.web.css.display
 import org.jetbrains.compose.web.dom.Button
@@ -18,7 +19,7 @@ import org.koin.core.parameter.parametersOf
 class NavigationView(
     config: NavigationViewConfig,
     chain: NavigationChain<NavigationNodeDefaultConfig>
-) : View<NavigationViewConfig, NavigationViewModel>(config, chain) {
+) : ComposeView<NavigationViewConfig, NavigationNodeDefaultConfig, NavigationViewModel>(config, chain) {
     override val viewModel: NavigationViewModel by inject {
         parametersOf(this)
     }
@@ -71,8 +72,11 @@ class NavigationView(
                 }
             }
             Div {
-                for (it in viewModel.subnodesIds) {
-                    Div({ id(it) })
+                SubchainsHost()
+                if (subchainsFlow.collectAsState().value.isEmpty() && config.text != "wp") {
+                    NavigationSubChain {
+                        NavigationSubNode(NavigationViewConfig("gg", "wp"))
+                    }
                 }
             }
         }
