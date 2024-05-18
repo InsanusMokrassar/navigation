@@ -158,11 +158,11 @@ abstract class NavigationNode<Config : Base, Base>(
         return subscope.coroutineContext.job
     }
 
-    class Empty<T>(
-        override val chain: NavigationChain<T>,
+    class Empty<T : Base, Base>(
+        override val chain: NavigationChain<Base>,
         config: T,
         id: NavigationNodeId = NavigationNodeId()
-    ) : NavigationNode<T, T>(id) {
+    ) : NavigationNode<T, Base>(id) {
         override val configState: StateFlow<T> = MutableStateFlow(config).asStateFlow()
     }
 }
