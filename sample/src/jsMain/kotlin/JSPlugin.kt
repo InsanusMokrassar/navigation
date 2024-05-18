@@ -14,9 +14,11 @@ import dev.inmo.navigation.core.initNavigation
 import dev.inmo.navigation.core.repo.ConfigHolder
 import dev.inmo.navigation.core.repo.NavigationConfigsRepo
 import dev.inmo.navigation.core.urls.OneParameterUrlNavigationConfigsRepo
+import kotlinx.browser.document
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.modules.SerializersModule
+import org.jetbrains.compose.web.renderComposable
 import org.koin.core.Koin
 import org.koin.core.module.Module
 
@@ -77,5 +79,23 @@ object JSPlugin : StartPlugin {
             dropRedundantChainsOnRestore = true,
             nodesFactory = koin.nodeFactory,
         )
+
+//        renderComposable("root") {
+//            dev.inmo.navigation.compose.initNavigation(
+//                defaultStartChain = ConfigHolder.Chain(
+//                    ConfigHolder.Node(
+//                        NavigationViewConfig(
+//                            "root",
+//                            ">"
+//                        ),
+//                        null,
+//                        listOf()
+//                    ),
+//                ),
+//                configsRepo = koin.get(),
+//                nodesFactory = koin.nodeFactory,
+//                dropRedundantChainsOnRestore = true,
+//            )
+//        }
     }
 }

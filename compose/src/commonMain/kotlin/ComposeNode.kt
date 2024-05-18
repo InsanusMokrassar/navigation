@@ -1,4 +1,4 @@
-package dev.inmo.navigation.mvvm.compose
+package dev.inmo.navigation.compose
 
 import androidx.compose.runtime.Composable
 import dev.inmo.micro_utils.coroutines.SpecialMutableStateFlow
@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-abstract class ComposeView<Config : Base, Base>(
+abstract class ComposeNode<Config : Base, Base>(
     config: Config,
     override val chain: NavigationChain<Base>,
     id: NavigationNodeId = NavigationNodeId()

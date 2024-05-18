@@ -18,8 +18,8 @@ import kotlinx.coroutines.withContext
 
 class NavigationViewModel (
     private val model: NavigationModel,
-    private val node: NavigationNode<NavigationViewConfig, NavigationNodeDefaultConfig>,
-) : ViewModel(node) {
+    private val node: NavigationNode<NavigationViewConfig, NavigationViewConfig>,
+) : ViewModel<NavigationViewConfig>(node) {
     private val _subnodesIds = mutableStateListOf<String>()
     val subnodesIds: List<String> = _subnodesIds
 

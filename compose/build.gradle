@@ -6,28 +6,21 @@ plugins {
 }
 
 apply from: "$mppProjectWithSerializationPresetPath"
+apply from: "$publishGradlePath"
 
 kotlin {
-    js(IR) {
-        binaries.executable()
-    }
-
     sourceSets {
         commonMain {
             dependencies {
                 api project(":navigation.core")
-                api project(":navigation.mvvm")
-                api libs.microutils.startup.launcher
+                api libs.microutils.coroutines.compose
+                api compose.runtime
             }
         }
-        androidMain {
-            dependencies {
-                api libs.android.compose.material3
-            }
-        }
+
         jsMain {
             dependencies {
-                api project(":navigation.compose")
+                api compose.web.core
             }
         }
     }

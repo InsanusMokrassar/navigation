@@ -1,6 +1,5 @@
-package dev.inmo.navigation.mvvm.compose
+package dev.inmo.navigation.compose
 
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.compositionLocalOf
 import dev.inmo.navigation.core.NavigationChain
@@ -17,5 +16,5 @@ internal val InternalLocalNavigationNodeProvider: ProvidableCompositionLocal<Nav
     )
 }
 
-fun <Base> LocalNavigationChainProvider(): ProvidableCompositionLocal<NavigationChain<Base>> = InternalLocalNavigationChainProvider as ProvidableCompositionLocal<NavigationChain<Base>>
-fun <Base> LocalNavigationNodeProvider(): ProvidableCompositionLocal<NavigationNode<out Base, Base>> = InternalLocalNavigationNodeProvider as ProvidableCompositionLocal<NavigationNode<out Base, Base>>
+internal fun <Base> LocalNavigationChainProvider(): ProvidableCompositionLocal<NavigationChain<Base>> = InternalLocalNavigationChainProvider as ProvidableCompositionLocal<NavigationChain<Base>>
+internal fun <Base> LocalNavigationNodeProvider(): ProvidableCompositionLocal<NavigationNode<out Base, Base>> = InternalLocalNavigationNodeProvider as ProvidableCompositionLocal<NavigationNode<out Base, Base>>

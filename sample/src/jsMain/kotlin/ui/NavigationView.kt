@@ -2,6 +2,8 @@ package dev.inmo.navigation.sample.ui
 
 
 import androidx.compose.runtime.Composable
+import dev.inmo.navigation.compose.NavigationSubChain
+import dev.inmo.navigation.compose.NavigationSubNode
 import dev.inmo.navigation.core.NavigationChain
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 import dev.inmo.navigation.mvvm.View
