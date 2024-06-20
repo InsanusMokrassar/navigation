@@ -63,10 +63,10 @@ fun <Base> NavigationSubChain(
 internal fun <Base> NavigationNode<*, Base>?.StartInCompose(
     onDismiss: (suspend NavigationNode<*, Base>.() -> Unit)? = null,
 ) {
-    val nodeAsComposeNode = derivedStateOf { this as? ComposeNode }
+    val nodeAsComposeNode = this as? ComposeNode
 
-    key(nodeAsComposeNode.value) {
-        nodeAsComposeNode.value ?.let { view ->
+    key(nodeAsComposeNode) {
+        nodeAsComposeNode ?.let { view ->
             CompositionLocalProvider(LocalNavigationNodeProvider<Base>() provides view) {
                 view.drawerState.collectAsState().value ?.invoke()
             }

@@ -18,6 +18,9 @@ kotlin {
                 api project(":navigation.core")
                 api project(":navigation.mvvm")
                 api libs.microutils.startup.launcher
+                implementation compose.runtime
+                implementation compose.foundation
+                implementation compose.material3
             }
         }
         androidMain {
@@ -27,8 +30,19 @@ kotlin {
         }
         jsMain {
             dependencies {
-                api project(":navigation.compose")
+//                implementation compose.html.core
+                implementation compose.ui
+                implementation(compose.material)
             }
         }
+    }
+}
+
+compose.experimental {
+    web.application {}
+}
+compose.desktop {
+    application {
+        mainClass = "dev.inmo.navigation.sample.MainKt"
     }
 }

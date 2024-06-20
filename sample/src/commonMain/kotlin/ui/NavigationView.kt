@@ -5,21 +5,23 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.input.pointer.PointerIcon.Companion.Text
 import dev.inmo.navigation.core.NavigationChain
 import dev.inmo.navigation.core.NavigationNodeId
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
-import dev.inmo.navigation.mvvm.JvmComposeView
-import dev.inmo.navigation.sample.R
+import dev.inmo.navigation.mvvm.compose.ComposeView
+import org.koin.core.component.inject
+import org.koin.core.parameter.parametersOf
 import kotlin.reflect.KClass
 
 class NavigationView(
     config: NavigationViewConfig,
     chain: NavigationChain<NavigationNodeDefaultConfig>,
     id: NavigationNodeId = NavigationNodeId()
-) : JvmComposeView<NavigationViewConfig, NavigationNodeDefaultConfig, NavigationViewModel>(config, chain, id) {
-    override val viewModelClass: KClass<NavigationViewModel>
-        get() = NavigationViewModel::class
+) : ComposeView<NavigationViewConfig, NavigationNodeDefaultConfig, NavigationViewModel>(config, chain, id) {
+    override val viewModel: NavigationViewModel by inject {
+        parametersOf(this)
+    }
 
     @Composable
     override fun onDraw() {
@@ -32,7 +34,7 @@ class NavigationView(
                     },
                     Modifier.align(Alignment.CenterVertically)
                 ) {
-                    Text(stringResource(R.string.back), color = MaterialTheme.colorScheme.primary)
+                    Text("<", color = MaterialTheme.colorScheme.primary)
                 }
                 IconButton(
                     {
@@ -40,7 +42,7 @@ class NavigationView(
                     },
                     Modifier.align(Alignment.CenterVertically)
                 ) {
-                    Text(stringResource(R.string.subchain), color = MaterialTheme.colorScheme.primary)
+                    Text("\\/", color = MaterialTheme.colorScheme.primary)
                 }
                 IconButton(
                     {
@@ -48,7 +50,7 @@ class NavigationView(
                     },
                     Modifier.align(Alignment.CenterVertically)
                 ) {
-                    Text(stringResource(R.string.forward), color = MaterialTheme.colorScheme.primary)
+                    Text("+>", color = MaterialTheme.colorScheme.primary)
                 }
                 IconButton(
                     {
@@ -56,7 +58,7 @@ class NavigationView(
                     },
                     Modifier.align(Alignment.CenterVertically)
                 ) {
-                    Text(stringResource(R.string.forwardUnstorable), color = MaterialTheme.colorScheme.primary)
+                    Text("->", color = MaterialTheme.colorScheme.primary)
                 }
             }
             Column {
@@ -64,11 +66,4 @@ class NavigationView(
             }
         }
     }
-
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        val inflater = TransitionInflater.from(requireContext())
-//        enterTransition = inflater.inflateTransition(R.transition.slide_right)
-//        exitTransition = inflater.inflateTransition(R.transition.fade)
-//    }
 }
