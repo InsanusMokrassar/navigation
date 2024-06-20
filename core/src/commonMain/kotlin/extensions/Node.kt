@@ -84,28 +84,28 @@ inline fun <Base> NavigationNode<*, Base>.findChainInSubTree(
 /**
  * Shortcut for [ChainOrNodeEither].[findInSubTree]
  */
-inline fun <Base> NavigationNode<*, Base>.findInSubTree(
+fun <Base> NavigationNode<*, Base>.findInSubTree(
     id: NavigationNodeId
 ): NavigationNode<*, Base>? = chainOrNodeEither().findInSubTree(id)
 
 /**
  * Shortcut for [ChainOrNodeEither].[findInSubTree]
  */
-inline fun <Base> NavigationNode<*, Base>.findInSubTree(
+fun <Base> NavigationNode<*, Base>.findInSubTree(
     id: NavigationChainId
 ): NavigationChain<Base>? = chainOrNodeEither().findInSubTree(id)
 
 /**
  * Shortcut for [ChainOrNodeEither].[findNodeInSubTree]
  */
-inline fun <Base> NavigationNode<*, Base>.findNodeInSubTree(
+fun <Base> NavigationNode<*, Base>.findNodeInSubTree(
     id: String
 ): NavigationNode<*, Base>? = chainOrNodeEither().findNodeInSubTree(id)
 
 /**
  * Shortcut for [ChainOrNodeEither].[findChainInSubTree]
  */
-inline fun <Base> NavigationNode<*, Base>.findChainInSubTree(
+fun <Base> NavigationNode<*, Base>.findChainInSubTree(
     id: String
 ): NavigationChain<Base>? = chainOrNodeEither().findChainInSubTree(id)
 
@@ -135,14 +135,14 @@ inline fun <Base> NavigationNode<*, Base>.dropChainsInSubTree(
 /**
  * Shortcut for [ChainOrNodeEither].[dropInSubTree]
  */
-inline fun <Base> NavigationNode<*, Base>.dropInSubTree(
+fun <Base> NavigationNode<*, Base>.dropInSubTree(
     id: NavigationNodeId
 ): Boolean = chainOrNodeEither().dropInSubTree(id)
 
 /**
  * Shortcut for [ChainOrNodeEither].[dropInSubTree]
  */
-inline fun <Base> NavigationNode<*, Base>.dropInSubTree(
+fun <Base> NavigationNode<*, Base>.dropInSubTree(
     id: NavigationChainId
 ): Boolean = chainOrNodeEither().dropInSubTree(id)
 

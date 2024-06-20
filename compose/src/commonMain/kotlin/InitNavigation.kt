@@ -55,7 +55,7 @@ fun <Base> initNavigation(
         }
     }
 
-    val rootChain = remember {
+    val restoredRootChain = remember {
         restoreHierarchy<Base>(
             existsChain ?: defaultStartChain,
             factory = resultNodesFactory,
@@ -63,6 +63,6 @@ fun <Base> initNavigation(
             dropRedundantChainsOnRestore = dropRedundantChainsOnRestore
         )
     }
-    rootChain ?.start(subscope)
-    rootChain ?.StartInCompose({ savingJob.cancel() })
+    restoredRootChain ?.start(subscope)
+    restoredRootChain ?.StartInCompose({ savingJob.cancel() })
 }

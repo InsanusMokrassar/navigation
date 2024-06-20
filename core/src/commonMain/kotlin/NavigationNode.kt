@@ -97,8 +97,8 @@ abstract class NavigationNode<Config : Base, Base>(
             chain.clear()
         }
         _subchainsFlow.value = _subchainsFlow.value.filter { it !== chain }
-        return containsChain && !subchains.contains(chain)
         log.d { "Removed chain $chain" }
+        return containsChain && !subchains.contains(chain)
     }
 
     fun createSubChain(config: Base, id: NavigationChainId? = null): Pair<NavigationNode<out Base, Base>, NavigationChain<Base>>? {

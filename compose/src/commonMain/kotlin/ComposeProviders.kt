@@ -16,5 +16,7 @@ internal val InternalLocalNavigationNodeProvider: ProvidableCompositionLocal<Nav
     )
 }
 
+@Suppress("UNCHECKED_CAST")
 internal fun <Base> LocalNavigationChainProvider(): ProvidableCompositionLocal<NavigationChain<Base>> = InternalLocalNavigationChainProvider as ProvidableCompositionLocal<NavigationChain<Base>>
+@Suppress("UNCHECKED_CAST")
 internal fun <Base> LocalNavigationNodeProvider(): ProvidableCompositionLocal<NavigationNode<out Base, Base>> = InternalLocalNavigationNodeProvider as ProvidableCompositionLocal<NavigationNode<out Base, Base>>
