@@ -11,12 +11,19 @@ import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.take
 
+/**
+ * Collecting [NavigationChain.stackFlow] and always [StartInCompose] only the last element in [NavigationChain.stackFlow]
+ */
 @Composable
 internal fun <Base> NavigationChain<Base>.defaultStackHandling() {
     val stack = stackFlow.collectAsState()
     stack.value.lastOrNull() ?.StartInCompose()
 }
 
+/**
+ * @param onDismiss Will be called when [this] [NavigationChain] will be removed from its parent. [onDismiss] will
+ * never be called if [this] [NavigationChain] is the root one
+ */
 @Composable
 internal fun <Base> NavigationChain<Base>.StartInCompose(
     onDismiss: (suspend NavigationChain<Base>.() -> Unit)? = null,
@@ -43,6 +50,9 @@ internal fun <Base> NavigationChain<Base>.StartInCompose(
     }
 }
 
+/**
+ * Creates [NavigationChain] in current composition and call [StartInCompose]
+ */
 @Composable
 fun <Base> NavigationNode<*, Base>.NavigationSubChain(
     onDismiss: (suspend NavigationChain<Base>.() -> Unit)? = null,
@@ -51,6 +61,9 @@ fun <Base> NavigationNode<*, Base>.NavigationSubChain(
     remember { createEmptySubChain() }.StartInCompose(onDismiss, block)
 }
 
+/**
+ * Trying to get [NavigationNode] using [LocalNavigationNodeProvider] and calling [NavigationSubChain] with it
+ */
 @Composable
 fun <Base> NavigationSubChain(
     onDismiss: (suspend NavigationChain<Base>.() -> Unit)? = null,
@@ -59,6 +72,12 @@ fun <Base> NavigationSubChain(
     LocalNavigationNodeProvider<Base>().current.NavigationSubChain(onDismiss, block)
 }
 
+/**
+ * **If [this] is [ComposeNode]** provides [this] with [LocalNavigationNodeProvider] in [CompositionLocalProvider] and
+ * calls [this] [ComposeNode.drawerState] value invoke
+ *
+ * @param onDismiss Will be called when [this] [NavigationNode] will be removed from its [NavigationChain]
+ */
 @Composable
 internal fun <Base> NavigationNode<*, Base>?.StartInCompose(
     onDismiss: (suspend NavigationNode<*, Base>.() -> Unit)? = null,
@@ -88,6 +107,10 @@ internal fun <Base> NavigationNode<*, Base>?.StartInCompose(
     }
 }
 
+/**
+ * Trying to create [NavigationNode] in [this] [NavigationChain] and do [StartInCompose] with passing of [onDismiss] in
+ * this call
+ */
 @Composable
 fun <Base> NavigationChain<Base>.NavigationSubNode(
     config: Base,
@@ -97,6 +120,10 @@ fun <Base> NavigationChain<Base>.NavigationSubNode(
     node.StartInCompose(onDismiss)
 }
 
+/**
+ * Trying to get current [NavigationChain] using [LocalNavigationChainProvider] and calls [NavigationSubNode] with
+ * passing both [config] and [onDismiss]
+ */
 @Composable
 fun <Base> NavigationSubNode(
     config: Base,

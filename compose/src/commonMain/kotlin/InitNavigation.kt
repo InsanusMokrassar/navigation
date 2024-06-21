@@ -14,6 +14,18 @@ import dev.inmo.navigation.core.repo.enableSavingHierarchy
 import dev.inmo.navigation.core.repo.restoreHierarchy
 import kotlinx.coroutines.CoroutineScope
 
+/**
+ * Creates root of navigation in current place
+ *
+ * @param defaultStartChain Config of default tree for navigation in case [configsRepo] contains no any information
+ * about last used navigation
+ * @param configsRepo Contains information about last saved navigation tree
+ * @param nodesFactory Provides opportunity to create [dev.inmo.navigation.core.NavigationNode] from their configs
+ * @param scope Will be used to create [LinkedSupervisorScope] which will be the root [CoroutineScope] for all navigation
+ * operations
+ * @param dropRedundantChainsOnRestore Drops chains with empty content
+ * @param rootChain Default root chain where navigation will be rooted
+ */
 @Composable
 fun <Base> initNavigation(
     defaultStartChain: ConfigHolder.Chain<Base>,

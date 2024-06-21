@@ -7,7 +7,11 @@ import dev.inmo.navigation.core.NavigationNodeFactory
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 import org.koin.core.Koin
 
-
+/**
+ * Helper method to get [NavigationNodeFactory] from [Koin]. It uses [getAllDistinct] to get all [NavigationNodeFactory]
+ * from [Koin] and registering [NavigationNodeFactory] which taking first created [dev.inmo.navigation.core.NavigationNode]
+ * from factories from [Koin]
+ */
 fun <Base> Koin.nodeFactory(): NavigationNodeFactory<Base> {
     val factories = getAllDistinct<NavigationNodeFactory<Base>>()
     return NavigationNodeFactory<Base> { chainHolder, config ->

@@ -12,6 +12,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlin.jvm.JvmName
 
+/**
+ * Provides [onDraw] open function which will be called by the navigation system to draw content in the place it added
+ */
 abstract class ComposeNode<Config : Base, Base>(
     config: Config,
     override val chain: NavigationChain<Base>,
@@ -37,6 +40,9 @@ abstract class ComposeNode<Config : Base, Base>(
     @Composable
     protected open fun onDraw() {}
 
+    /**
+     * Provides place for [NavigationChain] which placed in [subchainsFlow]
+     */
     @Composable
     protected open fun SubchainsHost(filter: (NavigationChain<Base>) -> Boolean) {
         val subchainsState = subchainsFlow.collectAsState()

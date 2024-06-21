@@ -25,7 +25,7 @@ abstract class NavigationNode<Config : Base, Base>(
     open val storableInNavigationHierarchy: Boolean
         get() = (config as? NavigationNodeDefaultConfig) ?.storableInNavigationHierarchy ?: true
 
-    internal val _subchainsFlow = MutableStateFlow<List<NavigationChain<Base>>>(emptyList())
+    internal val _subchainsFlow = SpecialMutableStateFlow<List<NavigationChain<Base>>>(emptyList())
     val subchainsFlow: StateFlow<List<NavigationChain<Base>>> = _subchainsFlow.asStateFlow()
     val subchains: List<NavigationChain<Base>>
         get() = _subchainsFlow.value.toList()
