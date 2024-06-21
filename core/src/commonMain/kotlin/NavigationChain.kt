@@ -22,7 +22,7 @@ class NavigationChain<Base>(
     private val parentNodeState: NavigationNodeState
         get() = parentNode ?.state ?: NavigationNodeState.RESUMED
 
-    private val _stackFlow = MutableStateFlow<List<NavigationNode<out Base, Base>>>(emptyList())
+    private val _stackFlow = SpecialMutableStateFlow<List<NavigationNode<out Base, Base>>>(emptyList())
     val stackFlow: StateFlow<List<NavigationNode<out Base, Base>>> = _stackFlow.asStateFlow()
     internal val stack
         get() = stackFlow.value
@@ -166,7 +166,7 @@ class NavigationChain<Base>(
         ).filter { !it.isEmpty() }.subscribeSafelyWithoutExceptions(subscope) {
             actualizeStackStates()
             nodeToJobMutex.withLock {
-                it.removed.forEach { (i, it) ->
+                it.removed.forEach { (_, it) ->
                     nodeToJob.remove(it.id) ?.cancel()
                 }
                 it.replaced.forEach { (old, new) ->
@@ -174,7 +174,7 @@ class NavigationChain<Base>(
                     nodeToJob[new.value.id] = new.value.start(subscope)
                     nodeToJob.remove(old.value.id) ?.cancel()
                 }
-                it.added.forEach { (i, it) ->
+                it.added.forEach { (_, it) ->
                     nodeToJob.remove(it.id) ?.cancel()
                     nodeToJob[it.id] = it.start(subscope)
                 }

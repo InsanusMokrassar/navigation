@@ -1,5 +1,19 @@
 # Navigation Changelog
 
+## 0.5.0
+
+* `Versions`:
+  * `Coroutines`: `1.8.0` -> `1.8.1`
+  * `MicroUtils`: `0.20.43` -> `0.20.53`
+  * `KSLog`: `1.3.3` -> `1.3.4`
+  * `Koin`: `3.5.4` -> `3.5.6`
+* `Core`:
+  * Drop redundant `inline`s from extensions like `findInSubTree` to avoid efficiency degrading
+* `Compose`:
+  * Module has been created to provide support of `Compose`-oriented navigation
+* `Sample`:
+  * Sample has been fully rewritten to work with `Compose`-oriented way
+
 ## 0.4.1
 
 * `Versions`:

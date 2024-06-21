@@ -1,43 +1,21 @@
 package dev.inmo.navigation.sample.ui
 
-import androidx.compose.runtime.mutableStateListOf
 import com.benasher44.uuid.uuid4
 import dev.inmo.kslog.common.i
 import dev.inmo.kslog.common.logger
-import dev.inmo.micro_utils.coroutines.compose.asComposeList
-import dev.inmo.micro_utils.coroutines.doInUI
 import dev.inmo.micro_utils.coroutines.subscribeSafelyWithoutExceptions
 import dev.inmo.navigation.mvvm.ViewModel
 import dev.inmo.navigation.core.NavigationNode
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
-import dev.inmo.navigation.core.extensions.onChainAddedFlow
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.withContext
 
 class NavigationViewModel (
     private val model: NavigationModel,
     private val node: NavigationNode<NavigationViewConfig, NavigationNodeDefaultConfig>,
-) : ViewModel(node) {
-    private val _subnodesIds = mutableStateListOf<String>()
-    val subnodesIds: List<String> = _subnodesIds
+) : ViewModel<NavigationNodeDefaultConfig>(node) {
 
     init {
         node.stateChangesFlow.subscribeSafelyWithoutExceptions(scope) {
             logger.i { "Current state change of node $node is ${it.type}" }
-        }
-        node.onChainAddedFlow(emptyList()).map { it.map { it.value } }.subscribeSafelyWithoutExceptions(scope) {
-            it.forEach {
-                it.stackFlow.subscribeSafelyWithoutExceptions(scope) {
-                    val id = it.firstOrNull() ?.config ?.id ?: return@subscribeSafelyWithoutExceptions
-                    doInUI {
-                        if (id !in _subnodesIds) {
-                            _subnodesIds.add(id)
-                        }
-                    }
-                }
-            }
         }
     }
 

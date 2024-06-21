@@ -51,28 +51,28 @@ inline fun <Base> ChainOrNodeEither<Base>.findChainInSubTree(
 /**
  * Will find and return FIRST [NavigationNode] with [NavigationNode.id] == [id]
  */
-inline fun <Base> ChainOrNodeEither<Base>.findInSubTree(
+fun <Base> ChainOrNodeEither<Base>.findInSubTree(
     id: NavigationNodeId
 ): NavigationNode<*, Base>? = findNodeInSubTree { it.id == id }
 
 /**
  * Will find and return FIRST [NavigationChain] with [NavigationChain.id] == [id]
  */
-inline fun <Base> ChainOrNodeEither<Base>.findInSubTree(
+fun <Base> ChainOrNodeEither<Base>.findInSubTree(
     id: NavigationChainId
 ): NavigationChain<Base>? = findChainInSubTree { it.id == id }
 
 /**
  * Will find and return FIRST [NavigationNode] with [NavigationNode.id] == [id]
  */
-inline fun <Base> ChainOrNodeEither<Base>.findNodeInSubTree(
+fun <Base> ChainOrNodeEither<Base>.findNodeInSubTree(
     id: String
 ): NavigationNode<*, Base>? = findInSubTree(NavigationNodeId(id))
 
 /**
  * Will find and return FIRST [NavigationChain] with [NavigationChain.id] == [id]
  */
-inline fun <Base> ChainOrNodeEither<Base>.findChainInSubTree(
+fun <Base> ChainOrNodeEither<Base>.findChainInSubTree(
     id: String
 ): NavigationChain<Base>? = findInSubTree(NavigationChainId(id))
 
@@ -127,14 +127,14 @@ inline fun <Base> ChainOrNodeEither<Base>.dropChainsInSubTree(
 /**
  * Will pass true each time when [dropNodesInSubTree] calls its mapper with [NavigationNode.id] == [id]
  */
-inline fun <Base> ChainOrNodeEither<Base>.dropInSubTree(
+fun <Base> ChainOrNodeEither<Base>.dropInSubTree(
     id: NavigationNodeId
 ): Boolean = dropNodesInSubTree { it.id == id }
 
 /**
  * Will pass true each time when [dropChainsInSubTree] calls its mapper with [NavigationChain.id] == [id]
  */
-inline fun <Base> ChainOrNodeEither<Base>.dropInSubTree(
+fun <Base> ChainOrNodeEither<Base>.dropInSubTree(
     id: NavigationChainId
 ): Boolean = dropChainsInSubTree { it.id == id }
 

@@ -25,7 +25,7 @@ abstract class NavigationNode<Config : Base, Base>(
     open val storableInNavigationHierarchy: Boolean
         get() = (config as? NavigationNodeDefaultConfig) ?.storableInNavigationHierarchy ?: true
 
-    internal val _subchainsFlow = MutableStateFlow<List<NavigationChain<Base>>>(emptyList())
+    internal val _subchainsFlow = SpecialMutableStateFlow<List<NavigationChain<Base>>>(emptyList())
     val subchainsFlow: StateFlow<List<NavigationChain<Base>>> = _subchainsFlow.asStateFlow()
     val subchains: List<NavigationChain<Base>>
         get() = _subchainsFlow.value.toList()
@@ -97,8 +97,8 @@ abstract class NavigationNode<Config : Base, Base>(
             chain.clear()
         }
         _subchainsFlow.value = _subchainsFlow.value.filter { it !== chain }
-        return containsChain && !subchains.contains(chain)
         log.d { "Removed chain $chain" }
+        return containsChain && !subchains.contains(chain)
     }
 
     fun createSubChain(config: Base, id: NavigationChainId? = null): Pair<NavigationNode<out Base, Base>, NavigationChain<Base>>? {
@@ -158,11 +158,11 @@ abstract class NavigationNode<Config : Base, Base>(
         return subscope.coroutineContext.job
     }
 
-    class Empty<T>(
-        override val chain: NavigationChain<T>,
+    class Empty<T : Base, Base>(
+        override val chain: NavigationChain<Base>,
         config: T,
         id: NavigationNodeId = NavigationNodeId()
-    ) : NavigationNode<T, T>(id) {
+    ) : NavigationNode<T, Base>(id) {
         override val configState: StateFlow<T> = MutableStateFlow(config).asStateFlow()
     }
 }

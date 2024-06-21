@@ -15,8 +15,8 @@ import kotlinx.coroutines.cancel
  * It has its own scope bind to [NavigationNode] lifecycle: when [NavigationNode] will be destroyed, its
  * [scope] will be cancelled
  */
-abstract class ViewModel(
-    node: NavigationNode<out NavigationNodeDefaultConfig, NavigationNodeDefaultConfig>
+abstract class ViewModel<T>(
+    node: NavigationNode<out T, T>
 ) {
     val scope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 

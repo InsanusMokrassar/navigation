@@ -38,7 +38,7 @@ import kotlin.reflect.KClass
  * This class handling the lifecycle of this view automatically: it will create android [View] in [onCreateView],
  * set the [Content] there and destroy when the view or lifecycle is destroying
  */
-abstract class ViewFragment<ViewModel: dev.inmo.navigation.mvvm.ViewModel, Config : NavigationNodeDefaultConfig> : NodeFragment<Config, NavigationNodeDefaultConfig>() {
+abstract class ViewFragment<ViewModel: dev.inmo.navigation.mvvm.ViewModel<NavigationNodeDefaultConfig>, Config : NavigationNodeDefaultConfig> : NodeFragment<Config, NavigationNodeDefaultConfig>() {
     /**
      * If true, [onBackPressedCallback] will be registered to handle the back presses and current [node] will be
      * popped from its [dev.inmo.navigation.core.NavigationChain] on back press
