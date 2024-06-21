@@ -1,6 +1,7 @@
 package dev.inmo.navigation.compose
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import dev.inmo.kslog.common.TagLogger
@@ -55,26 +56,28 @@ fun <Base> initNavigation(
             }
         }
     }
-    logger.d { "Hierarchy saving enabled" }
+    CompositionLocalProvider(InternalLocalNavigationNodeFactory<Base>() provides resultNodesFactory) {
+        logger.d { "Hierarchy saving enabled" }
 
-    val existsChain = configsRepo.get()
+        val existsChain = configsRepo.get()
 
-    logger.d {
-        if (existsChain == null) {
-            "Can't find exists chain. Using default one: $defaultStartChain"
-        } else {
-            "Took exists stored chain $existsChain"
+        logger.d {
+            if (existsChain == null) {
+                "Can't find exists chain. Using default one: $defaultStartChain"
+            } else {
+                "Took exists stored chain $existsChain"
+            }
         }
-    }
 
-    val restoredRootChain = remember {
-        restoreHierarchy<Base>(
-            existsChain ?: defaultStartChain,
-            factory = resultNodesFactory,
-            rootChain = rootChain,
-            dropRedundantChainsOnRestore = dropRedundantChainsOnRestore
-        )
+        val restoredRootChain = remember {
+            restoreHierarchy<Base>(
+                existsChain ?: defaultStartChain,
+                factory = resultNodesFactory,
+                rootChain = rootChain,
+                dropRedundantChainsOnRestore = dropRedundantChainsOnRestore
+            )
+        }
+        restoredRootChain ?.start(subscope)
+        restoredRootChain ?.StartInCompose({ savingJob.cancel() })
     }
-    restoredRootChain ?.start(subscope)
-    restoredRootChain ?.StartInCompose({ savingJob.cancel() })
 }
