@@ -2,6 +2,8 @@
 
 ## 0.5.2
 
+* Add support for native targets
+
 ## 0.5.1
 
 * `Versions`:
