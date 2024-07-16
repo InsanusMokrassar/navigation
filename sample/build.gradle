@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.compose)
 }
 
-apply from: "$mppProjectWithSerializationPresetPath"
+apply from: "$mppSampleProjectWithSerializationPresetPath"
 
 kotlin {
     js(IR) {

@@ -14,6 +14,7 @@ allprojects {
         }
 
         mppProjectWithSerializationPresetPath = "${rootProject.projectDir.absolutePath}/mppProjectWithSerialization.gradle"
+        mppSampleProjectWithSerializationPresetPath = "${rootProject.projectDir.absolutePath}/mppSampleProjectWithSerialization.gradle"
         mppJavaProjectPresetPath = "${rootProject.projectDir.absolutePath}/mppJavaProject.gradle"
         mppJsProjectPresetPath = "${rootProject.projectDir.absolutePath}/mppJsProject.gradle"
         mppAndroidProjectPresetPath = "${rootProject.projectDir.absolutePath}/mppAndroidProject.gradle"

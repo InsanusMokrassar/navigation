@@ -18,9 +18,6 @@ kotlin {
     androidTarget {
         publishAllLibraryVariants()
     }
-    linuxX64()
-    mingwX64()
-    linuxArm64()
 
     sourceSets {
         commonMain {
