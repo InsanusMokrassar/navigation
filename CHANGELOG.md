@@ -1,5 +1,7 @@
 # Navigation Changelog
 
+## 0.5.3
+
 ## 0.5.2
 
 * Add support for native targets
