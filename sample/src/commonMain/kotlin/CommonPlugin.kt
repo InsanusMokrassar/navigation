@@ -22,6 +22,7 @@ import org.koin.core.Koin
 import org.koin.core.module.Module
 
 object CommonPlugin : StartPlugin {
+    var useDefaultNavigationViewFactory = true
     override fun Module.setupDI(config: JsonObject) {
 
         factory { (node: NavigationNode<NavigationViewConfig, NavigationNodeDefaultConfig>) ->
@@ -41,12 +42,14 @@ object CommonPlugin : StartPlugin {
             }
         }
 
-        singleWithRandomQualifier<NavigationNodeFactory<NavigationNodeDefaultConfig>> {
-            NavigationNodeFactory { chain: NavigationChain<NavigationNodeDefaultConfig>, config: NavigationNodeDefaultConfig ->
-                if (config is NavigationViewConfig) {
-                    NavigationView(config, chain)
-                } else {
-                    null
+        if (useDefaultNavigationViewFactory) {
+            singleWithRandomQualifier<NavigationNodeFactory<NavigationNodeDefaultConfig>> {
+                NavigationNodeFactory { chain: NavigationChain<NavigationNodeDefaultConfig>, config: NavigationNodeDefaultConfig ->
+                    if (config is NavigationViewConfig) {
+                        NavigationView(config, chain)
+                    } else {
+                        null
+                    }
                 }
             }
         }

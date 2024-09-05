@@ -33,15 +33,11 @@ kotlin {
             dependencies {
 //                implementation compose.html.core
                 implementation compose.ui
-                implementation(compose.material)
             }
         }
     }
 }
 
-compose.experimental {
-    web.application {}
-}
 compose.desktop {
     application {
         mainClass = "dev.inmo.navigation.sample.MainKt"
