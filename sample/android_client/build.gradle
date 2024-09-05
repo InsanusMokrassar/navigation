@@ -3,6 +3,7 @@ plugins {
     id "org.jetbrains.kotlin.plugin.serialization"
     id "com.android.application"
     alias(libs.plugins.compose)
+    alias(libs.plugins.kt.jb.compose)
 }
 
 android {

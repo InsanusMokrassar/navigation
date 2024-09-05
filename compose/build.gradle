@@ -3,10 +3,11 @@ plugins {
     id "org.jetbrains.kotlin.plugin.serialization"
     id "com.android.library"
     alias(libs.plugins.compose)
+    alias(libs.plugins.kt.jb.compose)
 }
 
-apply from: "$mppProjectWithSerializationPresetPath"
-apply from: "$publishGradlePath"
+apply from: "$mppProjectWithSerialization"
+apply from: "$mpp_publish"
 
 kotlin {
     sourceSets {
