@@ -22,6 +22,6 @@ jobs:
         run: ./gradlew build
       - name: Publish to Gitea
         continue-on-error: true
-        run: ./gradlew publishAllPublicationsToGiteaRepository
+        run: ./gradlew publishAllPublicationsToInmoNexusRepository
         env:
           GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
