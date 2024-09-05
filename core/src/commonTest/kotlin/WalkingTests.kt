@@ -53,9 +53,9 @@ class WalkingTests : NavigationTest() {
 
         c0.walk {
             it.onNode { visitingNode ->
-                assertEquals(orderOfVisiting.removeFirst().nodeOrThrow, visitingNode)
+                assertEquals(orderOfVisiting.removeAt(0).nodeOrThrow, visitingNode)
             }.onChain { visitingChain ->
-                assertEquals(orderOfVisiting.removeFirst().chainOrThrow, visitingChain)
+                assertEquals(orderOfVisiting.removeAt(0).chainOrThrow, visitingChain)
             }
         }
 

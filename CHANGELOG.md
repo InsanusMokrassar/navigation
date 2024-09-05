@@ -1,5 +1,15 @@
 # Navigation Changelog
 
+## 0.5.3
+
+* `Versions`:
+  * `Kotlin`: `1.9.23` -> `2.0.20`
+  * `Serialization`: `1.6.3` -> `1.7.2`
+  * `KSLog`: `1.3.4` -> `1.3.6`
+  * `Compose`: `1.6.2` -> `1.7.0-alpha03`
+  * `MicroUtils`: `0.21.0` -> `0.22.2`
+  * `Android Compile SDK`: `34` -> `35`
+
 ## 0.5.2
 
 * Add support for native targets

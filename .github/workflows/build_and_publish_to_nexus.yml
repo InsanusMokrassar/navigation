@@ -20,8 +20,8 @@ jobs:
           mv gradle.properties.tmp gradle.properties
       - name: Build with Gradle
         run: ./gradlew build
-      - name: Publish to Gitea
+      - name: Publish to nexus.inmo.dev
         continue-on-error: true
-        run: ./gradlew publishAllPublicationsToGiteaRepository
+        run: ./gradlew publishAllPublicationsToInmoNexusRepository
         env:
           GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}

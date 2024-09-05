@@ -1,7 +1,7 @@
 project.version = "$version"
 project.group = "$group"
 
-// apply from: "$publishGradlePath"
+// apply from: "$mpp_publish"
 
 kotlin {
     jvm {
@@ -18,9 +18,6 @@ kotlin {
     androidTarget {
         publishAllLibraryVariants()
     }
-    linuxX64()
-    mingwX64()
-    linuxArm64()
 
     sourceSets {
         commonMain {
@@ -43,7 +40,6 @@ kotlin {
         jsTest {
             dependencies {
                 implementation libs.kotlin.test.js
-                implementation libs.kotlin.test.junit
             }
         }
         androidUnitTest {
@@ -61,4 +57,4 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
-apply from: "$defaultAndroidSettingsPresetPath"
+apply from: "$defaultAndroidSettings"
