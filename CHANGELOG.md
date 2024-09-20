@@ -2,6 +2,13 @@
 
 ## 0.5.4
 
+* `Versions`:
+  * `Coroutines`: `1.8.1` -> `1.9.0`
+  * `Serialization`: `1.7.2` -> `1.7.3`
+  * `Koin`: `3.5.6` -> `4.0.0`
+  * `Compose`: `1.7.0-alpha03` -> `1.7.0-beta02`
+  * `androidx.compose.material3:material3` has been replaced with `org.jetbrains.compose.material3:material3`
+
 ## 0.5.3
 
 * `Versions`:
