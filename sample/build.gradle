@@ -17,6 +17,7 @@ kotlin {
         commonMain {
             dependencies {
                 api project(":navigation.core")
+                api project(":navigation.mermaid")
                 api project(":navigation.mvvm")
                 api libs.microutils.startup.launcher
                 implementation compose.runtime

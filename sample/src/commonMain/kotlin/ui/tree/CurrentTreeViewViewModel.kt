@@ -1,19 +1,16 @@
 package dev.inmo.navigation.sample.ui.tree
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import dev.inmo.kslog.common.i
 import dev.inmo.kslog.common.logger
-import dev.inmo.micro_utils.common.applyDiff
 import dev.inmo.micro_utils.coroutines.subscribeSafelyWithoutExceptions
 import dev.inmo.navigation.core.NavigationNode
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 import dev.inmo.navigation.core.extensions.onChangesInSubTree
 import dev.inmo.navigation.core.extensions.rootChain
-import dev.inmo.navigation.core.visiter.walk
 import dev.inmo.navigation.core.visiter.walkOnNodes
+import dev.inmo.navigation.mermaid.buildMermaidLines
 import dev.inmo.navigation.mvvm.ViewModel
-import dev.inmo.navigation.sample.buildMermaidLines
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf

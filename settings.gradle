@@ -4,6 +4,7 @@ String[] includes = [
     ":core",
     ":compose",
     ":mvvm",
+    ":mermaid",
     ":sample",
     ":sample:android_client",
 ]
