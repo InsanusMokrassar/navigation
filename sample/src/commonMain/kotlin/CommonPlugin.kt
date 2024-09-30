@@ -1,9 +1,6 @@
 package dev.inmo.navigation.sample
 
 import androidx.compose.runtime.Composable
-import dev.inmo.kslog.common.d
-import dev.inmo.kslog.common.logger
-import dev.inmo.micro_utils.koin.getAllDistinct
 import dev.inmo.micro_utils.koin.singleWithRandomQualifier
 import dev.inmo.navigation.sample.ui.NavigationModel
 import dev.inmo.navigation.sample.ui.NavigationViewConfig
@@ -16,6 +13,8 @@ import dev.inmo.navigation.core.NavigationNodeFactory
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 import dev.inmo.navigation.core.repo.ConfigHolder
 import dev.inmo.navigation.sample.ui.NavigationView
+import dev.inmo.navigation.sample.ui.tree.CurrentTreeViewConfig
+import dev.inmo.navigation.sample.ui.tree.CurrentTreeViewViewModel
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.modules.SerializersModule
 import org.koin.core.Koin
@@ -53,6 +52,28 @@ object CommonPlugin : StartPlugin {
                 }
             }
         }
+        singleWithRandomQualifier<NavigationNodeFactory<NavigationNodeDefaultConfig>> {
+            NavigationNodeFactory { chain: NavigationChain<NavigationNodeDefaultConfig>, config: NavigationNodeDefaultConfig ->
+                if (config is EmptyConfig) {
+                    NavigationNode.Empty(chain, config)
+                } else {
+                    null
+                }
+            }
+        }
+
+        singleWithRandomQualifier {
+            SerializersModule {
+                polymorphic(Any::class, CurrentTreeViewConfig::class, CurrentTreeViewConfig.serializer())
+                polymorphic(NavigationNodeDefaultConfig::class, CurrentTreeViewConfig::class, CurrentTreeViewConfig.serializer())
+
+                polymorphic(Any::class, EmptyConfig::class, EmptyConfig.serializer())
+                polymorphic(NavigationNodeDefaultConfig::class, EmptyConfig::class, EmptyConfig.serializer())
+            }
+        }
+        factory {
+            CurrentTreeViewViewModel(it.get())
+        }
     }
 
     override suspend fun startPlugin(koin: Koin) {
@@ -62,12 +83,31 @@ object CommonPlugin : StartPlugin {
             dev.inmo.navigation.compose.initNavigation(
                 defaultStartChain = ConfigHolder.Chain(
                     ConfigHolder.Node(
-                        NavigationViewConfig(
-                            "root",
-                            ">"
+                        EmptyConfig(
+                            "",
                         ),
                         null,
-                        listOf()
+                        listOf(
+                            ConfigHolder.Chain(
+                                ConfigHolder.Node(
+                                    NavigationViewConfig(
+                                        "root",
+                                        ">"
+                                    ),
+                                    null,
+                                    listOf()
+                                ),
+                            ),
+                            ConfigHolder.Chain(
+                                ConfigHolder.Node(
+                                    CurrentTreeViewConfig(
+                                        "tree",
+                                    ),
+                                    null,
+                                    listOf()
+                                ),
+                            ),
+                        )
                     ),
                 ),
                 configsRepo = koin.get(),

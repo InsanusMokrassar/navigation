@@ -45,12 +45,7 @@ abstract class ComposeNode<Config : Base, Base>(
      */
     @Composable
     protected open fun SubchainsHost(filter: (NavigationChain<Base>) -> Boolean) {
-        val subchainsState = subchainsFlow.collectAsState()
-        val rawSubchains = subchainsState.value
-        val filteredSubchains = rawSubchains.filter(filter)
-        filteredSubchains.forEach {
-            it.StartInCompose()
-        }
+        defaultSubchainsHandling(filter)
     }
 
     @Composable
