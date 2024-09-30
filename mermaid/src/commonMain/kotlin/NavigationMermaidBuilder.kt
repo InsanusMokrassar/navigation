@@ -5,11 +5,11 @@ import dev.inmo.micro_utils.common.either
 import dev.inmo.navigation.core.*
 
 object NavigationMermaidBuilder {
-    internal const val newClassName = "navigation_mermaid_new"
-    internal const val createdClassName = "navigation_mermaid_created"
-    internal const val resumedClassName = "navigation_mermaid_resumed"
-    internal const val startedClassName = "navigation_mermaid_started"
-    internal val NavigationNodeState.className
+    const val newClassName = "navigation_mermaid_new"
+    const val createdClassName = "navigation_mermaid_created"
+    const val resumedClassName = "navigation_mermaid_resumed"
+    const val startedClassName = "navigation_mermaid_started"
+    val NavigationNodeState.className
         get() = when (this) {
             NavigationNodeState.NEW -> NavigationMermaidBuilder.newClassName
             NavigationNodeState.CREATED -> NavigationMermaidBuilder.createdClassName

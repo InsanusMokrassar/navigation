@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import dev.inmo.navigation.core.NavigationChain
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
+import dev.inmo.navigation.mermaid.NavigationMermaidBuilder
 import dev.inmo.navigation.mvvm.compose.ComposeView
 import dev.inmo.navigation.sample.ui.tree.CurrentTreeViewConfig
 import dev.inmo.navigation.sample.ui.tree.CurrentTreeViewViewModel

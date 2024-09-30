@@ -2,6 +2,11 @@
 
 ## 0.5.5
 
+* `Compose`:
+  * Fixes in handling of non-`ComposeView`
+* `Sample`:
+  * Add opportunity to see 
+
 ## 0.5.4
 
 * `Versions`:
