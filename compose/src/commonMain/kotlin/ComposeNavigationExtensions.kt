@@ -17,7 +17,18 @@ import kotlinx.coroutines.flow.take
 @Composable
 internal fun <Base> NavigationChain<Base>.defaultStackHandling() {
     val stack = stackFlow.collectAsState()
-    stack.value.lastOrNull() ?.StartInCompose()
+    val latestNode = stack.value.lastOrNull()
+    latestNode ?.StartInCompose()
+}
+
+@Composable
+fun <Base> NavigationNode<out Base, Base>.defaultSubchainsHandling(filter: (NavigationChain<Base>) -> Boolean = { true }) {
+    val subchainsState = subchainsFlow.collectAsState()
+    val rawSubchains = subchainsState.value
+    val filteredSubchains = rawSubchains.filter(filter)
+    filteredSubchains.forEach {
+        it.StartInCompose()
+    }
 }
 
 /**
@@ -85,9 +96,12 @@ internal fun <Base> NavigationNode<*, Base>?.StartInCompose(
     val nodeAsComposeNode = this as? ComposeNode
 
     key(nodeAsComposeNode) {
-        nodeAsComposeNode ?.let { view ->
+        this ?.let { view ->
             CompositionLocalProvider(LocalNavigationNodeProvider<Base>() provides view) {
-                view.drawerState.collectAsState().value ?.invoke()
+                nodeAsComposeNode ?.let { view ->
+                    val drawState = view.drawerState.collectAsState()
+                    drawState.value ?.invoke()
+                } ?: view.defaultSubchainsHandling()
             }
         }
     }

@@ -8,4 +8,8 @@ data class NavigationViewConfig(
     override val id: String,
     val text: String,
     override val storableInNavigationHierarchy: Boolean = true
-) : NavigationNodeDefaultConfig
+) : NavigationNodeDefaultConfig {
+    override fun toString(): String {
+        return text
+    }
+}
