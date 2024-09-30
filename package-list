@@ -11,3 +11,5 @@ dev.inmo.navigation.core.fragments.view
 dev.inmo.navigation.core.repo
 dev.inmo.navigation.core.urls
 dev.inmo.navigation.core.visiter
+module:navigation.mermaid
+dev.inmo.navigation.mermaid
