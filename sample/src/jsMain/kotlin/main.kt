@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 fun main() {
     window.addEventListener("load", {
         CoroutineScope(Default).launch {
+            CommonPlugin.useDefaultNavigationViewFactory = false // disabling default navigation view in favor to js implementation
             StartLauncherPlugin.start(
                 Config(
                     listOf(JSPlugin)

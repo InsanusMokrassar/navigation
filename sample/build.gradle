@@ -17,6 +17,7 @@ kotlin {
         commonMain {
             dependencies {
                 api project(":navigation.core")
+                api project(":navigation.mermaid")
                 api project(":navigation.mvvm")
                 api libs.microutils.startup.launcher
                 implementation compose.runtime
@@ -33,15 +34,11 @@ kotlin {
             dependencies {
 //                implementation compose.html.core
                 implementation compose.ui
-                implementation(compose.material)
             }
         }
     }
 }
 
-compose.experimental {
-    web.application {}
-}
 compose.desktop {
     application {
         mainClass = "dev.inmo.navigation.sample.MainKt"
