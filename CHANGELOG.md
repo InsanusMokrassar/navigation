@@ -6,6 +6,9 @@
   * Add default config for `Empty` node (just empty config object)
   * Add default factory for `Empty` node, based on default config
   * Add `NavigationNodeFactory.Typed` default node factory with inline factory fun
+* `Compose`:
+  * Add opportunity to setup initial chains and nodes in `initNavigation`
+  * A lot of fixes in Compose Navigation Extensions
 
 ## 0.5.5
 

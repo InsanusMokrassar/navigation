@@ -28,7 +28,7 @@ import kotlinx.coroutines.CoroutineScope
  * @param rootChain Default root chain where navigation will be rooted
  */
 @Composable
-fun <Base> initNavigation(
+private fun <Base> initNavigation(
     defaultStartChain: ConfigHolder.Chain<Base>?,
     configsRepo: NavigationConfigsRepo<Base>,
     nodesFactory: NavigationNodeFactory<Base>,
@@ -78,11 +78,16 @@ fun <Base> initNavigation(
                 dropRedundantChainsOnRestore = dropRedundantChainsOnRestore
             )
         }
-        restoredRootChain ?.start(subscope)
-        restoredRootChain ?.StartInCompose({ savingJob.cancel() }) {
+        restoredRootChain ?.let {
             if (existsChain == null && defaultStartChain == null) {
-                defaultInitBlock()
+                CompositionLocalProvider(LocalNavigationChainProvider<Base>() provides it) {
+                    defaultInitBlock()
+                }
+            } else {
+                it.defaultStackHandling()
             }
+
+            it.start(subscope)
         }
     }
 }
@@ -101,6 +106,38 @@ fun <Base> initNavigation(
  */
 @Composable
 fun <Base> initNavigation(
+    defaultStartChain: ConfigHolder.Chain<Base>,
+    configsRepo: NavigationConfigsRepo<Base>,
+    nodesFactory: NavigationNodeFactory<Base>,
+    scope: CoroutineScope = rememberCoroutineScope(),
+    dropRedundantChainsOnRestore: Boolean = false,
+    rootChain: NavigationChain<Base> = NavigationChain(null, nodesFactory),
+) = initNavigation(
+    defaultStartChain = defaultStartChain,
+    configsRepo = configsRepo,
+    nodesFactory = nodesFactory,
+    scope = scope,
+    dropRedundantChainsOnRestore = dropRedundantChainsOnRestore,
+    rootChain = rootChain,
+    defaultInitBlock = {}
+)
+
+
+/**
+ * Creates root of navigation in current place
+ *
+ * @param defaultStartChain Config of default tree for navigation in case [configsRepo] contains no any information
+ * about last used navigation
+ * @param configsRepo Contains information about last saved navigation tree
+ * @param nodesFactory Provides opportunity to create [dev.inmo.navigation.core.NavigationNode] from their configs
+ * @param scope Will be used to create [LinkedSupervisorScope] which will be the root [CoroutineScope] for all navigation
+ * operations
+ * @param dropRedundantChainsOnRestore Drops chains with empty content
+ * @param rootChain Default root chain where navigation will be rooted
+ */
+@Composable
+fun <Base> initNavigation(
+    rootNodeConfig: Base,
     configsRepo: NavigationConfigsRepo<Base>,
     nodesFactory: NavigationNodeFactory<Base>,
     scope: CoroutineScope = rememberCoroutineScope(),
@@ -113,6 +150,10 @@ fun <Base> initNavigation(
     nodesFactory = nodesFactory,
     scope = scope,
     dropRedundantChainsOnRestore = dropRedundantChainsOnRestore,
-    rootChain = rootChain,
-    defaultInitBlock = defaultInitBlock
-)
+    rootChain = rootChain
+) {
+    InjectNavigationNode(
+        rootNodeConfig,
+        defaultInitBlock
+    )
+}

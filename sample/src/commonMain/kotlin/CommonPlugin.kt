@@ -83,6 +83,7 @@ object CommonPlugin : StartPlugin {
 
         koin.get<(@Composable () -> Unit) -> Unit>().invoke {
             dev.inmo.navigation.compose.initNavigation<NavigationNodeDefaultConfig>(
+                EmptyConfig(""),
                 configsRepo = koin.get(),
                 nodesFactory = koin.nodeFactory(),
                 dropRedundantChainsOnRestore = true,
