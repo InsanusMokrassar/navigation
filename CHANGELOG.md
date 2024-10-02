@@ -1,5 +1,7 @@
 # Navigation Changelog
 
+## 0.5.6
+
 ## 0.5.5
 
 * `Compose`:
