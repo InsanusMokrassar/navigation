@@ -16,7 +16,7 @@ sealed interface ConfigHolder<T> {
     @Serializable
     @SerialName("Chain")
     data class Chain<T>(
-        val firstNodeConfig: Node<T>,
+        val firstNodeConfig: Node<T>?,
         val id: NavigationChainId? = null
     ) : ConfigHolder<T>
 }

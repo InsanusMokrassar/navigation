@@ -8,7 +8,7 @@ fun <Base> ConfigHolder.Chain<Base>.restoreHierarchy(
 ): NavigationChain<Base> {
     val subchain = node.createEmptySubChain(id)
 
-    firstNodeConfig.restoreHierarchy(subchain, dropRedundantChainsOnRestores)
+    firstNodeConfig ?.restoreHierarchy(subchain, dropRedundantChainsOnRestores)
 
     return subchain
 }
@@ -18,7 +18,7 @@ fun <Base> ConfigHolder.Chain<Base>.restoreHierarchy(
     chainToRestore: NavigationChain<Base> = NavigationChain(null, factory, id),
     dropRedundantChainsOnRestores: Boolean = false
 ): NavigationChain<Base> {
-    firstNodeConfig.restoreHierarchy(chainToRestore, dropRedundantChainsOnRestores)
+    firstNodeConfig ?.restoreHierarchy(chainToRestore, dropRedundantChainsOnRestores)
 
     return chainToRestore
 }
