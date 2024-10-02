@@ -2,6 +2,11 @@
 
 ## 0.5.6
 
+* `Core`:
+  * Add default config for `Empty` node (just empty config object)
+  * Add default factory for `Empty` node, based on default config
+  * Add `NavigationNodeFactory.Typed` default node factory with inline factory fun
+
 ## 0.5.5
 
 * `Compose`:
