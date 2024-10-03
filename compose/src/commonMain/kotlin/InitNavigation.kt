@@ -57,7 +57,7 @@ private fun <Base> initNavigation(
             }
         }
     }
-    CompositionLocalProvider(LocalNavigationNodeFactory<Base>() provides resultNodesFactory) {
+    doWithNodesFactoryInLocalProvider(resultNodesFactory) {
         logger.d { "Hierarchy saving enabled" }
 
         val existsChain = configsRepo.get()
