@@ -28,13 +28,14 @@ import kotlinx.coroutines.CoroutineScope
  * @param rootChain Default root chain where navigation will be rooted
  */
 @Composable
-fun <Base> initNavigation(
-    defaultStartChain: ConfigHolder.Chain<Base>,
+private fun <Base> initNavigation(
+    defaultStartChain: ConfigHolder.Chain<Base>?,
     configsRepo: NavigationConfigsRepo<Base>,
     nodesFactory: NavigationNodeFactory<Base>,
     scope: CoroutineScope = rememberCoroutineScope(),
     dropRedundantChainsOnRestore: Boolean = false,
-    rootChain: NavigationChain<Base> = NavigationChain(null, nodesFactory)
+    rootChain: NavigationChain<Base> = NavigationChain(null, nodesFactory),
+    defaultInitBlock: @Composable () -> Unit = {}
 ) {
     val logger = TagLogger("NavigationJob")
     val subscope = scope.LinkedSupervisorScope()
@@ -56,7 +57,7 @@ fun <Base> initNavigation(
             }
         }
     }
-    CompositionLocalProvider(InternalLocalNavigationNodeFactory<Base>() provides resultNodesFactory) {
+    doWithNodesFactoryInLocalProvider(resultNodesFactory) {
         logger.d { "Hierarchy saving enabled" }
 
         val existsChain = configsRepo.get()
@@ -71,13 +72,88 @@ fun <Base> initNavigation(
 
         val restoredRootChain = remember {
             restoreHierarchy<Base>(
-                existsChain ?: defaultStartChain,
+                existsChain ?: defaultStartChain ?: ConfigHolder.Chain<Base>(null),
                 factory = resultNodesFactory,
                 rootChain = rootChain,
                 dropRedundantChainsOnRestore = dropRedundantChainsOnRestore
             )
         }
-        restoredRootChain ?.start(subscope)
-        restoredRootChain ?.StartInCompose({ savingJob.cancel() })
+        restoredRootChain ?.let {
+            if (existsChain == null && defaultStartChain == null) {
+                doWithChainInLocalProvider(it) {
+                    defaultInitBlock()
+                }
+            } else {
+                it.DrawStackNodes()
+            }
+
+            it.start(subscope)
+        }
     }
+}
+
+/**
+ * Creates root of navigation in current place
+ *
+ * @param defaultStartChain Config of default tree for navigation in case [configsRepo] contains no any information
+ * about last used navigation
+ * @param configsRepo Contains information about last saved navigation tree
+ * @param nodesFactory Provides opportunity to create [dev.inmo.navigation.core.NavigationNode] from their configs
+ * @param scope Will be used to create [LinkedSupervisorScope] which will be the root [CoroutineScope] for all navigation
+ * operations
+ * @param dropRedundantChainsOnRestore Drops chains with empty content
+ * @param rootChain Default root chain where navigation will be rooted
+ */
+@Composable
+fun <Base> initNavigation(
+    defaultStartChain: ConfigHolder.Chain<Base>,
+    configsRepo: NavigationConfigsRepo<Base>,
+    nodesFactory: NavigationNodeFactory<Base>,
+    scope: CoroutineScope = rememberCoroutineScope(),
+    dropRedundantChainsOnRestore: Boolean = false,
+    rootChain: NavigationChain<Base> = NavigationChain(null, nodesFactory),
+) = initNavigation(
+    defaultStartChain = defaultStartChain,
+    configsRepo = configsRepo,
+    nodesFactory = nodesFactory,
+    scope = scope,
+    dropRedundantChainsOnRestore = dropRedundantChainsOnRestore,
+    rootChain = rootChain,
+    defaultInitBlock = {}
+)
+
+
+/**
+ * Creates root of navigation in current place
+ *
+ * @param defaultStartChain Config of default tree for navigation in case [configsRepo] contains no any information
+ * about last used navigation
+ * @param configsRepo Contains information about last saved navigation tree
+ * @param nodesFactory Provides opportunity to create [dev.inmo.navigation.core.NavigationNode] from their configs
+ * @param scope Will be used to create [LinkedSupervisorScope] which will be the root [CoroutineScope] for all navigation
+ * operations
+ * @param dropRedundantChainsOnRestore Drops chains with empty content
+ * @param rootChain Default root chain where navigation will be rooted
+ */
+@Composable
+fun <Base> initNavigation(
+    rootNodeConfig: Base,
+    configsRepo: NavigationConfigsRepo<Base>,
+    nodesFactory: NavigationNodeFactory<Base>,
+    scope: CoroutineScope = rememberCoroutineScope(),
+    dropRedundantChainsOnRestore: Boolean = false,
+    rootChain: NavigationChain<Base> = NavigationChain(null, nodesFactory),
+    defaultInitBlock: @Composable () -> Unit
+) = initNavigation(
+    defaultStartChain = null,
+    configsRepo = configsRepo,
+    nodesFactory = nodesFactory,
+    scope = scope,
+    dropRedundantChainsOnRestore = dropRedundantChainsOnRestore,
+    rootChain = rootChain
+) {
+    InjectNavigationNode(
+        rootNodeConfig,
+        additionalCodeInNodeContext = defaultInitBlock
+    )
 }

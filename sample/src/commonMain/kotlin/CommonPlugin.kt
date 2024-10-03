@@ -6,12 +6,13 @@ import dev.inmo.navigation.sample.ui.NavigationModel
 import dev.inmo.navigation.sample.ui.NavigationViewConfig
 import dev.inmo.navigation.sample.ui.NavigationViewModel
 import dev.inmo.micro_utils.startup.plugin.StartPlugin
+import dev.inmo.navigation.compose.InjectNavigationChain
+import dev.inmo.navigation.compose.InjectNavigationNode
 import dev.inmo.navigation.compose.nodeFactory
 import dev.inmo.navigation.core.NavigationChain
 import dev.inmo.navigation.core.NavigationNode
 import dev.inmo.navigation.core.NavigationNodeFactory
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
-import dev.inmo.navigation.core.repo.ConfigHolder
 import dev.inmo.navigation.sample.ui.NavigationView
 import dev.inmo.navigation.sample.ui.tree.CurrentTreeViewConfig
 import dev.inmo.navigation.sample.ui.tree.CurrentTreeViewViewModel
@@ -80,40 +81,21 @@ object CommonPlugin : StartPlugin {
         super.startPlugin(koin)
 
         koin.get<(@Composable () -> Unit) -> Unit>().invoke {
-            dev.inmo.navigation.compose.initNavigation(
-                defaultStartChain = ConfigHolder.Chain(
-                    ConfigHolder.Node(
-                        EmptyConfig(
-                            "",
-                        ),
-                        null,
-                        listOf(
-                            ConfigHolder.Chain(
-                                ConfigHolder.Node(
-                                    NavigationViewConfig(
-                                        "root",
-                                        ">"
-                                    ),
-                                    null,
-                                    listOf()
-                                ),
-                            ),
-                            ConfigHolder.Chain(
-                                ConfigHolder.Node(
-                                    CurrentTreeViewConfig(
-                                        "tree",
-                                    ),
-                                    null,
-                                    listOf()
-                                ),
-                            ),
-                        )
-                    ),
-                ),
+            dev.inmo.navigation.compose.initNavigation<NavigationNodeDefaultConfig>(
+                EmptyConfig(""),
                 configsRepo = koin.get(),
                 nodesFactory = koin.nodeFactory(),
                 dropRedundantChainsOnRestore = true,
-            )
+            ) {
+                InjectNavigationChain<NavigationNodeDefaultConfig> {
+                    InjectNavigationNode(
+                        NavigationViewConfig(id = "root", text = ">")
+                    )
+                }
+                InjectNavigationChain<NavigationNodeDefaultConfig> {
+                    InjectNavigationNode(CurrentTreeViewConfig(id = "tree"))
+                }
+            }
         }
     }
 }
