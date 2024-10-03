@@ -2,6 +2,8 @@
 
 ## 0.5.6
 
+* `Versions`:
+  * `MicroUtils`: `0.22.3` -> `0.22.4`
 * `Core`:
   * Add default config for `Empty` node (just empty config object)
   * Add default factory for `Empty` node, based on default config
