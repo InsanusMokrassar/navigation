@@ -17,7 +17,7 @@ internal val InternalLocalNavigationNodeProvider: ProvidableCompositionLocal<Nav
 }
 
 @Suppress("UNCHECKED_CAST")
-internal fun <Base> LocalNavigationNodeFactory(): ProvidableCompositionLocal<NavigationNodeFactory<Base>> = InternalLocalNavigationNodeFactory as ProvidableCompositionLocal<NavigationNodeFactory<Base>>
+private fun <Base> LocalNavigationNodeFactory(): ProvidableCompositionLocal<NavigationNodeFactory<Base>> = InternalLocalNavigationNodeFactory as ProvidableCompositionLocal<NavigationNodeFactory<Base>>
 @Suppress("UNCHECKED_CAST")
 private fun <Base> LocalNavigationChainProvider(): ProvidableCompositionLocal<NavigationChain<Base>?> = InternalLocalNavigationChainProvider as ProvidableCompositionLocal<NavigationChain<Base>?>
 @Suppress("UNCHECKED_CAST")
@@ -29,9 +29,17 @@ fun <Base> getNodeFromLocalProvider(): NavigationNode<out Base, Base>? = LocalNa
 fun <Base> doWithNodeInLocalProvider(node: NavigationNode<out Base, Base>, block: @Composable () -> Unit) {
     CompositionLocalProvider(LocalNavigationNodeProvider<Base>() provides node, block)
 }
+
 @Composable
 fun <Base> getChainFromLocalProvider(): NavigationChain<Base>? = LocalNavigationChainProvider<Base>().current
 @Composable
 fun <Base> doWithChainInLocalProvider(chain: NavigationChain<Base>, block: @Composable () -> Unit) {
     CompositionLocalProvider(LocalNavigationChainProvider<Base>() provides chain, block)
+}
+
+@Composable
+fun <Base> getNodesFactoryFromLocalProvider(): NavigationNodeFactory<Base> = LocalNavigationNodeFactory<Base>().current
+@Composable
+fun <Base> doWithNodesFactoryInLocalProvider(factory: NavigationNodeFactory<Base>, block: @Composable () -> Unit) {
+    CompositionLocalProvider(LocalNavigationNodeFactory<Base>() provides factory, block)
 }
