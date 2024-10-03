@@ -10,15 +10,15 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.take
 
 /**
- * Collecting [NavigationChain.stackFlow] and always [StartInCompose] only the last element in [NavigationChain.stackFlow]
+ * Collecting [NavigationChain.stackFlow] and always [Draw] only the last element in [NavigationChain.stackFlow]
  */
 @Composable
-internal fun <Base> NavigationChain<Base>.defaultStackHandling() {
+internal fun <Base> NavigationChain<Base>.DrawStackNodes() {
     val stack = stackFlow.collectAsState()
     key(stack.value.lastOrNull()) {
         val latestNode = stack.value.lastOrNull()
         if (latestNode != null) {
-            CompositionLocalProvider(LocalNavigationNodeProvider<Base>() provides latestNode) {
+            doWithNodeInLocalProvider(latestNode) {
                 when {
                     latestNode is ComposeNode -> {
                         val drawState = latestNode.drawerState.collectAsState()
@@ -26,7 +26,7 @@ internal fun <Base> NavigationChain<Base>.defaultStackHandling() {
                     }
 
                     else -> {
-                        latestNode.defaultSubchainsHandling()
+                        latestNode.SubchainsHandling()
                     }
                 }
             }
@@ -35,12 +35,12 @@ internal fun <Base> NavigationChain<Base>.defaultStackHandling() {
 }
 
 @Composable
-fun <Base> NavigationNode<out Base, Base>.defaultSubchainsHandling(filter: (NavigationChain<Base>) -> Boolean = { true }) {
+fun <Base> NavigationNode<out Base, Base>.SubchainsHandling(filter: (NavigationChain<Base>) -> Boolean = { true }) {
     val subchainsState = subchainsFlow.collectAsState()
     val rawSubchains = subchainsState.value
     val filteredSubchains = rawSubchains.filter(filter)
     filteredSubchains.forEach {
-        it.StartInCompose()
+        it.Draw()
     }
 }
 
@@ -49,9 +49,9 @@ fun <Base> NavigationNode<out Base, Base>.defaultSubchainsHandling(filter: (Navi
  * never be called if [this] [NavigationChain] is the root one
  */
 @Composable
-internal fun <Base> NavigationChain<Base>.StartInCompose(
+internal fun <Base> NavigationChain<Base>.Draw(
     onDismiss: (suspend NavigationChain<Base>.() -> Unit)? = null,
-    block: @Composable NavigationChain<Base>.() -> Unit = {  }
+    beforeNodes: @Composable NavigationChain<Base>.() -> Unit = {  }
 ) {
     key(onDismiss) {
         onDismiss ?.let {
@@ -60,7 +60,7 @@ internal fun <Base> NavigationChain<Base>.StartInCompose(
                     val scope = rememberCoroutineScope()
 
                     remember {
-                        parentNode.onChainRemovedFlow.filter { it.any { it.value === this@StartInCompose } }.subscribeSafelyWithoutExceptions(scope) {
+                        parentNode.onChainRemovedFlow.filter { it.any { it.value === this@Draw } }.subscribeSafelyWithoutExceptions(scope) {
                             onDismiss(this)
                         }
                     }
@@ -69,48 +69,48 @@ internal fun <Base> NavigationChain<Base>.StartInCompose(
         }
     }
 
-    CompositionLocalProvider(LocalNavigationChainProvider<Base>() provides this) {
-        block()
-        defaultStackHandling()
+    doWithChainInLocalProvider(this) {
+        beforeNodes()
+        DrawStackNodes()
     }
 }
 
 /**
- * Creates [NavigationChain] in current composition and call [StartInCompose]
+ * Creates [NavigationChain] in current composition and call [Draw]
  */
 @Composable
-fun <Base> NavigationNode<*, Base>?.NavigationSubChain(
+internal fun <Base> NavigationNode<*, Base>?.SubChain(
     onDismiss: (suspend NavigationChain<Base>.() -> Unit)? = null,
-    block: @Composable NavigationChain<Base>.() -> Unit
+    beforeNodes: @Composable NavigationChain<Base>.() -> Unit
 ) {
     val factory = LocalNavigationNodeFactory<Base>().current
     val chain = remember(this, factory) {
         this ?.createEmptySubChain() ?: NavigationChain<Base>(null, factory)
     }
-    chain.StartInCompose(onDismiss, block)
+    chain.Draw(onDismiss, beforeNodes)
 }
 
 /**
- * Trying to get [InjectNavigationNode] using [LocalNavigationNodeProvider] and calling [NavigationSubChain] with it
+ * Trying to get [InjectNavigationNode] using [LocalNavigationNodeProvider] and calling [SubChain] with it
  */
 @Composable
 fun <Base> InjectNavigationChain(
     onDismiss: (suspend NavigationChain<Base>.() -> Unit)? = null,
-    block: @Composable NavigationChain<Base>.() -> Unit
+    beforeNodes: @Composable NavigationChain<Base>.() -> Unit
 ) {
-    LocalNavigationNodeProvider<Base>().current.NavigationSubChain(onDismiss, block)
+    getNodeFromLocalProvider<Base>().SubChain(onDismiss, beforeNodes)
 }
 
 /**
- * Trying to get [InjectNavigationNode] using [LocalNavigationNodeProvider] and calling [NavigationSubChain] with it
+ * Trying to get [InjectNavigationNode] using [LocalNavigationNodeProvider] and calling [SubChain] with it
  */
 @Composable
 @Deprecated("Renamed", ReplaceWith("InjectNavigationChain(onDismiss, block)", "dev.inmo.navigation.compose.InjectNavigationChain"))
-fun <Base> NavigationSubChain(
+fun <Base> SubChain(
     onDismiss: (suspend NavigationChain<Base>.() -> Unit)? = null,
-    block: @Composable NavigationChain<Base>.() -> Unit
+    beforeNodes: @Composable NavigationChain<Base>.() -> Unit
 ) {
-    InjectNavigationChain(onDismiss, block)
+    InjectNavigationChain(onDismiss, beforeNodes)
 }
 
 /**
@@ -120,13 +120,13 @@ fun <Base> NavigationSubChain(
  * @param onDismiss Will be called when [this] [InjectNavigationNode] will be removed from its [NavigationChain]
  */
 @Composable
-internal fun <Base> NavigationNode<*, Base>.StartInCompose(
-    additionalCodeInNodeContext: (@Composable () -> Unit)? = null,
+internal fun <Base> NavigationNode<*, Base>.Use(
     onDismiss: (suspend NavigationNode<*, Base>.() -> Unit)? = null,
+    actionInContext: @Composable() (() -> Unit)? = null,
 ) {
     key(this) {
-        CompositionLocalProvider(LocalNavigationNodeProvider<Base>() provides this) {
-            additionalCodeInNodeContext ?.invoke()
+        doWithNodeInLocalProvider(this) {
+            actionInContext ?.invoke()
         }
     }
 
@@ -146,11 +146,11 @@ internal fun <Base> NavigationNode<*, Base>.StartInCompose(
 }
 
 /**
- * Trying to create [InjectNavigationNode] in [this] [NavigationChain] and do [StartInCompose] with passing of [onDismiss] in
+ * Trying to create [InjectNavigationNode] in [this] [NavigationChain] and do [Draw] with passing of [onDismiss] in
  * this call
  */
 @Composable
-fun <Base> NavigationChain<Base>.NavigationSubNode(
+internal fun <Base> NavigationChain<Base>.NodeInStack(
     config: Base,
     additionalCodeInNodeContext: (@Composable () -> Unit)? = null,
     onDismiss: (suspend NavigationNode<*, Base>.() -> Unit)? = null,
@@ -158,38 +158,38 @@ fun <Base> NavigationChain<Base>.NavigationSubNode(
     val node: NavigationNode<out Base, Base>? = remember {
         push(config)
     }
-    node ?.StartInCompose(additionalCodeInNodeContext, onDismiss)
+    node ?.Use(onDismiss, additionalCodeInNodeContext)
 }
 
 /**
- * Trying to get current [NavigationChain] using [LocalNavigationChainProvider] and calls [NavigationSubNode] with
+ * Trying to get current [NavigationChain] using [LocalNavigationChainProvider] and calls [InjectNavigationNode] with
  * passing both [config] and [onDismiss]
  */
 @Composable
 fun <Base> InjectNavigationNode(
     config: Base,
-    additionalCodeInNodeContext: (@Composable () -> Unit)? = null,
     onDismiss: (suspend NavigationNode<*, Base>.() -> Unit)? = null,
+    additionalCodeInNodeContext: @Composable() (() -> Unit)? = null,
 ) {
-    val chain = LocalNavigationChainProvider<Base>().current ?: run {
+    val chain = getChainFromLocalProvider<Base>() ?: run {
         InjectNavigationChain<Base> {
-            InjectNavigationNode(config, additionalCodeInNodeContext, onDismiss)
+            InjectNavigationNode(config, onDismiss, additionalCodeInNodeContext)
         }
         return@InjectNavigationNode
     }
-    chain.NavigationSubNode(config, additionalCodeInNodeContext, onDismiss)
+    chain.NodeInStack(config, additionalCodeInNodeContext, onDismiss)
 }
 
 /**
- * Trying to get current [NavigationChain] using [LocalNavigationChainProvider] and calls [NavigationSubNode] with
+ * Trying to get current [NavigationChain] using [LocalNavigationChainProvider] and calls [InjectNavigationNode] with
  * passing both [config] and [onDismiss]
  */
 @Composable
 @Deprecated("Renamed", ReplaceWith("InjectNavigationNode(config, onDismiss)", "dev.inmo.navigation.compose.InjectNavigationNode"))
 fun <Base> NavigationSubNode(
     config: Base,
-    additionalCodeInNodeContext: (@Composable () -> Unit)? = null,
     onDismiss: (suspend NavigationNode<*, Base>.() -> Unit)? = null,
+    additionalCodeInNodeContext: @Composable() (() -> Unit)? = null,
 ) {
-    InjectNavigationNode(config, additionalCodeInNodeContext, onDismiss)
+    InjectNavigationNode(config, onDismiss, additionalCodeInNodeContext)
 }

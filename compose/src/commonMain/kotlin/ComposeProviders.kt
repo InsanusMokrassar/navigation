@@ -1,5 +1,7 @@
 package dev.inmo.navigation.compose
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.compositionLocalOf
 import dev.inmo.navigation.core.NavigationChain
@@ -15,8 +17,21 @@ internal val InternalLocalNavigationNodeProvider: ProvidableCompositionLocal<Nav
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <Base> LocalNavigationNodeFactory(): ProvidableCompositionLocal<NavigationNodeFactory<Base>> = InternalLocalNavigationNodeFactory as ProvidableCompositionLocal<NavigationNodeFactory<Base>>
+internal fun <Base> LocalNavigationNodeFactory(): ProvidableCompositionLocal<NavigationNodeFactory<Base>> = InternalLocalNavigationNodeFactory as ProvidableCompositionLocal<NavigationNodeFactory<Base>>
 @Suppress("UNCHECKED_CAST")
-fun <Base> LocalNavigationChainProvider(): ProvidableCompositionLocal<NavigationChain<Base>?> = InternalLocalNavigationChainProvider as ProvidableCompositionLocal<NavigationChain<Base>?>
+private fun <Base> LocalNavigationChainProvider(): ProvidableCompositionLocal<NavigationChain<Base>?> = InternalLocalNavigationChainProvider as ProvidableCompositionLocal<NavigationChain<Base>?>
 @Suppress("UNCHECKED_CAST")
-fun <Base> LocalNavigationNodeProvider(): ProvidableCompositionLocal<NavigationNode<out Base, Base>?> = InternalLocalNavigationNodeProvider as ProvidableCompositionLocal<NavigationNode<out Base, Base>?>
+private fun <Base> LocalNavigationNodeProvider(): ProvidableCompositionLocal<NavigationNode<out Base, Base>?> = InternalLocalNavigationNodeProvider as ProvidableCompositionLocal<NavigationNode<out Base, Base>?>
+
+@Composable
+fun <Base> getNodeFromLocalProvider(): NavigationNode<out Base, Base>? = LocalNavigationNodeProvider<Base>().current
+@Composable
+fun <Base> doWithNodeInLocalProvider(node: NavigationNode<out Base, Base>, block: @Composable () -> Unit) {
+    CompositionLocalProvider(LocalNavigationNodeProvider<Base>() provides node, block)
+}
+@Composable
+fun <Base> getChainFromLocalProvider(): NavigationChain<Base>? = LocalNavigationChainProvider<Base>().current
+@Composable
+fun <Base> doWithChainInLocalProvider(chain: NavigationChain<Base>, block: @Composable () -> Unit) {
+    CompositionLocalProvider(LocalNavigationChainProvider<Base>() provides chain, block)
+}

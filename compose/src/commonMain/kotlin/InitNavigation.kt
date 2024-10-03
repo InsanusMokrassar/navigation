@@ -80,11 +80,11 @@ private fun <Base> initNavigation(
         }
         restoredRootChain ?.let {
             if (existsChain == null && defaultStartChain == null) {
-                CompositionLocalProvider(LocalNavigationChainProvider<Base>() provides it) {
+                doWithChainInLocalProvider(it) {
                     defaultInitBlock()
                 }
             } else {
-                it.defaultStackHandling()
+                it.DrawStackNodes()
             }
 
             it.start(subscope)
@@ -154,6 +154,6 @@ fun <Base> initNavigation(
 ) {
     InjectNavigationNode(
         rootNodeConfig,
-        defaultInitBlock
+        additionalCodeInNodeContext = defaultInitBlock
     )
 }
