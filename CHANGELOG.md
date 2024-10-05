@@ -2,6 +2,13 @@
 
 ## 0.5.7
 
+**THIS UPDATE CONTAINS BREAKING CHANGES RELATED TO `NavigationNodeFactory` things**
+
+* `Code`:
+  * Replace `NavigationNodeFactory.Companion.Typed` factory into `NavigationNodeFactory.Typed`
+  * Change order of `NavigationNodeFactory.Typed` type args
+  * Add default aggregator for `NavigationNodeFactory`
+
 ## 0.5.6
 
 * `Versions`:
