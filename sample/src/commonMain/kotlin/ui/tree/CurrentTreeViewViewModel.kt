@@ -6,6 +6,7 @@ import dev.inmo.kslog.common.logger
 import dev.inmo.micro_utils.coroutines.subscribeSafelyWithoutExceptions
 import dev.inmo.navigation.core.NavigationNode
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
+import dev.inmo.navigation.core.extensions.changesInSubTreeFlow
 import dev.inmo.navigation.core.extensions.onChangesInSubTree
 import dev.inmo.navigation.core.extensions.rootChain
 import dev.inmo.navigation.core.visiter.walkOnNodes
@@ -24,17 +25,8 @@ class CurrentTreeViewViewModel(
     val mermaidLines = mutableStateOf(emptyList<String>())
     private var listeningJob: Job? = null
     private val listeningJobsMutex = Mutex()
-    private val changesListeningJob = node.chain.rootChain().onChangesInSubTree(scope) { _, _ ->
-        listeningJobsMutex.withLock {
-            val flows = mutableListOf<Flow<Any>>(flowOf(Unit))
-            node.chain.rootChain().walkOnNodes {
-                flows.add(it.statesFlow)
-            }
-            listeningJob ?.cancel()
-            listeningJob = flows.merge().subscribeSafelyWithoutExceptions(scope) {
-                updateFun()
-            }
-        }
+    private val changesListeningJob = node.chain.rootChain().changesInSubTreeFlow().subscribeSafelyWithoutExceptions(scope) {
+        updateFun()
     }
 
 

@@ -1,18 +1,19 @@
 package dev.inmo.navigation.sample
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import dev.inmo.micro_utils.common.either
 import dev.inmo.micro_utils.koin.singleWithRandomQualifier
 import dev.inmo.navigation.sample.ui.NavigationModel
 import dev.inmo.navigation.sample.ui.NavigationViewConfig
 import dev.inmo.navigation.sample.ui.NavigationViewModel
 import dev.inmo.micro_utils.startup.plugin.StartPlugin
-import dev.inmo.navigation.compose.InjectNavigationChain
-import dev.inmo.navigation.compose.InjectNavigationNode
-import dev.inmo.navigation.compose.nodeFactory
+import dev.inmo.navigation.compose.*
 import dev.inmo.navigation.core.NavigationChain
 import dev.inmo.navigation.core.NavigationNode
 import dev.inmo.navigation.core.NavigationNodeFactory
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
+import dev.inmo.navigation.core.extensions.changesInSubtreeFlow
 import dev.inmo.navigation.sample.ui.NavigationView
 import dev.inmo.navigation.sample.ui.tree.CurrentTreeViewConfig
 import dev.inmo.navigation.sample.ui.tree.CurrentTreeViewViewModel
@@ -87,6 +88,12 @@ object CommonPlugin : StartPlugin {
                 nodesFactory = koin.nodeFactory(),
                 dropRedundantChainsOnRestore = true,
             ) {
+                val rootChain = getChainFromLocalProvider<NavigationNodeDefaultConfig>()!!
+                LaunchedEffect(rootChain) {
+                    rootChain.either<NavigationChain<NavigationNodeDefaultConfig>, NavigationNode<out NavigationNodeDefaultConfig, NavigationNodeDefaultConfig>>().changesInSubtreeFlow().collect {
+                        println(it)
+                    }
+                }
                 InjectNavigationChain<NavigationNodeDefaultConfig> {
                     InjectNavigationNode(
                         NavigationViewConfig(id = "root", text = ">")

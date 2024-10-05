@@ -167,7 +167,7 @@ abstract class NavigationNode<Config : Base, Base>(
         override val configState: StateFlow<T> = MutableStateFlow(config).asStateFlow()
 
         companion object {
-            val DefaultFactory = NavigationNodeFactory.Companion.Typed<Any, Config> { chain, config ->
+            val DefaultFactory = NavigationNodeFactory.Typed<Config, Any?> { chain, config ->
                 Empty(chain, config)
             }
         }
