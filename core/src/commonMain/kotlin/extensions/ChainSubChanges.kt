@@ -7,11 +7,8 @@ import dev.inmo.navigation.core.NavigationChain
 import dev.inmo.navigation.core.NavigationNode
 import dev.inmo.navigation.core.NavigationNodeId
 import dev.inmo.navigation.core.onDestroyFlow
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.job
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 
 fun <Base> NavigationChain<Base>.onChangesInSubTree(
     scope: CoroutineScope,
@@ -58,6 +55,9 @@ fun <Config : Base, Base> NavigationNode<Config, Base>.onChangesInSubTree(
             }
         )
         onChangeInSubNode(this@onChangesInSubTree, it)
+    }
+    configState.subscribeSafelyWithoutExceptions(subscope) {
+
     }
 
     onDestroyFlow.subscribeSafelyWithoutExceptions(subscope) {
