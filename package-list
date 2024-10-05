@@ -9,6 +9,7 @@ dev.inmo.navigation.core.fragments
 dev.inmo.navigation.core.fragments.transactions
 dev.inmo.navigation.core.fragments.view
 dev.inmo.navigation.core.repo
+dev.inmo.navigation.core.tmp_utils
 dev.inmo.navigation.core.urls
 dev.inmo.navigation.core.visiter
 module:navigation.mermaid
