@@ -1,5 +1,20 @@
 # Navigation Changelog
 
+## 0.6.0
+
+* `Versions`:
+  * `Kotlin`: `2.0.20` -> `2.1.10`
+  * `Coroutines`: `1.9.0` -> `1.10.1`
+  * `Serialization`: `1.7.3` -> `1.8.0`
+  * `MicroUtils`: `0.22.4` -> `0.24.5`
+  * `KSLog`: `1.3.6` -> `1.4.1`
+  * `Koin`: `4.0.0` -> `4.0.2`
+  * `Compose`: `1.7.0-beta02` -> `1.7.3`
+  * `Android Core KTX`: `1.13.1` -> `1.15.0`
+  * `Android Compose Activity`: `1.9.2` -> `1.10.0`
+* `Core`:
+  * `NodeFragment` node and config now setting up with synchronization
+
 ## 0.5.7
 
 **THIS UPDATE CONTAINS BREAKING CHANGES RELATED TO `NavigationNodeFactory` things**
