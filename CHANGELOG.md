@@ -1,5 +1,7 @@
 # Navigation Changelog
 
+## 0.6.0
+
 ## 0.5.7
 
 **THIS UPDATE CONTAINS BREAKING CHANGES RELATED TO `NavigationNodeFactory` things**
