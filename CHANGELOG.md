@@ -12,6 +12,8 @@
   * `Compose`: `1.7.0-beta02` -> `1.7.3`
   * `Android Core KTX`: `1.13.1` -> `1.15.0`
   * `Android Compose Activity`: `1.9.2` -> `1.10.0`
+* `Core`:
+  * `NodeFragment` node and config now setting up with synchronization
 
 ## 0.5.7
 
