@@ -12,7 +12,6 @@ import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 import dev.inmo.navigation.core.fragments.transactions.FragmentTransactionConfigurator
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import java.lang.ref.WeakReference
 import kotlin.reflect.KClass
 
 class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
@@ -29,7 +28,7 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
     override val log: KSLog by lazy {
         TagLogger("${this::class.simpleName}/${fragmentKClass.simpleName}")
     }
-    private var fragment: WeakReference<NodeFragment<Config, Base>>? = null
+    private var fragment: NodeFragment<Config, Base>? = null
     private val _configState = MutableStateFlow(config)
     override val configState: StateFlow<Config> = _configState.asStateFlow()
     private val viewTag
@@ -37,15 +36,14 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
 
     override fun onCreate() {
         super.onCreate()
-        val newFragment = (fragmentKClass.objectInstance ?: fragmentKClass.constructors.first {
+        fragment = (fragmentKClass.objectInstance ?: fragmentKClass.constructors.first {
             it.parameters.isEmpty()
         }.call()) as NodeFragment<Config, Base>
-        fragment = WeakReference(newFragment)
-        newFragment.setNode(this, _configState)
+        fragment ?.setNode(this, _configState)
     }
 
     private fun placeFragment(view: View) {
-        fragment ?.get() ?.let {
+        fragment ?.let {
             view.id = view.id.takeIf { it != NO_ID } ?: View.generateViewId()
             fragmentManager.beginTransaction().apply {
                 runCatching {
@@ -67,7 +65,7 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
     override fun onPause() {
         super.onPause()
 
-        fragment ?.get() ?.let {
+        fragment ?.let {
             fragmentManager.beginTransaction().apply {
                 runCatching {
                     fragmentTransactionConfigurator ?.apply {
@@ -106,7 +104,7 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
 
                 subsubscope.launchSafelyWithoutExceptions {
                     while (state == NavigationNodeState.RESUMED) {
-                        if (fragment ?.get() ?.isAdded != true) {
+                        if (fragment ?.isAdded != true) {
                             placeFragment()
                         }
 
