@@ -160,13 +160,13 @@ class NavigationChain<Base>(
         log.d { "Starting chain" }
 
         parentNode ?.run {
-            (flowOf(state) + stateChangesFlow).subscribeSafelyWithoutExceptions(subscope) {
+            (flowOf(state) + stateChangesFlow).subscribeLoggingDropExceptions(scope = subscope) {
                 log.d { "Start update of state due to parent state update to $it" }
                 actualizeStackStates()
             }
         }
 
-        parentNode ?.subchainsFlow ?.dropWhile { this in it } ?.subscribeSafelyWithoutExceptions(subscope) {
+        parentNode ?.subchainsFlow ?.dropWhile { this in it }?.subscribeLoggingDropExceptions(scope = subscope) {
             log.d { "Cancelling subscope" }
             subscope.cancel()
             log.d { "Cancelled subscope" }
@@ -178,27 +178,29 @@ class NavigationChain<Base>(
         merge(
             flow { emit(emptyList<NavigationNode<*, Base>>().diff(stackFlow.value)) },
             onNodesStackDiffFlow
-        ).filter { !it.isEmpty() }.subscribeSafelyWithoutExceptions(subscope) {
-            actualizeStackStates()
-            nodeToJobMutex.withLock {
-                it.removed.forEach { (_, it) ->
-                    nodeToJob.remove(it.id) ?.cancel()
+        )
+            .filter { !it.isEmpty() }
+            .subscribeLoggingDropExceptions(scope = subscope) {
+                actualizeStackStates()
+                nodeToJobMutex.withLock {
+                    it.removed.forEach { (_, it) ->
+                        nodeToJob.remove(it.id) ?.cancel()
+                    }
+                    it.replaced.forEach { (old, new) ->
+                        nodeToJob.remove(new.value.id) ?.cancel()
+                        nodeToJob[new.value.id] = new.value.start(subscope)
+                        nodeToJob.remove(old.value.id) ?.cancel()
+                    }
+                    it.added.forEach { (_, it) ->
+                        nodeToJob.remove(it.id) ?.cancel()
+                        nodeToJob[it.id] = it.start(subscope)
+                    }
                 }
-                it.replaced.forEach { (old, new) ->
-                    nodeToJob.remove(new.value.id) ?.cancel()
-                    nodeToJob[new.value.id] = new.value.start(subscope)
-                    nodeToJob.remove(old.value.id) ?.cancel()
-                }
-                it.added.forEach { (_, it) ->
-                    nodeToJob.remove(it.id) ?.cancel()
-                    nodeToJob[it.id] = it.start(subscope)
-                }
-            }
 
-            if (stack.isEmpty()) {
-                dropItself()
+                if (stack.isEmpty()) {
+                    dropItself()
+                }
             }
-        }
 
         subscope.launch {
             for (lambda in nodesChangesChannel) {
