@@ -116,22 +116,22 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
         val subscope = scope.LinkedSupervisorScope()
         return super.start(subscope).let {
 
-            (flowOf(state) + statesFlow).filter { it == NavigationNodeState.RESUMED }.subscribeSafelyWithoutExceptions(subscope) {
+            (flowOf(state) + statesFlow).filter { it == NavigationNodeState.RESUMED }.subscribeLoggingDropExceptions(subscope) {
                 val subsubscope = subscope.LinkedSupervisorScope()
 
                 flowOnHierarchyChangeListener.onChildViewAdded.filter {
                     log.d { "Added views: ${it}, subview navigation tag: ${it.second.navigationTag}" }
-                    it.second.navigationTag == viewTag
-                }.subscribeSafelyWithoutExceptions(subsubscope) {
+                    it.second.navigationTag == viewTag && chain.stack.contains(this@AndroidFragmentNode)
+                }.subscribeLoggingDropExceptions(subsubscope) {
                     placeFragment()
                 }
 
-                onDestroyFlow.subscribeSafelyWithoutExceptions(subsubscope) {
+                onDestroyFlow.subscribeLoggingDropExceptions(subsubscope) {
                     subsubscope.cancel()
                 }
 
-                subsubscope.launchSafelyWithoutExceptions {
-                    while (state == NavigationNodeState.RESUMED) {
+                subsubscope.launchLoggingDropExceptions {
+                    while (state == NavigationNodeState.RESUMED && chain.stack.contains(this@AndroidFragmentNode)) {
                         if (fragment ?.isAdded != true) {
                             placeFragment()
                         }

@@ -122,8 +122,25 @@ class NavigationChain<Base>(
         val newNode = nodeFactory.createNode(this, config) ?: return null
 
         nodesChangesChannel.trySend {
-            node.changeState(NavigationNodeState.STARTED)
+            node.changeState(NavigationNodeState.NEW)
 
+            _stackFlow.value = (stack.take(i) + newNode) + stack.drop(i + 1)
+            nodesIds[newNode.id] = newNode
+        }
+
+        return node to newNode
+    }
+
+    fun reversedReplace(
+        node: NavigationNode<*, Base>,
+        config: Base
+    ): Pair<NavigationNode<out Base, Base>, NavigationNode<out Base, Base>>? {
+        val i = stack.indexOfFirst { it === node }.takeIf { it > -1 } ?: return null
+
+        nodesIds.remove(node.id)
+        val newNode = nodeFactory.createNode(this, config) ?: return null
+
+        nodesChangesChannel.trySend {
             _stackFlow.value = (stack.take(i) + newNode) + stack.drop(i + 1)
             nodesIds[newNode.id] = newNode
 
