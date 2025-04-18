@@ -5,6 +5,7 @@ import dev.inmo.micro_utils.common.diff
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.extensions.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -38,13 +39,15 @@ class NavigationChain<Base>(
             log.d { "Start actualization of stack $stack" }
             runCatchingSafely {
                 stack.forEachIndexed { i, node ->
-                    node.state = minOf(
-                        parentState,
-                        if (i == stack.lastIndex) {
-                            NavigationNodeState.RESUMED
-                        } else {
-                            NavigationNodeState.STARTED
-                        }
+                    node.changeState(
+                        minOf(
+                            parentState,
+                            if (i == stack.lastIndex) {
+                                NavigationNodeState.RESUMED
+                            } else {
+                                NavigationNodeState.STARTED
+                            }
+                        )
                     )
 
                     log.d { "$node actual state now is ${node.state}" }
@@ -55,15 +58,19 @@ class NavigationChain<Base>(
         }
     }
 
+    private val nodesChangesChannel: Channel<suspend () -> Unit> = Channel(Channel.UNLIMITED)
+
     fun push(config: Base): NavigationNode<out Base, Base>? {
         val newNode = nodeFactory.createNode(this, config) ?: let {
             log.d { "Unable to create node for $config" }
             return null
         }
-        log.d { "Adding node $newNode with config $config" }
-        nodesIds[newNode.id] = newNode
-        _stackFlow.value += newNode
-        log.d { "$newNode now in stack: $stack" }
+        nodesChangesChannel.trySend {
+            log.d { "Adding node $newNode with config $config" }
+            nodesIds[newNode.id] = newNode
+            _stackFlow.value += newNode
+            log.d { "$newNode now in stack: $stack" }
+        }
         return newNode
     }
 
@@ -86,13 +93,17 @@ class NavigationChain<Base>(
             return null
         }
 
-        node.state = NavigationNodeState.NEW
+        nodesChangesChannel.trySend {
+            node.changeState(NavigationNodeState.STARTED)
 
-        log.d { "Stack before removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
-        _stackFlow.value = newStack
-        log.d { "Stack after removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
+            log.d { "Stack before removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
+            _stackFlow.value = newStack
+            log.d { "Stack after removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
 
-        nodesIds.remove(node.id)
+            node.changeState(NavigationNodeState.NEW)
+
+            nodesIds.remove(node.id)
+        }
         return node
     }
 
@@ -108,12 +119,16 @@ class NavigationChain<Base>(
         val i = stack.indexOfFirst { it === node }.takeIf { it > -1 } ?: return null
 
         nodesIds.remove(node.id)
-        node.state = NavigationNodeState.NEW
-
         val newNode = nodeFactory.createNode(this, config) ?: return null
 
-        _stackFlow.value = (stack.take(i) + newNode) + stack.drop(i + 1)
-        nodesIds[newNode.id] = newNode
+        nodesChangesChannel.trySend {
+            node.changeState(NavigationNodeState.STARTED)
+
+            _stackFlow.value = (stack.take(i) + newNode) + stack.drop(i + 1)
+            nodesIds[newNode.id] = newNode
+
+            node.changeState(NavigationNodeState.NEW)
+        }
 
         return node to newNode
     }
@@ -182,6 +197,12 @@ class NavigationChain<Base>(
 
             if (stack.isEmpty()) {
                 dropItself()
+            }
+        }
+
+        subscope.launch {
+            for (lambda in nodesChangesChannel) {
+                lambda()
             }
         }
 
