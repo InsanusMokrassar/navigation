@@ -67,12 +67,10 @@ class NavigationChain<Base>(
             log.d { "Unable to create node for $config" }
             return null
         }
-        nodesChangesChannel.trySend {
-            log.d { "Adding node $newNode with config $config" }
-            nodesIds[newNode.id] = newNode
-            _stackFlow.value += newNode
-            log.d { "$newNode now in stack: $stack" }
-        }
+        log.d { "Adding node $newNode with config $config" }
+        nodesIds[newNode.id] = newNode
+        _stackFlow.value += newNode
+        log.d { "$newNode now in stack: $stack" }
         return newNode
     }
 
