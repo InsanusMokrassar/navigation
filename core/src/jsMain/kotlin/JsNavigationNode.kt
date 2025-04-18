@@ -30,9 +30,11 @@ abstract class JsNavigationNode<Config : Base, Base : NavigationNodeDefaultConfi
     override fun onResume() {
         super.onResume()
         inline fun refresh() {
-            _htmlElementStateFlow.value = runCatching {
-                htmlElementOrThrow
-            }.getOrNull()
+            if (chain.stack.contains(this)) {
+                _htmlElementStateFlow.value = runCatching {
+                    htmlElementOrThrow
+                }.getOrNull()
+            }
         }
         observer = MutationObserver { _, _ ->
             refresh()

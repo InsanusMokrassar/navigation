@@ -11,6 +11,14 @@ import dev.inmo.navigation.core.nodeOrThrow
 import dev.inmo.navigation.core.onChain
 import dev.inmo.navigation.core.onNode
 import dev.inmo.navigation.core.visiter.walk
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.job
+import kotlinx.coroutines.plus
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -29,13 +37,16 @@ class WalkingTests : NavigationTest() {
      * ```
      */
     @Test
-    fun testingThatOrdinaryWalkingWorksProperly() {
+    fun testingThatOrdinaryWalkingWorksProperly() = runTest {
         val c0 = NavigationChain<TestConfig>(
             null,
             NavigationNodeFactory { chain, config ->
                 NavigationNode.Empty(chain, config, NavigationNodeId(config.id))
             }
         )
+        val c0Scope = this + Dispatchers.Default + Job(this.coroutineContext.job)
+        c0.start(c0Scope)
+
         val n0 = c0.push(TestConfig()) ?: error("Unable to create n0 for root chain for some reason")
         val (n1, c1) = n0.createSubChain(TestConfig()) ?: error("Unable to create subchain c1 with node n1 in n1 node for some reason")
         val n3 = c0.push(TestConfig()) ?: error("Unable to create node n2 for root chain for some reason")
@@ -51,6 +62,18 @@ class WalkingTests : NavigationTest() {
             n3.either(),
         )
 
+        merge(
+            *orderOfVisiting.mapNotNull {
+                it.t1OrNull ?.stackFlow
+            }.toTypedArray()
+        ).filter {
+            orderOfVisiting.mapNotNull {
+                it.t1OrNull ?.stackFlow
+            }.sumOf {
+                it.value.size
+            } == orderOfVisiting.count { it.t2OrNull != null }
+        }.first()
+
         c0.walk {
             it.onNode { visitingNode ->
                 assertEquals(orderOfVisiting.removeAt(0).nodeOrThrow, visitingNode)
@@ -60,5 +83,6 @@ class WalkingTests : NavigationTest() {
         }
 
         assertEquals(0, orderOfVisiting.size)
+        c0Scope.coroutineContext.job.cancel()
     }
 }
