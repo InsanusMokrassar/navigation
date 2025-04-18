@@ -104,22 +104,22 @@ abstract class NavigationNode<Config : Base, Base>(
     }
 
     open suspend fun onBeforeCreate() {
-        log.d { "onCreate" }
+        log.d { "onBeforeCreate" }
     }
     open suspend fun onBeforeStart() {
-        log.d { "onStart" }
+        log.d { "onBeforeStart" }
     }
     open suspend fun onBeforeResume() {
-        log.d { "onResume" }
+        log.d { "onBeforeResume" }
     }
     open suspend fun onBeforePause() {
-        log.d { "onPause" }
+        log.d { "onBeforePause" }
     }
     open suspend fun onBeforeStop() {
-        log.d { "onStop" }
+        log.d { "onBeforeStop" }
     }
     open suspend fun onBeforeDestroy() {
-        log.d { "onDestroy" }
+        log.d { "onBeforeDestroy" }
     }
 
     private fun createEmptySubChainWithoutAttaching(id: NavigationChainId? = null): NavigationChain<Base> {
