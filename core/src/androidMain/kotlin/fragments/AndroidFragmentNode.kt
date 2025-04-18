@@ -12,6 +12,7 @@ import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 import dev.inmo.navigation.core.fragments.transactions.FragmentTransactionConfigurator
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import kotlin.coroutines.coroutineContext
 import kotlin.reflect.KClass
 
 class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
@@ -33,6 +34,33 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
     override val configState: StateFlow<Config> = _configState.asStateFlow()
     private val viewTag
         get() = config.id
+
+    private val _beforePauseWaitJobState = SpecialMutableStateFlow<CompletableJob?>(null)
+
+    /**
+     * In case you wish to do some job before pause, you may return true from this function and listen for
+     * [beforePauseWaitJobState] states. If [beforePauseWaitJobState] is not null - you are in pre-pause state and may
+     * do some job. After job is done, you MUST call [CompletableJob.complete] on [beforePauseWaitJobState] value
+     */
+    var useBeforePauseWait: Boolean = false
+    /**
+     * Will contain [CompletableJob] if [useBeforePauseWait] returns true before pausing will be done.
+     *
+     * This state will be useful to animate or do some before-pausing job. After job or animation is done,
+     * call [CompletableJob.complete] on [beforePauseWaitJobState] value
+     */
+    val beforePauseWaitJobState = _beforePauseWaitJobState.asStateFlow()
+
+    override suspend fun onBeforePause() {
+        super.onBeforePause()
+        if (useBeforePauseWait) {
+            val completingJob = Job(coroutineContext.job)
+            _beforePauseWaitJobState.value = completingJob
+            runCatching {
+                completingJob.join()
+            }
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
