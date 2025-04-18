@@ -210,4 +210,15 @@ class NavigationChain<Base>(
 
         return subscope.coroutineContext.job
     }
+
+    companion object {
+        operator fun <Base> invoke(
+            parentNode: NavigationNode<out Base, Base>?,
+            nodeFactory: NavigationNodeFactory<Base>,
+            scope: CoroutineScope,
+            id: NavigationChainId? = null
+        ) = NavigationChain(parentNode = parentNode, nodeFactory = nodeFactory, id = id).apply {
+            start(scope)
+        }
+    }
 }
