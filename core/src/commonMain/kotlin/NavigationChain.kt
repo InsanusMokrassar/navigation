@@ -59,6 +59,8 @@ class NavigationChain<Base>(
     }
 
     private val nodesChangesChannel: Channel<suspend () -> Unit> = Channel(Channel.UNLIMITED)
+    private var nodesChangesJobMutex = Mutex()
+    private var nodesChangesJob: Job? = null
 
     fun push(config: Base): NavigationNode<out Base, Base>? {
         val newNode = nodeFactory.createNode(this, config) ?: let {
@@ -202,9 +204,14 @@ class NavigationChain<Base>(
                 }
             }
 
-        subscope.launch {
-            for (lambda in nodesChangesChannel) {
-                lambda()
+        subscope.launchLoggingDropExceptions {
+            nodesChangesJobMutex.withLock {
+                nodesChangesJob ?.cancel()
+                nodesChangesJob = subscope.launch {
+                    for (lambda in nodesChangesChannel) {
+                        lambda()
+                    }
+                }
             }
         }
 
