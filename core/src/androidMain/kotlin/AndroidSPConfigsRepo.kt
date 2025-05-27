@@ -5,6 +5,7 @@ import dev.inmo.navigation.core.repo.ConfigHolder
 import dev.inmo.navigation.core.repo.NavigationConfigsRepo
 import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.modules.*
 import kotlin.reflect.KClass
 
@@ -12,7 +13,8 @@ class AndroidSPConfigsRepo<T: Any>(
     private val sharedPreferences: SharedPreferences,
     baseConfigKClass: KClass<T>,
     private val key: String = "navigation",
-    private val json: Json
+    private val json: Json,
+    private val onDecodingError: (raw: JsonElement?, Throwable) -> ConfigHolder<T>? = { _, _ -> null },
 ) : NavigationConfigsRepo<T> {
     private val serializer = ConfigHolder.serializer(PolymorphicSerializer<T>(baseConfigKClass))
 
@@ -21,6 +23,7 @@ class AndroidSPConfigsRepo<T: Any>(
         baseConfigKClass: KClass<T>,
         configKClasses: List<KClass<out T>>,
         key: String = "navigation",
+        onDecodingError: (raw: JsonElement?, Throwable) -> ConfigHolder<T>? = { _, _ -> null },
     ) : this(
         sharedPreferences,
         baseConfigKClass,
@@ -36,20 +39,23 @@ class AndroidSPConfigsRepo<T: Any>(
                     poly(it)
                 }
             }
-        }
+        },
+        onDecodingError
     )
 
     constructor(
         sharedPreferences: SharedPreferences,
         baseConfigKClass: KClass<T>,
         subclass: KClass<out T>,
-        vararg subclasses: KClass<out T>
-    ) : this(sharedPreferences, baseConfigKClass, listOf(subclass) + subclasses.toList())
+        vararg subclasses: KClass<out T>,
+        onDecodingError: (raw: JsonElement?, Throwable) -> ConfigHolder<T>? = { _, _ -> null },
+    ) : this(sharedPreferences, baseConfigKClass, listOf(subclass) + subclasses.toList(), onDecodingError = onDecodingError)
 
     constructor(
         sharedPreferences: SharedPreferences,
-        baseConfigKClass: KClass<T>
-    ) : this(sharedPreferences, baseConfigKClass, baseConfigKClass.sealedSubclasses)
+        baseConfigKClass: KClass<T>,
+        onDecodingError: (raw: JsonElement?, Throwable) -> ConfigHolder<T>? = { _, _ -> null },
+    ) : this(sharedPreferences, baseConfigKClass, baseConfigKClass.sealedSubclasses, onDecodingError = onDecodingError)
 
     override fun save(holder: ConfigHolder<T>) {
         sharedPreferences.edit().apply {
@@ -60,8 +66,17 @@ class AndroidSPConfigsRepo<T: Any>(
     }
 
     override fun get(): ConfigHolder<T>? {
-        return sharedPreferences.getString(key, null) ?.let {
-            json.decodeFromString(serializer, it)
+        return runCatching {
+            sharedPreferences.getString(key, null) ?.let {
+                json.decodeFromString(serializer, it)
+            }
+        }.getOrElse {
+            val raw = runCatching {
+                sharedPreferences.getString(key, null) ?.let {
+                    json.decodeFromString(JsonElement.serializer(), it)
+                }
+            }.getOrNull()
+            onDecodingError(raw, it)
         }
     }
 

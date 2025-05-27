@@ -29,13 +29,17 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
     override val log: KSLog by lazy {
         TagLogger("${this::class.simpleName}/${fragmentKClass.simpleName}")
     }
-    private var fragment: NodeFragment<Config, Base>? = null
     private val _configState = MutableStateFlow(config)
     override val configState: StateFlow<Config> = _configState.asStateFlow()
     private val viewTag
         get() = config.id
 
     private val _beforePauseWaitJobState = SpecialMutableStateFlow<CompletableJob?>(null)
+    private var fragment: NodeFragment<Config, Base>? = ((fragmentKClass.objectInstance ?: fragmentKClass.constructors.first {
+        it.parameters.isEmpty()
+    }.call()) as NodeFragment<Config, Base>).also {
+        it.setNode(this, _configState)
+    }
 
     /**
      * In case you wish to do some job before pause, you may return true from this function and listen for
@@ -60,14 +64,6 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
                 completingJob.join()
             }
         }
-    }
-
-    override fun onCreate() {
-        super.onCreate()
-        fragment = (fragmentKClass.objectInstance ?: fragmentKClass.constructors.first {
-            it.parameters.isEmpty()
-        }.call()) as NodeFragment<Config, Base>
-        fragment ?.setNode(this, _configState)
     }
 
     private fun placeFragment(view: View) {

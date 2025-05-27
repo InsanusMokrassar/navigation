@@ -2,6 +2,8 @@ package dev.inmo.navigation.core
 
 import dev.inmo.kslog.common.*
 import dev.inmo.micro_utils.common.diff
+import dev.inmo.micro_utils.common.withReplaced
+import dev.inmo.micro_utils.common.withReplacedAt
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.extensions.*
 import kotlinx.coroutines.*
@@ -37,7 +39,7 @@ class NavigationChain<Base>(
         }
         actualizeMutex.withLock {
             log.d { "Start actualization of stack $stack" }
-            runCatchingSafely {
+            runCatchingLogging(logger = log) {
                 stack.forEachIndexed { i, node ->
                     node.changeState(
                         minOf(
@@ -67,10 +69,12 @@ class NavigationChain<Base>(
             log.d { "Unable to create node for $config" }
             return null
         }
-        log.d { "Adding node $newNode with config $config" }
-        nodesIds[newNode.id] = newNode
-        _stackFlow.value += newNode
-        log.d { "$newNode now in stack: $stack" }
+        nodesChangesChannel.trySend {
+            log.d { "Adding node $newNode with config $config" }
+            nodesIds[newNode.id] = newNode
+            _stackFlow.value += newNode
+            log.d { "$newNode now in stack: $stack" }
+        }
         return newNode
     }
 
@@ -118,13 +122,14 @@ class NavigationChain<Base>(
     ): Pair<NavigationNode<out Base, Base>, NavigationNode<out Base, Base>>? {
         val i = stack.indexOfFirst { it === node }.takeIf { it > -1 } ?: return null
 
-        nodesIds.remove(node.id)
         val newNode = nodeFactory.createNode(this, config) ?: return null
 
         nodesChangesChannel.trySend {
+            val i = stack.indexOfFirst { it === node }.takeIf { it > -1 } ?: return@trySend
             node.changeState(NavigationNodeState.NEW)
 
-            _stackFlow.value = (stack.take(i) + newNode) + stack.drop(i + 1)
+            nodesIds.remove(node.id)
+            _stackFlow.value = stack.withReplacedAt(i) { newNode }
             nodesIds[newNode.id] = newNode
         }
 
@@ -136,12 +141,12 @@ class NavigationChain<Base>(
         config: Base
     ): Pair<NavigationNode<out Base, Base>, NavigationNode<out Base, Base>>? {
         val i = stack.indexOfFirst { it === node }.takeIf { it > -1 } ?: return null
-
-        nodesIds.remove(node.id)
         val newNode = nodeFactory.createNode(this, config) ?: return null
 
         nodesChangesChannel.trySend {
-            _stackFlow.value = (stack.take(i) + newNode) + stack.drop(i + 1)
+            val i = stack.indexOfFirst { it === node }.takeIf { it > -1 } ?: return@trySend
+            _stackFlow.value = stack.withReplacedAt(i) { newNode }
+            nodesIds.remove(node.id)
             nodesIds[newNode.id] = newNode
 
             node.changeState(NavigationNodeState.NEW)
