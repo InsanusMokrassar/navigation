@@ -42,6 +42,26 @@ abstract class NavigationNode<Config : Base, Base>(
             val changes = NavigationStateChangeList(state, newState)
 
             changes.forEach { change ->
+                when (change.type) {
+                    NavigationStateChange.Type.CREATE -> {
+                        onBeforeCreate()
+                    }
+                    NavigationStateChange.Type.START -> {
+                        onBeforeStart()
+                    }
+                    NavigationStateChange.Type.RESUME -> {
+                        onBeforeResume()
+                    }
+                    NavigationStateChange.Type.PAUSE -> {
+                        onBeforePause()
+                    }
+                    NavigationStateChange.Type.STOP -> {
+                        onBeforeStop()
+                    }
+                    NavigationStateChange.Type.DESTROY -> {
+                        onBeforeDestroy()
+                    }
+                }
                 state = change.to
 
                 if (change.isNegative) {
@@ -50,27 +70,21 @@ abstract class NavigationNode<Config : Base, Base>(
 
                 when (change.type) {
                     NavigationStateChange.Type.CREATE -> {
-                        onBeforeCreate()
                         onCreate()
                     }
                     NavigationStateChange.Type.START -> {
-                        onBeforeStart()
                         onStart()
                     }
                     NavigationStateChange.Type.RESUME -> {
-                        onBeforeResume()
                         onResume()
                     }
                     NavigationStateChange.Type.PAUSE -> {
-                        onBeforePause()
                         onPause()
                     }
                     NavigationStateChange.Type.STOP -> {
-                        onBeforeStop()
                         onStop()
                     }
                     NavigationStateChange.Type.DESTROY -> {
-                        onBeforeDestroy()
                         onDestroy()
                     }
                 }
