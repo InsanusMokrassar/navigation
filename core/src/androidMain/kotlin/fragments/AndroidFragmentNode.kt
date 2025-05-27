@@ -35,11 +35,6 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
         get() = config.id
 
     private val _beforePauseWaitJobState = SpecialMutableStateFlow<CompletableJob?>(null)
-    private var fragment: NodeFragment<Config, Base>? = ((fragmentKClass.objectInstance ?: fragmentKClass.constructors.first {
-        it.parameters.isEmpty()
-    }.call()) as NodeFragment<Config, Base>).also {
-        it.setNode(this, _configState)
-    }
 
     /**
      * In case you wish to do some job before pause, you may return true from this function and listen for
@@ -54,6 +49,12 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
      * call [CompletableJob.complete] on [beforePauseWaitJobState] value
      */
     val beforePauseWaitJobState = _beforePauseWaitJobState.asStateFlow()
+
+    private var fragment: NodeFragment<Config, Base>? = ((fragmentKClass.objectInstance ?: fragmentKClass.constructors.first {
+        it.parameters.isEmpty()
+    }.call()) as NodeFragment<Config, Base>).also {
+        it.setNode(this, _configState)
+    }
 
     override suspend fun onBeforePause() {
         super.onBeforePause()
