@@ -34,23 +34,59 @@ abstract class NavigationNode<Config : Base, Base>(
     val stateChangesFlow: Flow<NavigationStateChange> = _stateChanges.asSharedFlow()
     val statesFlow: Flow<NavigationNodeState> = stateChangesFlow.map { it.to }
     var state: NavigationNodeState = NavigationNodeState.NEW
-        internal set(value) {
-            val changes = NavigationStateChangeList(field, value)
+        private set
+
+    private val changeStateMutex = Mutex()
+    suspend fun changeState(newState: NavigationNodeState) {
+        changeStateMutex.withLock {
+            val changes = NavigationStateChangeList(state, newState)
 
             changes.forEach { change ->
-                field = change.to
+                when (change.type) {
+                    NavigationStateChange.Type.CREATE -> {
+                        onBeforeCreate()
+                    }
+                    NavigationStateChange.Type.START -> {
+                        onBeforeStart()
+                    }
+                    NavigationStateChange.Type.RESUME -> {
+                        onBeforeResume()
+                    }
+                    NavigationStateChange.Type.PAUSE -> {
+                        onBeforePause()
+                    }
+                    NavigationStateChange.Type.STOP -> {
+                        onBeforeStop()
+                    }
+                    NavigationStateChange.Type.DESTROY -> {
+                        onBeforeDestroy()
+                    }
+                }
+                state = change.to
 
                 if (change.isNegative) {
                     _stateChanges.tryEmit(change)
                 }
 
                 when (change.type) {
-                    NavigationStateChange.Type.CREATE -> onCreate()
-                    NavigationStateChange.Type.START -> onStart()
-                    NavigationStateChange.Type.RESUME -> onResume()
-                    NavigationStateChange.Type.PAUSE -> onPause()
-                    NavigationStateChange.Type.STOP -> onStop()
-                    NavigationStateChange.Type.DESTROY -> onDestroy()
+                    NavigationStateChange.Type.CREATE -> {
+                        onCreate()
+                    }
+                    NavigationStateChange.Type.START -> {
+                        onStart()
+                    }
+                    NavigationStateChange.Type.RESUME -> {
+                        onResume()
+                    }
+                    NavigationStateChange.Type.PAUSE -> {
+                        onPause()
+                    }
+                    NavigationStateChange.Type.STOP -> {
+                        onStop()
+                    }
+                    NavigationStateChange.Type.DESTROY -> {
+                        onDestroy()
+                    }
                 }
 
                 if (change.isPositive) {
@@ -60,6 +96,7 @@ abstract class NavigationNode<Config : Base, Base>(
                 log.d { "State has been changed from ${change.from} to ${change.to}" }
             }
         }
+    }
 
     open fun onCreate() {
         log.d { "onCreate" }
@@ -78,6 +115,25 @@ abstract class NavigationNode<Config : Base, Base>(
     }
     open fun onDestroy() {
         log.d { "onDestroy" }
+    }
+
+    open suspend fun onBeforeCreate() {
+        log.d { "onBeforeCreate" }
+    }
+    open suspend fun onBeforeStart() {
+        log.d { "onBeforeStart" }
+    }
+    open suspend fun onBeforeResume() {
+        log.d { "onBeforeResume" }
+    }
+    open suspend fun onBeforePause() {
+        log.d { "onBeforePause" }
+    }
+    open suspend fun onBeforeStop() {
+        log.d { "onBeforeStop" }
+    }
+    open suspend fun onBeforeDestroy() {
+        log.d { "onBeforeDestroy" }
     }
 
     private fun createEmptySubChainWithoutAttaching(id: NavigationChainId? = null): NavigationChain<Base> {

@@ -12,6 +12,7 @@ import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 import dev.inmo.navigation.core.fragments.transactions.FragmentTransactionConfigurator
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import kotlin.coroutines.coroutineContext
 import kotlin.reflect.KClass
 
 class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
@@ -28,18 +29,42 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
     override val log: KSLog by lazy {
         TagLogger("${this::class.simpleName}/${fragmentKClass.simpleName}")
     }
-    private var fragment: NodeFragment<Config, Base>? = null
     private val _configState = MutableStateFlow(config)
     override val configState: StateFlow<Config> = _configState.asStateFlow()
     private val viewTag
         get() = config.id
 
-    override fun onCreate() {
-        super.onCreate()
-        fragment = (fragmentKClass.objectInstance ?: fragmentKClass.constructors.first {
-            it.parameters.isEmpty()
-        }.call()) as NodeFragment<Config, Base>
-        fragment ?.setNode(this, _configState)
+    private val _beforePauseWaitJobState = SpecialMutableStateFlow<CompletableJob?>(null)
+
+    /**
+     * In case you wish to do some job before pause, you may return true from this function and listen for
+     * [beforePauseWaitJobState] states. If [beforePauseWaitJobState] is not null - you are in pre-pause state and may
+     * do some job. After job is done, you MUST call [CompletableJob.complete] on [beforePauseWaitJobState] value
+     */
+    var useBeforePauseWait: Boolean = false
+    /**
+     * Will contain [CompletableJob] if [useBeforePauseWait] returns true before pausing will be done.
+     *
+     * This state will be useful to animate or do some before-pausing job. After job or animation is done,
+     * call [CompletableJob.complete] on [beforePauseWaitJobState] value
+     */
+    val beforePauseWaitJobState = _beforePauseWaitJobState.asStateFlow()
+
+    private var fragment: NodeFragment<Config, Base>? = ((fragmentKClass.objectInstance ?: fragmentKClass.constructors.first {
+        it.parameters.isEmpty()
+    }.call()) as NodeFragment<Config, Base>).also {
+        it.setNode(this, _configState)
+    }
+
+    override suspend fun onBeforePause() {
+        super.onBeforePause()
+        if (useBeforePauseWait) {
+            val completingJob = Job(coroutineContext.job)
+            _beforePauseWaitJobState.value = completingJob
+            runCatching {
+                completingJob.join()
+            }
+        }
     }
 
     private fun placeFragment(view: View) {
@@ -88,22 +113,22 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
         val subscope = scope.LinkedSupervisorScope()
         return super.start(subscope).let {
 
-            (flowOf(state) + statesFlow).filter { it == NavigationNodeState.RESUMED }.subscribeSafelyWithoutExceptions(subscope) {
+            (flowOf(state) + statesFlow).filter { it == NavigationNodeState.RESUMED }.subscribeLoggingDropExceptions(subscope) {
                 val subsubscope = subscope.LinkedSupervisorScope()
 
                 flowOnHierarchyChangeListener.onChildViewAdded.filter {
                     log.d { "Added views: ${it}, subview navigation tag: ${it.second.navigationTag}" }
-                    it.second.navigationTag == viewTag
-                }.subscribeSafelyWithoutExceptions(subsubscope) {
+                    it.second.navigationTag == viewTag && chain.stack.contains(this@AndroidFragmentNode)
+                }.subscribeLoggingDropExceptions(subsubscope) {
                     placeFragment()
                 }
 
-                onDestroyFlow.subscribeSafelyWithoutExceptions(subsubscope) {
+                onDestroyFlow.subscribeLoggingDropExceptions(subsubscope) {
                     subsubscope.cancel()
                 }
 
-                subsubscope.launchSafelyWithoutExceptions {
-                    while (state == NavigationNodeState.RESUMED) {
+                subsubscope.launchLoggingDropExceptions {
+                    while (state == NavigationNodeState.RESUMED && chain.stack.contains(this@AndroidFragmentNode)) {
                         if (fragment ?.isAdded != true) {
                             placeFragment()
                         }

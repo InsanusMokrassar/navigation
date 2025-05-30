@@ -2,9 +2,12 @@ package dev.inmo.navigation.core
 
 import dev.inmo.kslog.common.*
 import dev.inmo.micro_utils.common.diff
+import dev.inmo.micro_utils.common.withReplaced
+import dev.inmo.micro_utils.common.withReplacedAt
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.extensions.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -36,15 +39,17 @@ class NavigationChain<Base>(
         }
         actualizeMutex.withLock {
             log.d { "Start actualization of stack $stack" }
-            runCatchingSafely {
+            runCatchingLogging(logger = log) {
                 stack.forEachIndexed { i, node ->
-                    node.state = minOf(
-                        parentState,
-                        if (i == stack.lastIndex) {
-                            NavigationNodeState.RESUMED
-                        } else {
-                            NavigationNodeState.STARTED
-                        }
+                    node.changeState(
+                        minOf(
+                            parentState,
+                            if (i == stack.lastIndex) {
+                                NavigationNodeState.RESUMED
+                            } else {
+                                NavigationNodeState.STARTED
+                            }
+                        )
                     )
 
                     log.d { "$node actual state now is ${node.state}" }
@@ -55,15 +60,21 @@ class NavigationChain<Base>(
         }
     }
 
+    private val nodesChangesChannel: Channel<suspend () -> Unit> = Channel(Channel.UNLIMITED)
+    private var nodesChangesJobMutex = Mutex()
+    private var nodesChangesJob: Job? = null
+
     fun push(config: Base): NavigationNode<out Base, Base>? {
         val newNode = nodeFactory.createNode(this, config) ?: let {
             log.d { "Unable to create node for $config" }
             return null
         }
-        log.d { "Adding node $newNode with config $config" }
-        nodesIds[newNode.id] = newNode
-        _stackFlow.value += newNode
-        log.d { "$newNode now in stack: $stack" }
+        nodesChangesChannel.trySend {
+            log.d { "Adding node $newNode with config $config" }
+            nodesIds[newNode.id] = newNode
+            _stackFlow.value += newNode
+            log.d { "$newNode now in stack: $stack" }
+        }
         return newNode
     }
 
@@ -86,13 +97,17 @@ class NavigationChain<Base>(
             return null
         }
 
-        node.state = NavigationNodeState.NEW
+        nodesChangesChannel.trySend {
+            node.changeState(NavigationNodeState.STARTED)
 
-        log.d { "Stack before removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
-        _stackFlow.value = newStack
-        log.d { "Stack after removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
+            log.d { "Stack before removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
+            _stackFlow.value = newStack
+            log.d { "Stack after removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
 
-        nodesIds.remove(node.id)
+            node.changeState(NavigationNodeState.NEW)
+
+            nodesIds.remove(node.id)
+        }
         return node
     }
 
@@ -107,13 +122,35 @@ class NavigationChain<Base>(
     ): Pair<NavigationNode<out Base, Base>, NavigationNode<out Base, Base>>? {
         val i = stack.indexOfFirst { it === node }.takeIf { it > -1 } ?: return null
 
-        nodesIds.remove(node.id)
-        node.state = NavigationNodeState.NEW
-
         val newNode = nodeFactory.createNode(this, config) ?: return null
 
-        _stackFlow.value = (stack.take(i) + newNode) + stack.drop(i + 1)
-        nodesIds[newNode.id] = newNode
+        nodesChangesChannel.trySend {
+            val i = stack.indexOfFirst { it === node }.takeIf { it > -1 } ?: return@trySend
+            node.changeState(NavigationNodeState.NEW)
+
+            nodesIds.remove(node.id)
+            _stackFlow.value = stack.withReplacedAt(i) { newNode }
+            nodesIds[newNode.id] = newNode
+        }
+
+        return node to newNode
+    }
+
+    fun reversedReplace(
+        node: NavigationNode<*, Base>,
+        config: Base
+    ): Pair<NavigationNode<out Base, Base>, NavigationNode<out Base, Base>>? {
+        val i = stack.indexOfFirst { it === node }.takeIf { it > -1 } ?: return null
+        val newNode = nodeFactory.createNode(this, config) ?: return null
+
+        nodesChangesChannel.trySend {
+            val i = stack.indexOfFirst { it === node }.takeIf { it > -1 } ?: return@trySend
+            _stackFlow.value = stack.withReplacedAt(i) { newNode }
+            nodesIds.remove(node.id)
+            nodesIds[newNode.id] = newNode
+
+            node.changeState(NavigationNodeState.NEW)
+        }
 
         return node to newNode
     }
@@ -145,13 +182,13 @@ class NavigationChain<Base>(
         log.d { "Starting chain" }
 
         parentNode ?.run {
-            (flowOf(state) + stateChangesFlow).subscribeSafelyWithoutExceptions(subscope) {
+            (flowOf(state) + stateChangesFlow).subscribeLoggingDropExceptions(scope = subscope) {
                 log.d { "Start update of state due to parent state update to $it" }
                 actualizeStackStates()
             }
         }
 
-        parentNode ?.subchainsFlow ?.dropWhile { this in it } ?.subscribeSafelyWithoutExceptions(subscope) {
+        parentNode ?.subchainsFlow ?.dropWhile { this in it }?.subscribeLoggingDropExceptions(scope = subscope) {
             log.d { "Cancelling subscope" }
             subscope.cancel()
             log.d { "Cancelled subscope" }
@@ -163,28 +200,52 @@ class NavigationChain<Base>(
         merge(
             flow { emit(emptyList<NavigationNode<*, Base>>().diff(stackFlow.value)) },
             onNodesStackDiffFlow
-        ).filter { !it.isEmpty() }.subscribeSafelyWithoutExceptions(subscope) {
-            actualizeStackStates()
-            nodeToJobMutex.withLock {
-                it.removed.forEach { (_, it) ->
-                    nodeToJob.remove(it.id) ?.cancel()
+        )
+            .filter { !it.isEmpty() }
+            .subscribeLoggingDropExceptions(scope = subscope) {
+                actualizeStackStates()
+                nodeToJobMutex.withLock {
+                    it.removed.forEach { (_, it) ->
+                        nodeToJob.remove(it.id) ?.cancel()
+                    }
+                    it.replaced.forEach { (old, new) ->
+                        nodeToJob.remove(new.value.id) ?.cancel()
+                        nodeToJob[new.value.id] = new.value.start(subscope)
+                        nodeToJob.remove(old.value.id) ?.cancel()
+                    }
+                    it.added.forEach { (_, it) ->
+                        nodeToJob.remove(it.id) ?.cancel()
+                        nodeToJob[it.id] = it.start(subscope)
+                    }
                 }
-                it.replaced.forEach { (old, new) ->
-                    nodeToJob.remove(new.value.id) ?.cancel()
-                    nodeToJob[new.value.id] = new.value.start(subscope)
-                    nodeToJob.remove(old.value.id) ?.cancel()
-                }
-                it.added.forEach { (_, it) ->
-                    nodeToJob.remove(it.id) ?.cancel()
-                    nodeToJob[it.id] = it.start(subscope)
+
+                if (stack.isEmpty()) {
+                    dropItself()
                 }
             }
 
-            if (stack.isEmpty()) {
-                dropItself()
+        subscope.launchLoggingDropExceptions {
+            nodesChangesJobMutex.withLock {
+                nodesChangesJob ?.cancel()
+                nodesChangesJob = subscope.launch {
+                    for (lambda in nodesChangesChannel) {
+                        lambda()
+                    }
+                }
             }
         }
 
         return subscope.coroutineContext.job
+    }
+
+    companion object {
+        operator fun <Base> invoke(
+            parentNode: NavigationNode<out Base, Base>?,
+            nodeFactory: NavigationNodeFactory<Base>,
+            scope: CoroutineScope,
+            id: NavigationChainId? = null
+        ) = NavigationChain(parentNode = parentNode, nodeFactory = nodeFactory, id = id).apply {
+            start(scope)
+        }
     }
 }
