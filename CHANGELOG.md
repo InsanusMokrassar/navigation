@@ -2,6 +2,9 @@
 
 ## 0.6.2
 
+* `Compose`:
+  * Add opportunity to pass `id: NavigationChainId` in subchains creation
+
 ## 0.6.1
 
 * `Versions`:
