@@ -3,6 +3,7 @@ package dev.inmo.navigation.compose
 import androidx.compose.runtime.*
 import dev.inmo.micro_utils.coroutines.subscribeSafelyWithoutExceptions
 import dev.inmo.navigation.core.NavigationChain
+import dev.inmo.navigation.core.NavigationChainId
 import dev.inmo.navigation.core.NavigationNode
 import dev.inmo.navigation.core.extensions.onChainRemovedFlow
 import dev.inmo.navigation.core.onDestroyFlow
@@ -86,11 +87,12 @@ internal fun <Base> NavigationChain<Base>.Draw(
 @Composable
 internal fun <Base> NavigationNode<*, Base>?.SubChain(
     onDismiss: (suspend NavigationChain<Base>.() -> Unit)? = null,
+    id: NavigationChainId? = null,
     beforeNodes: @Composable NavigationChain<Base>.() -> Unit
 ) {
     val factory = getNodesFactoryFromLocalProvider<Base>()
     val chain = remember(this, factory) {
-        this ?.createEmptySubChain() ?: NavigationChain<Base>(null, factory)
+        this ?.createEmptySubChain(id = id) ?: NavigationChain<Base>(parentNode = null, nodeFactory = factory, id = id)
     }
     chain.Draw(onDismiss, beforeNodes)
 }
@@ -101,9 +103,10 @@ internal fun <Base> NavigationNode<*, Base>?.SubChain(
 @Composable
 fun <Base> InjectNavigationChain(
     onDismiss: (suspend NavigationChain<Base>.() -> Unit)? = null,
+    id: NavigationChainId? = null,
     beforeNodes: @Composable NavigationChain<Base>.() -> Unit
 ) {
-    getNodeFromLocalProvider<Base>().SubChain(onDismiss, beforeNodes)
+    getNodeFromLocalProvider<Base>().SubChain(onDismiss = onDismiss, id = id, beforeNodes = beforeNodes)
 }
 
 /**
@@ -113,9 +116,10 @@ fun <Base> InjectNavigationChain(
 @Deprecated("Renamed", ReplaceWith("InjectNavigationChain(onDismiss, block)", "dev.inmo.navigation.compose.InjectNavigationChain"))
 fun <Base> SubChain(
     onDismiss: (suspend NavigationChain<Base>.() -> Unit)? = null,
+    id: NavigationChainId? = null,
     beforeNodes: @Composable NavigationChain<Base>.() -> Unit
 ) {
-    InjectNavigationChain(onDismiss, beforeNodes)
+    InjectNavigationChain(onDismiss = onDismiss, id = id, beforeNodes = beforeNodes)
 }
 
 /**
