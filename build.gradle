@@ -2,8 +2,8 @@ buildscript {
     repositories {
         google()
         mavenCentral()
-        mavenLocal()
         maven { url "https://plugins.gradle.org/m2/" }
+        mavenLocal()
     }
 
     dependencies {
@@ -49,10 +49,10 @@ tasks.named("dependencyUpdates").configure {
 
 allprojects {
     repositories {
-        mavenLocal()
         mavenCentral()
         google()
         maven { url "https://nexus.inmo.dev/repository/maven-releases/" }
+        mavenLocal()
     }
 }
 

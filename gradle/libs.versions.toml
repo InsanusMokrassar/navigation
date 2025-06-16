@@ -2,10 +2,10 @@
 
 kotlin = "2.1.21"
 kotlin-coroutines = "1.10.2"
-kotlin-serialization = "1.8.0"
+kotlin-serialization = "1.8.1"
 dokka = "2.0.0"
 
-microutils = "0.25.6"
+microutils = "0.25.7"
 kslog = "1.4.2"
 uuid = "0.8.4"
 
@@ -23,7 +23,7 @@ android-compileSdk = "35"
 android-buildTools = "35.0.0"
 
 android-core-ktx = "1.16.0"
-android-appcompat = "1.7.0"
+android-appcompat = "1.7.1"
 android-material = "1.12.0"
 android-compose-activity = "1.10.1"
 

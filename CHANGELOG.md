@@ -2,6 +2,11 @@
 
 ## 0.6.3
 
+* `Versions`:
+  * `Serialization`: `1.8.0` -> `1.8.1`
+  * `MicroUtils`: `0.25.3` -> `0.25.7`
+  * `Android AppCompat`: `1.7.0` -> `1.7.1`
+
 ## 0.6.2
 
 * `Compose`:
