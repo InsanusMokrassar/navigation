@@ -30,6 +30,7 @@ android-compose-activity = "1.10.1"
 github-release = "2.5.2"
 
 versions = "0.51.0"
+nmcp = "0.1.5"
 
 [libraries]
 
@@ -83,3 +84,4 @@ compose = { id = "org.jetbrains.compose", version.ref = "compose" }
 kt-jb-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
 versions = { id = "com.github.ben-manes.versions", version.ref = "versions" }
+nmcp-aggregation = { id = "com.gradleup.nmcp.aggregation", version.ref = "nmcp" }
