@@ -10,7 +10,7 @@ kslog = "1.4.2"
 uuid = "0.8.4"
 
 koin = "4.0.4"
-compose = "1.8.0"
+compose = "1.8.2"
 
 dexcount = "4.0.0"
 junit_version = "4.12"
