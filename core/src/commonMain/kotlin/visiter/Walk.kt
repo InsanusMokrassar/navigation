@@ -29,15 +29,22 @@ inline fun <Base> ChainOrNodeEither<Base>.walk(
 ) {
     val visitingQueue = ArrayDeque<ChainOrNodeEither<Base>>()
     visitingQueue.add(this)
+    val seen = mutableSetOf<ChainOrNodeEither<Base>>(this)
 
     while (visitingQueue.isNotEmpty()) {
         val firstOne = visitingQueue.removeFirst()
         onNodeOrChain(firstOne)
 
         firstOne.onFirst {
-            visitingQueue.addAll(0, it.stackFlow.value.map { it.chainOrNodeEither() })
+            visitingQueue.addAll(
+                0,
+                it.stackFlow.value.mapNotNull { it.chainOrNodeEither().takeIf { seen.add(it) } }
+            )
         }.onSecond {
-            visitingQueue.addAll(0, it.subchainsFlow.value.map { it.chainOrNodeEither() })
+            visitingQueue.addAll(
+                0,
+                it.subchainsFlow.value.mapNotNull { it.chainOrNodeEither().takeIf { seen.add(it) } }
+            )
         }
     }
 }
