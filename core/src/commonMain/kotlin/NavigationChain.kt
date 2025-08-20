@@ -25,7 +25,7 @@ class NavigationChain<Base>(
     private val parentNodeState: NavigationNodeState
         get() = parentNode ?.state ?: NavigationNodeState.RESUMED
 
-    private val _stackFlow = SpecialMutableStateFlow<List<NavigationNode<out Base, Base>>>(emptyList())
+    private val _stackFlow = MutableRedeliverStateFlow<List<NavigationNode<out Base, Base>>>(emptyList())
     val stackFlow: StateFlow<List<NavigationNode<out Base, Base>>> = _stackFlow.asStateFlow()
     internal val stack
         get() = stackFlow.value

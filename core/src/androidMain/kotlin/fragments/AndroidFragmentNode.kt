@@ -34,7 +34,7 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
     private val viewTag
         get() = config.id
 
-    private val _beforePauseWaitJobState = SpecialMutableStateFlow<CompletableJob?>(null)
+    private val _beforePauseWaitJobState = MutableRedeliverStateFlow<CompletableJob?>(null)
 
     /**
      * In case you wish to do some job before pause, you may return true from this function and listen for

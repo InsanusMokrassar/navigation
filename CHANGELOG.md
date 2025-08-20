@@ -1,5 +1,25 @@
 # Navigation Changelog
 
+## 0.6.4
+
+* `Versions`:
+  * `Kotlin`: `2.1.20` -> `2.2.10`
+  * `Serialization`: `1.8.1` -> `1.9.0`
+  * `MicroUtils`: `0.25.7` -> `0.26.3`
+  * `KSLog`: `1.4.2` -> `1.5.0`
+  * `Koin`: `4.0.4` -> `4.1.0`
+  * `Compose`: `1.8.0` -> `1.8.2`
+  * `Android Core KTX`: `1.16.0` -> `1.17.0`
+  * `Android Compile SDK`: `35` -> `36`
+* `Core`:
+  * Replace `SpecialMutableStateFlow` with `MutableRedeliverStateFlow` for internal flows
+* `Compose`:
+  * Use `MutableRedeliverStateFlow` for drawer and before-pause state handling in `ComposeNode`
+* `Android`:
+  * Use `MutableRedeliverStateFlow` for before-pause state in `AndroidFragmentNode`
+* `Sample`:
+  * Migrate to `MutableRedeliverStateFlow`
+
 ## 0.6.3
 
 * `Versions`:

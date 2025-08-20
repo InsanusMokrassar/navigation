@@ -6,7 +6,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import dev.inmo.micro_utils.coroutines.Default
-import dev.inmo.micro_utils.coroutines.SpecialMutableStateFlow
+import dev.inmo.micro_utils.coroutines.MutableRedeliverStateFlow
 import dev.inmo.micro_utils.startup.launcher.Config
 import dev.inmo.micro_utils.startup.launcher.StartLauncherPlugin
 import dev.inmo.micro_utils.startup.plugin.StartPlugin
