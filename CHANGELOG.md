@@ -17,8 +17,6 @@
   * Use `MutableRedeliverStateFlow` for drawer and before-pause state handling in `ComposeNode`
 * `Android`:
   * Use `MutableRedeliverStateFlow` for before-pause state in `AndroidFragmentNode`
-* `Build/Publishing`:
-  * Replace `verificationTimeout` with `validationTimeout` in `centralPortal` configuration
 * `Sample`:
   * Migrate to `MutableRedeliverStateFlow`
 
