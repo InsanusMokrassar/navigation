@@ -1,7 +1,7 @@
 package dev.inmo.navigation.compose
 
 import androidx.compose.runtime.Composable
-import dev.inmo.micro_utils.coroutines.SpecialMutableStateFlow
+import dev.inmo.micro_utils.coroutines.MutableRedeliverStateFlow
 import dev.inmo.navigation.core.NavigationChain
 import dev.inmo.navigation.core.NavigationNode
 import dev.inmo.navigation.core.NavigationNodeId
@@ -24,7 +24,7 @@ abstract class ComposeNode<Config : Base, Base>(
     override var config: Config
         get() = _configState.value
         set(value) { _configState.value = value }
-    internal val drawerState: SpecialMutableStateFlow<(@Composable () -> Unit)?> = SpecialMutableStateFlow(null)
+    internal val drawerState: MutableRedeliverStateFlow<(@Composable () -> Unit)?> = MutableRedeliverStateFlow(null)
 
     override fun onResume() {
         super.onResume()
@@ -36,7 +36,7 @@ abstract class ComposeNode<Config : Base, Base>(
         drawerState.value = null
     }
 
-    private val _beforePauseWaitJobState = SpecialMutableStateFlow<CompletableJob?>(null)
+    private val _beforePauseWaitJobState = MutableRedeliverStateFlow<CompletableJob?>(null)
 
     /**
      * Will contain [CompletableJob] if [useBeforePauseWait] returns true before pausing will be done.

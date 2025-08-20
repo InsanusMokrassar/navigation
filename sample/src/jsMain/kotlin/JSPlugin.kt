@@ -2,7 +2,7 @@ package dev.inmo.navigation.sample
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import dev.inmo.micro_utils.coroutines.SpecialMutableStateFlow
+import dev.inmo.micro_utils.coroutines.MutableRedeliverStateFlow
 import dev.inmo.navigation.sample.ui.NavigationViewConfig
 import dev.inmo.micro_utils.koin.singleWithRandomQualifier
 import dev.inmo.micro_utils.startup.plugin.StartPlugin
@@ -21,7 +21,7 @@ import org.koin.core.Koin
 import org.koin.core.module.Module
 
 object JSPlugin : StartPlugin {
-    val currentDrawingBlock = SpecialMutableStateFlow<@Composable () -> Unit>({})
+    val currentDrawingBlock = MutableRedeliverStateFlow<@Composable () -> Unit>({})
     override fun Module.setupDI(config: JsonObject) {
         with (CommonPlugin) { setupDI(config) }
 
