@@ -41,7 +41,9 @@ sealed interface NavigationNodeState : Comparable<NavigationNodeState> {
     override fun compareTo(other: NavigationNodeState): Int = stateNumber.compareTo(other.stateNumber)
 
     companion object {
-        private val values = setOf(NEW, CREATED, STARTED, RESUMED).sorted()
+        private val values by lazy {
+            setOf(NEW, CREATED, STARTED, RESUMED).sorted()
+        }
         /**
          * @return All possible [NavigationNodeState]
          */
