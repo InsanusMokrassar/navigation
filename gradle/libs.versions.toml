@@ -9,7 +9,7 @@ microutils = "0.26.3"
 kslog = "1.5.0"
 uuid = "0.8.4"
 
-koin = "4.1.0"
+koin = "4.1.1"
 compose = "1.8.2"
 
 dexcount = "4.0.0"
