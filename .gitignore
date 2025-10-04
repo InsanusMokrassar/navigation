@@ -3,6 +3,7 @@
 out/*
 *.iml
 target
+.vscode
 
 settings.xml
 
