@@ -3,7 +3,7 @@
 kotlin = "2.2.20"
 kotlin-coroutines = "1.10.2"
 kotlin-serialization = "1.9.0"
-dokka = "2.0.0"
+dokka = "2.1.0"
 
 microutils = "0.26.5"
 kslog = "1.5.1"
