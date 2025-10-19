@@ -1,5 +1,7 @@
 # Navigation Changelog
 
+## 0.6.6
+
 ## 0.6.5
 
 * `Versions`:
