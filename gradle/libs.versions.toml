@@ -5,7 +5,7 @@ kotlin-coroutines = "1.10.2"
 kotlin-serialization = "1.9.0"
 dokka = "2.0.0"
 
-microutils = "0.26.5"
+microutils = "0.26.6"
 kslog = "1.5.1"
 uuid = "0.8.4"
 
