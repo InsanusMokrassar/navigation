@@ -1,5 +1,15 @@
 # Navigation Changelog
 
+## 0.6.6
+
+* `Versions`:
+  * `MicroUtils`: `0.26.5` -> `0.26.6`
+  * `Dokka`: `2.0.0` -> `2.1.0`
+  * `Android Material`: `1.12.0` -> `1.13.0`
+  * `Android Compose Activity`: `1.10.1` -> `1.11.0`
+  * `JUnit`: `4.12` -> `4.13.2`
+  * `Versions Plugin`: `0.51.0` -> `0.53.0`
+
 ## 0.6.5
 
 * `Versions`:
