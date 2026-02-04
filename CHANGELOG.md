@@ -1,5 +1,15 @@
 # Navigation Changelog
 
+## 0.7.0
+
+* `Versions`:
+  * `Kotlin`: `2.2.20` -> `2.3.0`
+  * `Serialization`: `1.9.0` -> `1.10.0`
+  * `KSLog`: `1.5.1` -> `1.6.0`
+  * `Compose`: `1.8.2` -> `1.10.0`
+  * `Compose Material3`: `1.8.2` -> `1.9.0`
+  * `MicroUtils`: `0.26.6` -> `0.28.0`
+
 ## 0.6.6
 
 * `Versions`:
