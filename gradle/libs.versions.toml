@@ -11,7 +11,7 @@ uuid = "0.8.4"
 
 koin = "4.1.1"
 compose = "1.10.0"
-compose-material3 = "1.8.2"
+compose-material3 = "1.9.0"
 
 dexcount = "4.0.0"
 junit_version = "4.13.2"
