@@ -31,7 +31,7 @@ android-compose-activity = "1.11.0"
 github-release = "2.5.2"
 
 versions = "0.53.0"
-nmcp = "1.2.0"
+nmcp = "1.4.4"
 
 [libraries]
 
