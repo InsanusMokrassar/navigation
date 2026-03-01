@@ -2,6 +2,9 @@
 
 ## 0.7.2
 
+* `JS` realizations:
+  * Fix usages of `MutationObserverInit` (see [KT-84029](https://youtrack.jetbrains.com/issue/KT-84029/))
+
 ## 0.7.1
 
 * `Versions`:

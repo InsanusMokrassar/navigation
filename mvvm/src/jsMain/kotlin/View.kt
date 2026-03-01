@@ -53,7 +53,10 @@ abstract class HtmlView<Config: NavigationNodeDefaultConfig, VM: ViewModel<Navig
         observer = MutationObserver { _, _ ->
             refresh()
         }.apply {
-            observe(document, MutationObserverInit(childList = true, subtree = true, attributes = true))
+            observe(
+                document,
+                js("({childList: true, subtree: true, attributes: true})")
+            )
         }
         refresh()
 
