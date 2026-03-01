@@ -1,5 +1,15 @@
 # Navigation Changelog
 
+## 0.7.1
+
+* `Versions`:
+  * `Kotlin`: `2.3.0` -> `2.3.10`
+  * `MicroUtils`: `0.28.0` -> `0.29.0`
+  * `Compose`: `1.10.0` -> `1.10.1`
+  * `Android Gradle Plugin`: `8.10.+` -> `8.12.+`
+  * `Android Compose Activity`: `1.11.0` -> `1.12.4`
+  * `NMCP`: `1.2.0` -> `1.4.4`
+
 ## 0.7.0
 
 * `Versions`:
