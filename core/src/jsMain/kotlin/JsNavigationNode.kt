@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import org.w3c.dom.Element
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.MutationObserver
-import org.w3c.dom.MutationObserverInit
 
 abstract class JsNavigationNode<Config : Base, Base : NavigationNodeDefaultConfig>(
     override val chain: NavigationChain<Base>,
@@ -39,7 +38,7 @@ abstract class JsNavigationNode<Config : Base, Base : NavigationNodeDefaultConfi
         observer = MutationObserver { _, _ ->
             refresh()
         }.apply {
-            observe(document, MutationObserverInit(childList = true, subtree = true, attributes = true))
+            observe(document, js("({childList: true, subtree: true, attributes: true})"))
         }
         refresh()
     }
