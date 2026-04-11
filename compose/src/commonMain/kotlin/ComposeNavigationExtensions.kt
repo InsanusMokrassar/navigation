@@ -1,12 +1,20 @@
 package dev.inmo.navigation.compose
 
 import androidx.compose.runtime.*
+import dev.inmo.kslog.common.KSLog
+import dev.inmo.kslog.common.d
+import dev.inmo.micro_utils.coroutines.subscribeLoggingDropExceptions
 import dev.inmo.micro_utils.coroutines.subscribeSafelyWithoutExceptions
 import dev.inmo.navigation.core.NavigationChain
 import dev.inmo.navigation.core.NavigationChainId
 import dev.inmo.navigation.core.NavigationNode
 import dev.inmo.navigation.core.extensions.onChainRemovedFlow
 import dev.inmo.navigation.core.onDestroyFlow
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.take
 
@@ -16,8 +24,8 @@ import kotlinx.coroutines.flow.take
 @Composable
 internal fun <Base> NavigationChain<Base>.DrawStackNodes() {
     val stack = stackFlow.collectAsState()
-    key(stack.value.lastOrNull()) {
-        val latestNode = stack.value.lastOrNull()
+    val latestNode = stack.value.lastOrNull()
+    key(latestNode, latestNode ?.hashCode()) {
         if (latestNode != null) {
             doWithNodeInLocalProvider(latestNode) {
                 when {
@@ -92,7 +100,11 @@ internal fun <Base> NavigationNode<*, Base>?.SubChain(
 ) {
     val factory = getNodesFactoryFromLocalProvider<Base>()
     val chain = remember(this, factory) {
-        this ?.createEmptySubChain(id = id) ?: NavigationChain<Base>(parentNode = null, nodeFactory = factory, id = id)
+        if (this == null) {
+            NavigationChain<Base>(parentNode = null, nodeFactory = factory, id = id)
+        } else {
+            createEmptySubChain(id = id)
+        }
     }
     chain.Draw(onDismiss, beforeNodes)
 }
@@ -113,7 +125,7 @@ fun <Base> InjectNavigationChain(
  * Just calls [InjectNavigationChain]
  */
 @Composable
-@Deprecated("Renamed", ReplaceWith("InjectNavigationChain(onDismiss, block)", "dev.inmo.navigation.compose.InjectNavigationChain"))
+@Deprecated("Renamed", ReplaceWith("InjectNavigationChain(onDismiss, id, block)", "dev.inmo.navigation.compose.InjectNavigationChain"))
 fun <Base> SubChain(
     onDismiss: (suspend NavigationChain<Base>.() -> Unit)? = null,
     id: NavigationChainId? = null,
@@ -142,7 +154,7 @@ internal fun <Base> NavigationNode<*, Base>.Use(
         onDismiss ?.let { onDismiss ->
             val scope = rememberCoroutineScope()
 
-            onDestroyFlow.take(1).subscribeSafelyWithoutExceptions(scope) {
+            onDestroyFlow.take(1).subscribeLoggingDropExceptions(scope) {
                 onDismiss(this)
             }
         }
@@ -178,20 +190,21 @@ fun <Base> InjectNavigationNode(
     onDismiss: (suspend NavigationNode<*, Base>.() -> Unit)? = null,
     additionalCodeInNodeContext: @Composable() (() -> Unit)? = null,
 ) {
-    val chain = getChainFromLocalProvider<Base>() ?: run {
+    val existsChain = getChainFromLocalProvider<Base>()
+    if (existsChain == null) {
         InjectNavigationChain<Base> {
             NodeInStack(config, onDismiss, additionalCodeInNodeContext)
         }
-        return@InjectNavigationNode
+    } else {
+        existsChain.NodeInStack(config, onDismiss, additionalCodeInNodeContext)
     }
-    chain.NodeInStack(config, onDismiss, additionalCodeInNodeContext)
 }
 
 /**
  * Just calling [InjectNavigationNode] with passing arguments as is
  */
 @Composable
-@Deprecated("Renamed", ReplaceWith("InjectNavigationNode(config, onDismiss)", "dev.inmo.navigation.compose.InjectNavigationNode"))
+@Deprecated("Renamed", ReplaceWith("InjectNavigationNode(config, onDismiss, additionalCodeInNodeContext)", "dev.inmo.navigation.compose.InjectNavigationNode"))
 fun <Base> NavigationSubNode(
     config: Base,
     onDismiss: (suspend NavigationNode<*, Base>.() -> Unit)? = null,

@@ -177,21 +177,28 @@ abstract class NavigationNode<Config : Base, Base>(
 
         val initialStateOfSubchains = subchains
 
-        merge(
-            onChainAddedFlow(initialStateOfSubchains),
-            onChainReplacedFlow(initialStateOfSubchains).map {
-                it.map { it.second }
-            }
-        ).flatten().subscribeSafelyWithoutExceptions(subscope) {
+        fun actualizeSubchainWithoutLock(chain: NavigationChain<Base>) {
+            log.d { "Starting ${chain}" }
+            chainToJob[chain] ?.cancel()
+            chainToJob[chain] = chain.start(subscope)
+            log.d { "Started ${chain}" }
+        }
+        onChainAddedFlow(initialStateOfSubchains).flatten().subscribeLoggingDropExceptions(subscope) {
             chainToJobMutex.withLock {
-                log.d { "Starting ${it.value}" }
-                chainToJob[it.value] = it.value.start(subscope)
-                log.d { "Started ${it.value}" }
+                actualizeSubchainWithoutLock(it.value)
+            }
+        }
+        onChainReplacedFlow(initialStateOfSubchains).subscribeLoggingDropExceptions(subscope) {
+            chainToJobMutex.withLock {
+                it.forEach {
+                    chainToJob.remove(it.first.value) ?.cancel()
+                    actualizeSubchainWithoutLock(it.second.value)
+                }
             }
         }
         (onChainRemovedFlow(initialStateOfSubchains) + onChainReplacedFlow(initialStateOfSubchains).map {
             it.map { it.first }
-        }).flatten().subscribeSafelyWithoutExceptions(subscope) {
+        }).flatten().subscribeLoggingDropExceptions(subscope) {
             chainToJobMutex.withLock {
                 log.d { "Cancelling and removing ${it.value}" }
                 chainToJob.remove(it.value) ?.cancel()
@@ -199,14 +206,14 @@ abstract class NavigationNode<Config : Base, Base>(
             }
         }
 
-        onChainsStackDiffFlow(initialStateOfSubchains).subscribeSafelyWithoutExceptions(subscope) {
+        onChainsStackDiffFlow(initialStateOfSubchains).subscribeLoggingDropExceptions(subscope) {
             log.d { it }
         }
 
         subscope.launch {
             subchainsFlow.value.forEach {
                 chainToJobMutex.withLock {
-                    chainToJob[it] = it.start(subscope)
+                    actualizeSubchainWithoutLock(it)
                 }
             }
         }
