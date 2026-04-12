@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.job
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.test.runTest
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -37,7 +38,7 @@ class WalkingTests : NavigationTest() {
      * ```
      */
     @Test
-    fun testingThatOrdinaryWalkingWorksProperly() = runTest {
+    fun testingThatOrdinaryWalkingWorksProperly() = runTest(EmptyCoroutineContext + Job()) {
         val c0 = NavigationChain<TestConfig>(
             null,
             NavigationNodeFactory { chain, config ->

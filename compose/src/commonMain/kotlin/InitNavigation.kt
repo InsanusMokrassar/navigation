@@ -1,13 +1,13 @@
 package dev.inmo.navigation.compose
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import dev.inmo.kslog.common.TagLogger
 import dev.inmo.kslog.common.d
 import dev.inmo.micro_utils.coroutines.LinkedSupervisorScope
 import dev.inmo.navigation.core.NavigationChain
+import dev.inmo.navigation.core.NavigationNode
 import dev.inmo.navigation.core.NavigationNodeFactory
 import dev.inmo.navigation.core.repo.ConfigHolder
 import dev.inmo.navigation.core.repo.NavigationConfigsRepo
@@ -57,37 +57,42 @@ private fun <Base> initNavigation(
             }
         }
     }
-    doWithNodesFactoryInLocalProvider(resultNodesFactory) {
-        logger.d { "Hierarchy saving enabled" }
+    val currentComposeInjectedChainsAndNodesIds = InternalLocalComposeInjectedChainsAndNodesProvider.current
+    doWithComposeInjectedChainsAndNodesInLocalProvider(
+        currentComposeInjectedChainsAndNodesIds
+    ) {
+        doWithNodesFactoryInLocalProvider(resultNodesFactory) {
+            logger.d { "Hierarchy saving enabled" }
 
-        val existsChain = configsRepo.get()
+            val existsChain = configsRepo.get()
 
-        logger.d {
-            if (existsChain == null) {
-                "Can't find exists chain. Using default one: $defaultStartChain"
-            } else {
-                "Took exists stored chain $existsChain"
-            }
-        }
-
-        val restoredRootChain = remember {
-            restoreHierarchy<Base>(
-                existsChain ?: defaultStartChain ?: ConfigHolder.Chain<Base>(null),
-                factory = resultNodesFactory,
-                rootChain = rootChain,
-                dropRedundantChainsOnRestore = dropRedundantChainsOnRestore
-            )
-        }
-        restoredRootChain ?.let {
-            if (existsChain == null && defaultStartChain == null) {
-                doWithChainInLocalProvider(it) {
-                    defaultInitBlock()
+            logger.d {
+                if (existsChain == null) {
+                    "Can't find exists chain. Using default one: $defaultStartChain"
+                } else {
+                    "Took exists stored chain $existsChain"
                 }
-            } else {
-                it.DrawStackNodes()
             }
 
-            it.start(subscope)
+            val restoredRootChain = remember {
+                restoreHierarchy<Base>(
+                    existsChain ?: defaultStartChain ?: ConfigHolder.Chain<Base>(null),
+                    factory = resultNodesFactory,
+                    rootChain = rootChain,
+                    dropRedundantChainsOnRestore = dropRedundantChainsOnRestore
+                )
+            }
+            restoredRootChain ?.let {
+                doWithChainInLocalProvider(it) {
+                    if (existsChain == null && defaultStartChain == null) {
+                        defaultInitBlock()
+                    } else {
+                        DrawStackNodes<Base>()
+                    }
+                }
+
+                it.start(subscope)
+            }
         }
     }
 }
@@ -143,7 +148,7 @@ fun <Base> initNavigation(
     scope: CoroutineScope = rememberCoroutineScope(),
     dropRedundantChainsOnRestore: Boolean = false,
     rootChain: NavigationChain<Base> = NavigationChain(null, nodesFactory),
-    defaultInitBlock: @Composable () -> Unit
+    defaultInitBlock: @Composable NavigationNode<out Base, Base>.() -> Unit
 ) = initNavigation(
     defaultStartChain = null,
     configsRepo = configsRepo,

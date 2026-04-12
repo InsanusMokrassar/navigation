@@ -1,5 +1,13 @@
 # Navigation Changelog
 
+## 0.7.3
+
+* `Compose`:
+  * Add tracking of injected chains and nodes to fix double rendering issue
+  * Refactor composition local providers organization
+* `Core`:
+  * Add `toString()` methods to `NavigationChain` and `NavigationNode` for better debugging
+
 ## 0.7.2
 
 * `JS` realizations:

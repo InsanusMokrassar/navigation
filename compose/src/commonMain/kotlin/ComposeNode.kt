@@ -25,10 +25,11 @@ abstract class ComposeNode<Config : Base, Base>(
         get() = _configState.value
         set(value) { _configState.value = value }
     internal val drawerState: MutableRedeliverStateFlow<(@Composable () -> Unit)?> = MutableRedeliverStateFlow(null)
+    private val onDrawLambda: @Composable () -> Unit = { onDraw() }
 
     override fun onResume() {
         super.onResume()
-        drawerState.value = @Composable { onDraw() }
+        drawerState.value = onDrawLambda
     }
 
     override fun onPause() {

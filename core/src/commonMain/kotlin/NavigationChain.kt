@@ -238,6 +238,10 @@ class NavigationChain<Base>(
         return subscope.coroutineContext.job
     }
 
+    override fun toString(): String {
+        return "NavigationChain(id=$id, stack=$stack)"
+    }
+
     companion object {
         operator fun <Base> invoke(
             parentNode: NavigationNode<out Base, Base>?,

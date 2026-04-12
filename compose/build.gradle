@@ -21,6 +21,13 @@ kotlin {
             }
         }
 
+        jvmTest {
+            dependencies {
+                implementation compose.uiTest
+                implementation compose.desktop.currentOs
+            }
+        }
+
         jsMain {
             dependencies {
                 api compose.web.core
