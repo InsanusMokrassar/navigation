@@ -221,6 +221,10 @@ abstract class NavigationNode<Config : Base, Base>(
         return subscope.coroutineContext.job
     }
 
+    override fun toString(): String {
+        return "NavigationNode(id=$id, subchains=${subchains}, config=$config)"
+    }
+
     class Empty<T : Base, Base>(
         override val chain: NavigationChain<Base>,
         config: T,
