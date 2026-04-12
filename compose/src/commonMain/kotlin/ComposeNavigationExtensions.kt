@@ -33,7 +33,7 @@ internal fun <Base> DrawStackNodes() {
     val latestNode = remember(stack.value.lastOrNull()) {
         stack.value.lastOrNull()
     }
-    val provider = InternalLocalComposeInjectedChainsAndNodesIdsProvider.current
+    val provider = InternalLocalComposeInjectedChainsAndNodesProvider.current
     key(latestNode, latestNode ?.hashCode()) {
         if (latestNode != null) {
             doWithNodeInLocalProvider(latestNode) {
@@ -55,7 +55,7 @@ internal fun <Base> SubchainsHandling(filter: (NavigationChain<Base>) -> Boolean
     val rawSubchains = subchainsState.value
     val filteredSubchains = rawSubchains.filter(filter)
 
-    val provider = InternalLocalComposeInjectedChainsAndNodesIdsProvider.current
+    val provider = InternalLocalComposeInjectedChainsAndNodesProvider.current
     filteredSubchains.forEach {
         if (provider.chains.contains(it) == false) {
             doWithChainInLocalProvider(it) {
@@ -113,7 +113,7 @@ fun <Base> InjectNavigationChain(
             rootNode.createEmptySubChain(id = id)
         }
     }
-    val provider = InternalLocalComposeInjectedChainsAndNodesIdsProvider.current
+    val provider = InternalLocalComposeInjectedChainsAndNodesProvider.current
     remember(chain) { provider.chains.add(chain) }
     DisposableEffect(provider, chain) {
         onDispose {
@@ -184,7 +184,7 @@ internal fun <Base> PushAndDrawNodeInStack(
             chain.drop(currentValue)
         }
     }
-    val provider = InternalLocalComposeInjectedChainsAndNodesIdsProvider.current
+    val provider = InternalLocalComposeInjectedChainsAndNodesProvider.current
     node.value ?.let {
         remember { provider.nodes.add(it) }
         DisposableEffect(provider, it) {

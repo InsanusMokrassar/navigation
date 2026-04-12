@@ -1,7 +1,6 @@
 package dev.inmo.navigation.compose
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import dev.inmo.kslog.common.TagLogger
@@ -58,8 +57,8 @@ private fun <Base> initNavigation(
             }
         }
     }
-    val currentComposeInjectedChainsAndNodesIds = InternalLocalComposeInjectedChainsAndNodesIdsProvider.current
-    doWithComposeInjectedChainsAndNodesIdsInLocalProvider(
+    val currentComposeInjectedChainsAndNodesIds = InternalLocalComposeInjectedChainsAndNodesProvider.current
+    doWithComposeInjectedChainsAndNodesInLocalProvider(
         currentComposeInjectedChainsAndNodesIds
     ) {
         doWithNodesFactoryInLocalProvider(resultNodesFactory) {

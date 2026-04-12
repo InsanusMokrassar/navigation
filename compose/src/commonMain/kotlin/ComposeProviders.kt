@@ -44,13 +44,13 @@ fun <Base> doWithNodesFactoryInLocalProvider(factory: NavigationNodeFactory<Base
 
 
 
-internal val InternalLocalComposeInjectedChainsAndNodesIdsProvider: ProvidableCompositionLocal<ComposeInjectedChainsAndNodesIds> = compositionLocalOf {
-    ComposeInjectedChainsAndNodesIds()
+internal val InternalLocalComposeInjectedChainsAndNodesProvider: ProvidableCompositionLocal<ComposeInjectedChainsAndNodes> = compositionLocalOf {
+    ComposeInjectedChainsAndNodes()
 }
 @Composable
-internal fun doWithComposeInjectedChainsAndNodesIdsInLocalProvider(
-    composeInjectedChainsAndNodesIds: ComposeInjectedChainsAndNodesIds,
+internal fun doWithComposeInjectedChainsAndNodesInLocalProvider(
+    composeInjectedChainsAndNodes: ComposeInjectedChainsAndNodes,
     block: @Composable () -> Unit
 ) {
-    CompositionLocalProvider(InternalLocalComposeInjectedChainsAndNodesIdsProvider provides composeInjectedChainsAndNodesIds, block)
+    CompositionLocalProvider(InternalLocalComposeInjectedChainsAndNodesProvider provides composeInjectedChainsAndNodes, block)
 }

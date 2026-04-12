@@ -5,9 +5,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.runComposeUiTest
 import dev.inmo.micro_utils.coroutines.MutableRedeliverStateFlow
+import dev.inmo.navigation.compose.ComposeInjectedChainsAndNodes
 import dev.inmo.navigation.compose.ComposeNode
 import dev.inmo.navigation.compose.InjectNavigationChain
 import dev.inmo.navigation.compose.InjectNavigationNode
+import dev.inmo.navigation.compose.doWithComposeInjectedChainsAndNodesInLocalProvider
 import dev.inmo.navigation.compose.initNavigation
 import dev.inmo.navigation.core.NavigationChain
 import dev.inmo.navigation.core.NavigationNode
@@ -331,5 +333,90 @@ class ComposeNavigationExtensionsTests {
             drawingsCalculator.toList(),
             listOf("test1", "test2")
         )
+    }
+
+    @Test
+    fun testInternalManagementOfDrawnChainsWorksProperly() = runComposeUiTest {
+        val drawingsCalculator = mutableListOf<String>()
+        val drawingsCalculatorMutex = Mutex()
+        var root: NavigationChain<NavigationNodeDefaultConfig>? = null
+        val dropNode = mutableStateOf(false)
+        val dropChain = mutableStateOf(false)
+        val composeInjectedChainsAndNodes = ComposeInjectedChainsAndNodes()
+        setContent {
+            doWithComposeInjectedChainsAndNodesInLocalProvider(
+                composeInjectedChainsAndNodes
+            ) {
+                initNavigation(
+                    EmptyConfig("root"),
+                    NavigationConfigsRepo.InMemory(),
+                    TestNodeFactory {
+                        val state = 0
+                        LaunchedEffect(state) {
+                            root = it.chain.rootChain()
+                            drawingsCalculatorMutex.withLock {
+                                drawingsCalculator.add(it.config.id)
+                            }
+                        }
+                    }
+                ) {
+                    if (dropChain.value == false) {
+                        InjectNavigationChain<NavigationNodeDefaultConfig> {
+                            if (dropNode.value == false) {
+                                InjectNavigationNode(
+                                    TestConfig("test")
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        waitForIdle()
+
+        assertEquals(
+            drawingsCalculator.toList(),
+            listOf("test")
+        )
+        assertNotNull(root)
+        assertEquals(
+            1,
+            root.stackFlow.value.size
+        )
+        assertTrue(root.stackFlow.value.first().config is EmptyConfig)
+        assertEquals(
+            1,
+            root.stackFlow.value.first().subchains.size
+        )
+        assertEquals(
+            1,
+            root.stackFlow.value.first().subchains.first().stackFlow.value.size
+        )
+        assertTrue(
+            root.stackFlow.value.first().subchains.first().stackFlow.value.first().config is TestConfig
+        )
+        assertEquals(
+            "test",
+            root.stackFlow.value.first().subchains.first().stackFlow.value.first().config.id
+        )
+
+        assertTrue(composeInjectedChainsAndNodes.chains.single() === root.stackFlow.value.first().subchains.first())
+        assertTrue(composeInjectedChainsAndNodes.nodes.size == 2)
+        assertTrue(composeInjectedChainsAndNodes.nodes.last() === root.stackFlow.value.first().subchains.first().stackFlow.value.first())
+
+        dropNode.value = true
+
+        waitForIdle()
+
+        assertTrue(composeInjectedChainsAndNodes.chains.single() === root.stackFlow.value.first().subchains.first())
+        assertTrue(composeInjectedChainsAndNodes.nodes.size == 1)
+
+        dropChain.value = true
+
+        waitForIdle()
+
+        assertTrue(composeInjectedChainsAndNodes.chains.isEmpty())
+        assertTrue(composeInjectedChainsAndNodes.nodes.size == 1)
     }
 }
