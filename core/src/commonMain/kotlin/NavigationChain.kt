@@ -29,8 +29,7 @@ class NavigationChain<Base>(
     internal val stack
         get() = stackFlow.value
 
-    private val actualizeMutex = Mutex()
-    private suspend fun actualizeStackStates() {
+    private fun actualizeStackStates() {
         val parentState = parentNodeState.also {
             log.d {
                 "Chain state (parent $parentNode) now is $it"
@@ -57,8 +56,6 @@ class NavigationChain<Base>(
                 log.e(it) { "Unable to actualize stack of $this" }
             }
         }
-//        actualizeMutex.withLock {
-//        }
     }
 
     private val nodesChangesChannel: Channel<suspend () -> Unit> = Channel(Channel.UNLIMITED)
