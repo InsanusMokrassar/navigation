@@ -2,7 +2,6 @@ package dev.inmo.navigation.core
 
 import dev.inmo.kslog.common.*
 import dev.inmo.micro_utils.common.diff
-import dev.inmo.micro_utils.common.withReplaced
 import dev.inmo.micro_utils.common.withReplacedAt
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.extensions.*
@@ -30,14 +29,13 @@ class NavigationChain<Base>(
     internal val stack
         get() = stackFlow.value
 
-    private val actualizeMutex = Mutex()
-    private suspend fun actualizeStackStates() {
+    private fun actualizeStackStates() {
         val parentState = parentNodeState.also {
             log.d {
                 "Chain state (parent $parentNode) now is $it"
             }
         }
-        actualizeMutex.withLock {
+        nodesChangesChannel.trySend {
             log.d { "Start actualization of stack $stack" }
             runCatchingLogging(logger = log) {
                 stack.forEachIndexed { i, node ->
@@ -182,13 +180,13 @@ class NavigationChain<Base>(
         log.d { "Starting chain" }
 
         parentNode ?.run {
-            (flowOf(state) + stateChangesFlow).subscribeLoggingDropExceptions(scope = subscope) {
+            stateFlow.subscribeLoggingDropExceptions(scope = subscope) {
                 log.d { "Start update of state due to parent state update to $it" }
                 actualizeStackStates()
             }
         }
 
-        parentNode ?.subchainsFlow ?.dropWhile { this in it }?.subscribeLoggingDropExceptions(scope = subscope) {
+        parentNode ?.subchainsFlow ?.dropWhile { this in it } ?.subscribeLoggingDropExceptions(scope = subscope) {
             log.d { "Cancelling subscope" }
             subscope.cancel()
             log.d { "Cancelled subscope" }

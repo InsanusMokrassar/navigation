@@ -1,5 +1,13 @@
 # Navigation Changelog
 
+## 0.7.5
+
+* `Core`:
+  * Rework states in `NavigationNode` - now they are based on `StateFlow`
+  * Force `NavigationChain` to actualize states in synchronized manner with other places of stack schanges
+* `Compose`:
+  * Fix of bug when root chain do not draw its stack in case of default drawing requirement
+
 ## 0.7.4
 
 * `Versions`:

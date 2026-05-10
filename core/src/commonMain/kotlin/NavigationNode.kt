@@ -29,12 +29,16 @@ abstract class NavigationNode<Config : Base, Base>(
     val subchainsFlow: StateFlow<List<NavigationChain<Base>>> = _subchainsFlow.asStateFlow()
     val subchains: List<NavigationChain<Base>>
         get() = _subchainsFlow.value.toList()
+    private val _statesFlow = MutableRedeliverStateFlow<NavigationNodeState>(NavigationNodeState.NEW)
+    val stateFlow = _statesFlow.asStateFlow()
     private val _stateChanges = MutableSharedFlow<NavigationStateChange>(extraBufferCapacity = Int.MAX_VALUE)
 
     val stateChangesFlow: Flow<NavigationStateChange> = _stateChanges.asSharedFlow()
-    val statesFlow: Flow<NavigationNodeState> = stateChangesFlow.map { it.to }
-    var state: NavigationNodeState = NavigationNodeState.NEW
-        private set
+    @Deprecated("This field is deprecated and will be removed soon", ReplaceWith("stateFlow"))
+    val statesFlow: Flow<NavigationNodeState>
+        get() = stateFlow
+    val state: NavigationNodeState
+        get() = _statesFlow.value
 
     private val changeStateMutex = Mutex()
     suspend fun changeState(newState: NavigationNodeState) {
@@ -62,7 +66,7 @@ abstract class NavigationNode<Config : Base, Base>(
                         onBeforeDestroy()
                     }
                 }
-                state = change.to
+                _statesFlow.value = change.to
 
                 if (change.isNegative) {
                     _stateChanges.tryEmit(change)

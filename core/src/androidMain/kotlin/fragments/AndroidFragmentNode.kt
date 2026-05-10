@@ -22,7 +22,7 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
     private val fragmentManager: FragmentManager,
     private val rootView: View,
     private val flowOnHierarchyChangeListener: FlowOnHierarchyChangeListener,
-    private val manualHierarchyCheckerDelayMillis: Long? = 100L,
+    private val manualHierarchyCheckerDelayMillis: Long? = 1000L,
     override val id: NavigationNodeId = NavigationNodeId(),
     private val fragmentTransactionConfigurator: FragmentTransactionConfigurator<Base>? = null
 ) : NavigationNode<Config, Base>() {
@@ -113,7 +113,7 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
         val subscope = scope.LinkedSupervisorScope()
         return super.start(subscope).let {
 
-            (flowOf(state) + statesFlow).filter { it == NavigationNodeState.RESUMED }.subscribeLoggingDropExceptions(subscope) {
+            stateFlow.filter { it == NavigationNodeState.RESUMED }.subscribeLoggingDropExceptions(subscope) {
                 val subsubscope = subscope.LinkedSupervisorScope()
 
                 flowOnHierarchyChangeListener.onChildViewAdded.filter {
@@ -127,15 +127,24 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
                     subsubscope.cancel()
                 }
 
-                subsubscope.launchLoggingDropExceptions {
-                    while (state == NavigationNodeState.RESUMED && chain.stack.contains(this@AndroidFragmentNode)) {
+                merge(
+                    stateFlow,
+                    chain.stackFlow,
+                    flow {
+                        while (true) {
+                            delay(manualHierarchyCheckerDelayMillis ?: return@flow)
+                            emit(Unit)
+                        }
+                    }
+                )
+                    .takeWhile {
+                        state == NavigationNodeState.RESUMED && chain.stack.contains(this@AndroidFragmentNode)
+                    }
+                    .subscribeLoggingDropExceptions(subsubscope) {
                         if (fragment ?.isAdded != true) {
                             placeFragment()
                         }
-
-                        delay(manualHierarchyCheckerDelayMillis ?: break)
                     }
-                }
             }
 
             subscope.coroutineContext.job
