@@ -2,7 +2,6 @@ package dev.inmo.navigation.core
 
 import dev.inmo.kslog.common.*
 import dev.inmo.micro_utils.common.diff
-import dev.inmo.micro_utils.common.withReplaced
 import dev.inmo.micro_utils.common.withReplacedAt
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.extensions.*
@@ -37,7 +36,7 @@ class NavigationChain<Base>(
                 "Chain state (parent $parentNode) now is $it"
             }
         }
-        actualizeMutex.withLock {
+        nodesChangesChannel.trySend {
             log.d { "Start actualization of stack $stack" }
             runCatchingLogging(logger = log) {
                 stack.forEachIndexed { i, node ->
@@ -58,6 +57,8 @@ class NavigationChain<Base>(
                 log.e(it) { "Unable to actualize stack of $this" }
             }
         }
+//        actualizeMutex.withLock {
+//        }
     }
 
     private val nodesChangesChannel: Channel<suspend () -> Unit> = Channel(Channel.UNLIMITED)
@@ -182,13 +183,13 @@ class NavigationChain<Base>(
         log.d { "Starting chain" }
 
         parentNode ?.run {
-            (flowOf(state) + stateChangesFlow).subscribeLoggingDropExceptions(scope = subscope) {
+            stateFlow.subscribeLoggingDropExceptions(scope = subscope) {
                 log.d { "Start update of state due to parent state update to $it" }
                 actualizeStackStates()
             }
         }
 
-        parentNode ?.subchainsFlow ?.dropWhile { this in it }?.subscribeLoggingDropExceptions(scope = subscope) {
+        parentNode ?.subchainsFlow ?.dropWhile { this in it } ?.subscribeLoggingDropExceptions(scope = subscope) {
             log.d { "Cancelling subscope" }
             subscope.cancel()
             log.d { "Cancelled subscope" }

@@ -86,9 +86,8 @@ private fun <Base> initNavigation(
                 doWithChainInLocalProvider(it) {
                     if (existsChain == null && defaultStartChain == null) {
                         defaultInitBlock()
-                    } else {
-                        DrawStackNodes<Base>()
                     }
+                    DrawStackNodes<Base>()
                 }
 
                 it.start(subscope)

@@ -42,7 +42,7 @@ fun <Base> Either<NavigationChain<Base>, NavigationNode<out Base, Base>>.changes
                         it.either<NavigationChain<Base>, NavigationNode<out Base, Base>>().changesInSubtreeFlow<Base>()
                     }.merge()
                 },
-                this.t2.stateChangesFlow.map { (this.t2 to null).either() },
+                this.t2.stateFlow.map { (this.t2 to null).either() },
                 this.t2.configState.map { (this.t2 to null).either() },
             )
         },
