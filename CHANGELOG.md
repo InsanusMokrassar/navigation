@@ -2,6 +2,19 @@
 
 ## 0.7.7
 
+* `Versions`:
+  * `Kotlin`: `2.3.20` -> `2.3.21`
+  * `Coroutines`: `1.10.2` -> `1.11.0`
+  * `MicroUtils`: `0.29.2` -> `0.30.0`
+  * `Koin`: `4.2.1` -> `4.2.2`
+  * `Compose`: `1.10.1` -> `1.11.1`
+  * `Android Gradle Plugin`: `8.12.+` -> `8.13.+`
+  * `Android Core KTX`: `1.17.0` -> `1.19.0`
+  * `Android Material`: `1.13.0` -> `1.14.0`
+  * `Android Compose Activity`: `1.12.4` -> `1.13.0`
+  * `Versions Plugin`: `0.53.0` -> `0.61.0`
+  * `NMCP`: `1.4.4` -> `1.6.1`
+
 ## 0.7.5
 
 * `Core`:
