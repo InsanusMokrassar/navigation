@@ -2,6 +2,16 @@
 
 ## 0.8.0
 
+* `Versions`:
+  * `Kotlin`: `2.3.21` -> `2.4.10`
+  * `Android Gradle Plugin`: `8.13.+` -> `9.3.2`
+  * `Android Compile SDK`: `36` -> `37`
+  * `Android Build Tools`: `36.0.0` -> `37.0.0`
+  * `Android AppCompat`: `1.7.1` -> `1.8.0`
+  * `Gradle`: `8.14.2` -> `9.7.1`
+* `Android`:
+  * Migrate onto new Android DSL and built-in Kotlin
+
 ## 0.7.7
 
 * `Versions`:

@@ -3,6 +3,8 @@ project.group = "$group"
 
 // apply from: "$mpp_publish"
 
+apply from: "$defaultAndroidSettings"
+
 kotlin {
     jvm {
         compilations.main {
@@ -15,8 +17,10 @@ kotlin {
         browser()
         nodejs()
     }
-    androidTarget {
-        publishAllLibraryVariants()
+    android {
+        project.ext.configureAndroidTarget(delegate)
+        withHostTest {}
+        withDeviceTest {}
     }
 
     sourceSets {
@@ -42,7 +46,14 @@ kotlin {
                 implementation libs.kotlin.test.js
             }
         }
-        androidUnitTest {
+        androidHostTest {
+            dependencies {
+                implementation libs.kotlin.test.junit
+                implementation libs.android.test.junit
+                implementation libs.android.test.espresso.core
+            }
+        }
+        androidDeviceTest {
             dependencies {
                 implementation libs.kotlin.test.junit
                 implementation libs.android.test.junit
@@ -56,5 +67,3 @@ java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
 }
-
-apply from: "$defaultAndroidSettings"
