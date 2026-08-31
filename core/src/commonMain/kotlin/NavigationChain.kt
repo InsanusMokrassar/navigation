@@ -195,11 +195,10 @@ class NavigationChain<Base>(
         val nodeToJob = mutableMapOf<NavigationNodeId, Job>()
         val nodeToJobMutex = Mutex()
 
-        merge(
-            flow { emit(emptyList<NavigationNode<*, Base>>().diff(stackFlow.value)) },
-            onNodesStackDiffFlow
-        )
-            .filter { !it.isEmpty() }
+        onNodesStackDiffFlow(emptyList())
+            .filter {
+                !it.isEmpty()
+            }
             .subscribeLoggingDropExceptions(scope = subscope) {
                 actualizeStackStates()
                 nodeToJobMutex.withLock {
