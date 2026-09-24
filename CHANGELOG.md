@@ -2,6 +2,16 @@
 
 ## 0.9.0
 
+* `Versions`:
+  * `Kotlin`: `2.4.10` -> `2.4.20`
+  * `Compose`: `1.12.0` -> `1.12.1`
+  * `KSLog`: `2.0.0` -> `2.1.0`
+  * `MicroUtils`: `0.31.0` -> `0.32.0`
+  * `Android Core KTX`: `1.19.0` -> `1.19.1`
+  * `Versions Plugin`: `0.61.0` -> `0.64.0`
+  * `NMCP`: `1.6.1` -> `1.6.2`
+  * `Android Gradle Plugin`: `9.1.1` -> `9.3.1`
+
 ## 0.8.0
 
 * `Versions`:
