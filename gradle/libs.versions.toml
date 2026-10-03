@@ -23,7 +23,7 @@ android-minSdk = "26"
 android-compileSdk = "37"
 android-buildTools = "37.0.0"
 
-android-core-ktx = "1.19.0"
+android-core-ktx = "1.19.1"
 android-appcompat = "1.8.0"
 android-material = "1.14.0"
 android-compose-activity = "1.13.0"
