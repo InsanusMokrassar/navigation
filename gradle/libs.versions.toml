@@ -1,16 +1,16 @@
 [versions]
 
-kotlin = "2.4.10"
+kotlin = "2.4.21"
 kotlin-coroutines = "1.11.0"
 kotlin-serialization = "1.11.0"
 dokka = "2.2.0"
 
-microutils = "0.31.0"
-kslog = "2.0.0"
+microutils = "0.32.0"
+kslog = "2.1.0"
 uuid = "0.8.4"
 
 koin = "4.2.2"
-compose = "1.12.0"
+compose = "1.12.1"
 compose-material3 = "1.9.0"
 
 dexcount = "4.0.0"
@@ -23,15 +23,15 @@ android-minSdk = "26"
 android-compileSdk = "37"
 android-buildTools = "37.0.0"
 
-android-core-ktx = "1.19.0"
+android-core-ktx = "1.19.1"
 android-appcompat = "1.8.0"
 android-material = "1.14.0"
 android-compose-activity = "1.13.0"
 
 github-release = "2.5.2"
 
-versions = "0.61.0"
-nmcp = "1.6.1"
+versions = "0.65.0"
+nmcp = "1.6.2"
 
 [libraries]
 

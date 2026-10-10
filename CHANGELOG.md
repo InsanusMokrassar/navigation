@@ -2,6 +2,19 @@
 
 ## 0.9.0
 
+* `Versions`:
+  * `Kotlin`: `2.4.10` -> `2.4.21`
+  * `Compose`: `1.12.0` -> `1.12.1`
+  * `Gradle`: `9.7.1` -> `9.7.0` (align with the officially supported Kotlin Gradle Plugin range)
+  * `MicroUtils`: `0.31.0` -> `0.32.0`
+  * `KSLog`: `2.0.0` -> `2.1.0`
+  * `Android Core KTX`: `1.19.0` -> `1.19.1`
+  * `Versions Plugin`: `0.61.0` -> `0.65.0`
+  * `NMCP`: `1.6.1` -> `1.6.2`
+* `Build`:
+  * Regenerate Gradle wrapper scripts and JAR for `9.7.0` with the official distribution checksum
+  * Refresh the generated JS Yarn lockfile after the Kotlin toolchain update
+
 ## 0.8.0
 
 * `Versions`:
