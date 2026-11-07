@@ -153,6 +153,86 @@ fun <Base> NavigationChain<Base>.dropNodeInSubTree(id: String) = chainOrNodeEith
  */
 fun <Base> NavigationChain<Base>.dropChainInSubTree(id: String) = chainOrNodeEither().dropChainInSubTree(id)
 
+/**
+ * Removes the specified navigation node from this chain and suspends until it is no longer present
+ * in the navigation stack.
+ *
+ * If the node is already absent from the stack, this function returns immediately.
+ *
+ * @param node The navigation node to remove and await removal for.
+ */
+suspend fun <Base> NavigationChain<Base>.dropAndAwaitAbsence(node: NavigationNode<*, Base>) {
+    if (node in stack == false) return
+    drop(node)
+    stackFlow.dropWhile { it.contains(node) }.first()
+}
+
+/**
+ * Removes the navigation node with the specified identifier from this chain and waits until it is absent.
+ *
+ * @param id The identifier of the navigation node to remove.
+ * @return The removed navigation node, or `null` if no node with the specified identifier exists in the chain.
+ */
+suspend fun <Base> NavigationChain<Base>.dropAndAwaitAbsence(id: NavigationNodeId): NavigationNode<out Base, Base>? {
+    val node = stack.firstOrNull { it.id == id }
+    if (node == null) return null
+    dropAndAwaitAbsence(node)
+    return node
+}
+
+/**
+ * Removes the navigation node identified by the specified ID and suspends until the node
+ * is no longer present in the navigation chain.
+ *
+ * @param id The string identifier of the navigation node to remove.
+ * @return The removed navigation node, or `null` if no node with the specified ID was present.
+ */
+suspend fun <Base> NavigationChain<Base>.dropAndAwaitAbsence(
+    id: String
+): NavigationNode<out Base, Base>? = dropAndAwaitAbsence(
+    NavigationNodeId(id)
+)
+
+/**
+ * Removes the specified navigation node from this chain and suspends until the node is destroyed.
+ *
+ * The function first waits for the node to no longer be present in the navigation chain, then waits
+ * for its state to become [NavigationNodeState.NEW]. If the node is already absent and in that state,
+ * this function returns immediately.
+ *
+ * @param node the navigation node to remove and await destruction for.
+ */
+suspend fun <Base> NavigationChain<Base>.dropAndAwaitDestroy(node: NavigationNode<*, Base>) {
+    dropAndAwaitAbsence(node)
+    node.stateFlow.dropWhile { it != NavigationNodeState.NEW }.take(1).collect()
+}
+
+/**
+ * Finds the navigation node with the specified identifier, removes it from this chain,
+ * and suspends until the node is destroyed.
+ *
+ * @param id Identifier of the navigation node to remove.
+ * @return The removed and destroyed navigation node, or `null` if no node with the specified identifier exists.
+ */
+suspend fun <Base> NavigationChain<Base>.dropAndAwaitDestroy(id: NavigationNodeId): NavigationNode<out Base, Base>? {
+    val node = stack.firstOrNull { it.id == id }
+    if (node == null) return null
+    dropAndAwaitDestroy(node)
+    return node
+}
+
+/**
+ * Removes the navigation node identified by the given ID and suspends until its destruction completes.
+ *
+ * @param id The string identifier of the navigation node to remove.
+ * @return The removed navigation node, or `null` if no node with the specified ID exists.
+ */
+suspend fun <Base> NavigationChain<Base>.dropAndAwaitDestroy(
+    id: String
+): NavigationNode<out Base, Base>? = dropAndAwaitDestroy(
+    NavigationNodeId(id)
+)
+
 // Replace
 
 /**

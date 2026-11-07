@@ -15,6 +15,14 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity
+            android:name="dev.inmo.navigation.sample.ComposeSampleActivity"
+            android:exported="false"
+            android:label="@string/compose_sample"/>
+        <activity
+            android:name="dev.inmo.navigation.sample.MVVMSampleActivity"
+            android:exported="false"
+            android:label="@string/view_fragment_sample"/>
     </application>
 
 </manifest>

@@ -30,7 +30,7 @@ class NavigationView(
 
     @Composable
     override fun onDraw() {
-        Column {
+        Column(Modifier.safeDrawingPadding()) {
             Row {
                 beforePauseWaitJobState.collectAsState().value ?.let {
                     val leftTime = remember { mutableStateOf(3.seconds) }

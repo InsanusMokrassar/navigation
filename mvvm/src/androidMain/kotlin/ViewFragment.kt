@@ -54,9 +54,6 @@ abstract class ViewFragment<ViewModel: dev.inmo.navigation.mvvm.ViewModel<Naviga
             }
             field = value
         }
-    protected val Log by lazy {
-        logger
-    }
 
     /**
      * This class of [ViewModel] will be used to create [viewModel] with [lazyInject]
@@ -161,5 +158,55 @@ abstract class ViewFragment<ViewModel: dev.inmo.navigation.mvvm.ViewModel<Naviga
     ) {
         super.onSetNode(node, configStateFlow)
         viewModel // just init view model
+    }
+
+    override fun onNavigationCreate() {
+        super.onNavigationCreate()
+        viewModel.onCreate()
+    }
+    override fun onNavigationStart() {
+        super.onNavigationStart()
+        viewModel.onStart()
+    }
+    override fun onNavigationResume() {
+        super.onNavigationResume()
+        viewModel.onResume()
+    }
+    override fun onNavigationPause() {
+        super.onNavigationPause()
+        viewModel.onPause()
+    }
+    override fun onNavigationStop() {
+        super.onNavigationStop()
+        viewModel.onStop()
+    }
+    override fun onNavigationDestroy() {
+        super.onNavigationDestroy()
+        viewModel.onDestroy()
+    }
+
+    override suspend fun onBeforeNavigationCreate() {
+        super.onBeforeNavigationCreate()
+        viewModel.onBeforeCreate()
+    }
+    override suspend fun onBeforeNavigationStart() {
+        super.onBeforeNavigationStart()
+        viewModel.onBeforeStart()
+    }
+    override suspend fun onBeforeNavigationResume() {
+        super.onBeforeNavigationResume()
+        viewModel.onBeforeResume()
+    }
+    override suspend fun onBeforeNavigationPause() {
+        super.onBeforeNavigationPause()
+        viewModel.onBeforePause()
+    }
+    override suspend fun onBeforeNavigationStop() {
+        super.onBeforeNavigationStop()
+        viewModel.onBeforeStop()
+    }
+    override suspend fun onBeforeNavigationDestroy() {
+        super.onBeforeNavigationDestroy()
+        viewModel.onBeforeDestroy()
     }
 }

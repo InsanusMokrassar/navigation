@@ -3,6 +3,8 @@ package dev.inmo.navigation.core.fragments
 import android.view.View
 import android.view.ViewGroup.NO_ID
 import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentTransaction
+import androidx.lifecycle.Lifecycle
 import dev.inmo.kslog.common.KSLog
 import dev.inmo.kslog.common.TagLogger
 import dev.inmo.kslog.common.d
@@ -34,7 +36,18 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
     private val viewTag
         get() = config.id
 
+    internal var callbacksCollection: CallbacksCollection? = null
+
     private val _beforePauseWaitJobState = MutableRedeliverStateFlow<CompletableJob?>(null)
+    private val descendantViews = MutableStateFlow<Map<NodeFragment<*, *>, Lifecycle>>(emptyMap())
+
+    internal fun onDescendantViewCreated(fragment: NodeFragment<*, *>, lifecycle: Lifecycle) {
+        descendantViews.value += fragment to lifecycle
+    }
+
+    internal fun onDescendantViewDestroyed(fragment: NodeFragment<*, *>) {
+        descendantViews.value -= fragment
+    }
 
     /**
      * In case you wish to do some job before pause, you may return true from this function and listen for
@@ -53,7 +66,22 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
     private var fragment: NodeFragment<Config, Base>? = ((fragmentKClass.objectInstance ?: fragmentKClass.constructors.first {
         it.parameters.isEmpty()
     }.call()) as NodeFragment<Config, Base>).also {
+        callbacksCollection = it.callbacks
         it.setNode(this, _configState)
+    }
+
+
+    override suspend fun onBeforeCreate() {
+        super.onBeforeCreate()
+        callbacksCollection ?.onBeforeNavigationCreate()
+    }
+    override suspend fun onBeforeStart() {
+        super.onBeforeStart()
+        callbacksCollection ?.onBeforeNavigationStart()
+    }
+    override suspend fun onBeforeResume() {
+        super.onBeforeResume()
+        callbacksCollection ?.onBeforeNavigationResume()
     }
 
     override suspend fun onBeforePause() {
@@ -65,15 +93,68 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
                 completingJob.join()
             }
         }
+        awaitDescendantEffects()
+
+        callbacksCollection ?.onBeforeNavigationPause()
+    }
+    override suspend fun onBeforeStop() {
+        super.onBeforeStop()
+        callbacksCollection ?.onBeforeNavigationStop()
+    }
+    override suspend fun onBeforeDestroy() {
+        super.onBeforeDestroy()
+        callbacksCollection ?.onBeforeNavigationDestroy()
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private suspend fun awaitDescendantEffects() = withContext(Dispatchers.Main.immediate) {
+        val hostLifecycle = fragment?.activity?.lifecycle ?: return@withContext
+        // A prepared framework transition receives no end callback if its container
+        // detaches before pre-draw. Keep the ancestor resumed until its descendants
+        // have finished entering/exiting. Backgrounding keeps this wait suspended;
+        // destroying the host cancels it along with the navigation job.
+        combine(
+            hostLifecycle.currentStateFlow,
+            descendantViews.flatMapLatest { views ->
+                if (views.isEmpty()) {
+                    flowOf(Unit)
+                } else {
+                    combine(views.values.map { it.currentStateFlow }) { Unit }
+                }
+            }
+        ) { _, _ -> Unit }.first {
+            val hostState = hostLifecycle.currentState
+            if (hostState == Lifecycle.State.DESTROYED) {
+                true
+            } else if (hostState != Lifecycle.State.RESUMED) {
+                false
+            } else {
+                // Leaving an ancestor also leaves every postponed child container.
+                // Release postponement just as a new transaction in that container
+                // would, then wait for the actual effect completion.
+                descendantViews.value.keys.forEach { it.startPostponedEnterTransition() }
+                // Read the current registry on Main, not a cached combine result:
+                // another child effect may have begun while a flow update was queued.
+                descendantViews.value.values.all {
+                    it.currentState == Lifecycle.State.RESUMED || it.currentState == Lifecycle.State.DESTROYED
+                }
+            }
+        }
     }
 
     private fun placeFragment(view: View) {
         fragment ?.let {
             view.id = view.id.takeIf { it != NO_ID } ?: View.generateViewId()
             fragmentManager.beginTransaction().apply {
+                // Batch remove/replace operations so their framework transitions complete together.
+                setReorderingAllowed(true)
                 runCatching {
                     fragmentTransactionConfigurator ?.apply {
                         onPlace(this@AndroidFragmentNode)
+                    }
+                    if (it.hasInactiveAncestor) {
+                        setCustomAnimations(0, 0, 0, 0)
+                        setTransition(FragmentTransaction.TRANSIT_NONE)
                     }
                     replace(view.id, it)
                 }.onSuccess {
@@ -87,14 +168,34 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
         return rootView.findViewsWithNavigationTag(viewTag).firstOrNull() ?.also(::placeFragment) != null
     }
 
+    override fun onCreate() {
+        super.onCreate()
+        callbacksCollection ?.onNavigationCreate()
+    }
+    override fun onStart() {
+        super.onStart()
+        callbacksCollection ?.onNavigationStart()
+    }
+    override fun onResume() {
+        super.onResume()
+        callbacksCollection ?.onNavigationResume()
+    }
+
     override fun onPause() {
         super.onPause()
 
         fragment ?.let {
             fragmentManager.beginTransaction().apply {
+                setReorderingAllowed(true)
                 runCatching {
                     fragmentTransactionConfigurator ?.apply {
                         onRemove(this@AndroidFragmentNode)
+                    }
+                    if (it.hasInactiveAncestor) {
+                        // Suppressing a framework transition must not enable its
+                        // legacy animation fallback in the departing subtree.
+                        setCustomAnimations(0, 0, 0, 0)
+                        setTransition(FragmentTransaction.TRANSIT_NONE)
                     }
                     remove(it)
                 }.onSuccess {
@@ -102,11 +203,19 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
                 }
             }
         }
+        callbacksCollection ?.onNavigationPause()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        callbacksCollection ?.onNavigationStop()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         fragment = null
+        callbacksCollection ?.onNavigationDestroy()
+        callbacksCollection = null
     }
 
     override fun start(scope: CoroutineScope): Job {
