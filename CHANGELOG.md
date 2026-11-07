@@ -2,6 +2,23 @@
 
 ## 0.10.0
 
+* `Core`:
+  * Add `dropAndAwaitAbsence` and `dropAndAwaitDestroy` extensions with node, `NavigationNodeId` and `String` overloads to await stack removal or node destruction
+  * Fix `NavigationChain.drop` to update the current stack when queued removals run and ignore nodes absent from the chain
+* `Android`:
+  * Add `onNavigation*` and suspending `onBeforeNavigation*` callbacks to `NodeFragment`
+  * Fix nested fragment lifecycle stalls by reordering transactions, waiting for descendant effects and suppressing redundant child animations
+  * Fix removal animation completion in `NavigationFragmentContainerView`
+  * Fix `NavigationMVVMSingleActivity` recreation when restored fragments access unbound navigation nodes
+* `MVVM`:
+  * Forward navigation lifecycle callbacks to `ViewModel` through `ComposeView` and `ViewFragment`, including suspending `onBefore*` hooks
+* `Sample`:
+  * Restore the `NavigationMVVMSingleActivity` sample based on `ViewFragment`
+  * Add a launcher screen for choosing between the Compose and fragment samples
+* `Tests`:
+  * Add Android instrumentation coverage for nested navigation, interrupted effects, activity recreation and awaited node removal
+  * Run every Android navigation test with animations enabled and disabled
+
 ## 0.9.0
 
 * `Versions`:
