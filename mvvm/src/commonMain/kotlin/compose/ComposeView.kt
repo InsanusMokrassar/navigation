@@ -1,12 +1,15 @@
 package dev.inmo.navigation.mvvm.compose
 
 import androidx.compose.runtime.Composition
+import dev.inmo.kslog.common.d
 import dev.inmo.kslog.common.logger
 import dev.inmo.navigation.compose.ComposeNode
 import dev.inmo.navigation.core.*
 import dev.inmo.navigation.mvvm.ViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.isActive
 import org.koin.core.component.KoinComponent
 
 /**
@@ -27,5 +30,55 @@ abstract class ComposeView<Config: Base, Base, VM: ViewModel<Base>> (
 
     override fun toString(): String {
         return this::class.simpleName ?: super.toString()
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        viewModel.onCreate()
+    }
+    override fun onStart() {
+        super.onStart()
+        viewModel.onStart()
+    }
+    override fun onResume() {
+        super.onResume()
+        viewModel.onResume()
+    }
+    override fun onPause() {
+        super.onPause()
+        viewModel.onPause()
+    }
+    override fun onStop() {
+        super.onStop()
+        viewModel.onStop()
+    }
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel.onDestroy()
+    }
+
+    override suspend fun onBeforeCreate() {
+        super.onBeforeCreate()
+        viewModel.onBeforeCreate()
+    }
+    override suspend fun onBeforeStart() {
+        super.onBeforeStart()
+        viewModel.onBeforeStart()
+    }
+    override suspend fun onBeforeResume() {
+        super.onBeforeResume()
+        viewModel.onBeforeResume()
+    }
+    override suspend fun onBeforePause() {
+        super.onBeforePause()
+        viewModel.onBeforePause()
+    }
+    override suspend fun onBeforeStop() {
+        super.onBeforeStop()
+        viewModel.onBeforeStop()
+    }
+    override suspend fun onBeforeDestroy() {
+        super.onBeforeDestroy()
+        viewModel.onBeforeDestroy()
     }
 }

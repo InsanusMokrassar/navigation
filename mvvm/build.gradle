@@ -10,6 +10,12 @@ apply from: "$mppProjectWithSerialization"
 apply from: "$mpp_publish"
 
 kotlin {
+    android {
+        compilations.withType(com.android.build.api.dsl.KotlinMultiplatformAndroidDeviceTestCompilation) {
+            instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        }
+    }
+
     sourceSets {
         commonMain {
             dependencies {

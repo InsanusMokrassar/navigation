@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">NavigationMVVMSample</string>
+    <string name="choose_sample">Choose a navigation sample</string>
+    <string name="compose_sample">Common Compose</string>
+    <string name="view_fragment_sample">ViewFragment (MVVM)</string>
     <string name="back">◀</string>
     <string name="forward">▶</string>
     <string name="forwardUnstorable">▷</string>
