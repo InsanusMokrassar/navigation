@@ -41,6 +41,15 @@ abstract class NavigationNode<Config : Base, Base>(
         get() = _statesFlow.value
 
     private val changeStateMutex = Mutex()
+    /**
+     * Transitions this node to the specified state by applying each required adjacent lifecycle change.
+     *
+     * Lifecycle callbacks are invoked before and after every transition step. State change events are
+     * emitted before callbacks for downward transitions and after callbacks for upward transitions.
+     * Transitions are serialized to prevent concurrent state changes.
+     *
+     * @param newState The target lifecycle state for this node.
+     */
     suspend fun changeState(newState: NavigationNodeState) {
         changeStateMutex.withLock {
             val changes = NavigationStateChangeList(state, newState)

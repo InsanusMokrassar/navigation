@@ -2,11 +2,16 @@ package dev.inmo.navigation.mvvm.test
 
 import androidx.test.filters.LargeTest
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import dev.inmo.navigation.core.NavigationNodeState
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
+import dev.inmo.navigation.core.extensions.dropAndAwaitAbsence
+import dev.inmo.navigation.core.extensions.dropAndAwaitDestroy
 import dev.inmo.navigation.core.repo.ConfigHolder
 import dev.inmo.navigation.mvvm.test.NavigationFixture.Companion.ROOT
+import kotlinx.coroutines.async
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -16,6 +21,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNotSame
+import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
@@ -167,6 +173,26 @@ class FragmentNavigationTests(private val animationsEnabled: Boolean) {
             f.expect(ROOT to listOf("A"))
             f.awaitDestroyed(e)
         }
+    }
+
+    @Test
+    fun dropAndAwaitAbsenceSupportsAllOverloadsInSequence() {
+        awaitedDropsSupportAllOverloadsInSequence(awaitDestroy = false)
+    }
+
+    @Test
+    fun dropAndAwaitDestroySupportsAllOverloadsInSequence() {
+        awaitedDropsSupportAllOverloadsInSequence(awaitDestroy = true)
+    }
+
+    @Test
+    fun dropAndAwaitAbsenceWaitsForBeforePauseGate() {
+        awaitedDropWaitsForBeforePauseGate(awaitDestroy = false)
+    }
+
+    @Test
+    fun dropAndAwaitDestroyWaitsForBeforePauseGate() {
+        awaitedDropWaitsForBeforePauseGate(awaitDestroy = true)
     }
 
     @Test
@@ -605,6 +631,93 @@ class FragmentNavigationTests(private val animationsEnabled: Boolean) {
                         assertEquals(0, f.startedTransitionCount)
                         assertEquals(0, f.customAnimationRequestCount)
                     }
+                }
+            }
+        }
+    }
+
+    private fun awaitedDropsSupportAllOverloadsInSequence(awaitDestroy: Boolean) {
+        fixture().use { f ->
+            val a = f.top()
+            val model = f.model(a)
+            val b = f.push(f.root, "B")
+            f.expect(ROOT to listOf("A", "B"))
+            val c = f.push(f.root, "C")
+            f.expect(ROOT to listOf("A", "B", "C"))
+            val d = f.push(f.root, "D")
+            f.expect(ROOT to listOf("A", "B", "C", "D"))
+
+            val removal = f.main {
+                f.activity.lifecycleScope.async {
+                    if (awaitDestroy) f.root.dropAndAwaitDestroy(b) else f.root.dropAndAwaitAbsence(b)
+                    assertEquals(listOf("A", "C", "D"), f.root.labels())
+                    if (awaitDestroy) assertEquals(NavigationNodeState.NEW, b.state)
+
+                    assertSame(c, if (awaitDestroy) f.root.dropAndAwaitDestroy(c.id) else f.root.dropAndAwaitAbsence(c.id))
+                    assertEquals(listOf("A", "D"), f.root.labels())
+                    if (awaitDestroy) assertEquals(NavigationNodeState.NEW, c.state)
+
+                    assertSame(d, if (awaitDestroy) f.root.dropAndAwaitDestroy(d.id.string) else f.root.dropAndAwaitAbsence(d.id.string))
+                    assertEquals(listOf("A"), f.root.labels())
+                    if (awaitDestroy) {
+                        assertEquals(NavigationNodeState.NEW, d.state)
+                        f.root.dropAndAwaitDestroy(d)
+                        assertNull(f.root.dropAndAwaitDestroy(c.id))
+                        assertNull(f.root.dropAndAwaitDestroy(d.id.string))
+                    } else {
+                        f.root.dropAndAwaitAbsence(d)
+                        assertNull(f.root.dropAndAwaitAbsence(c.id))
+                        assertNull(f.root.dropAndAwaitAbsence(d.id.string))
+                    }
+                }
+            }
+            f.await("all awaited drops complete in order") { removal.isCompleted }
+            runBlocking { removal.await() }
+
+            // Stack absence and node destruction do not imply the Fragment's exit effect has finished.
+            f.expect(ROOT to listOf("A"))
+            listOf(b, c, d).forEach(f::awaitDestroyed)
+            assertSame(a, f.top())
+            assertSame(model, f.model(a))
+            assertTrue(model.scope.isActive)
+        }
+    }
+
+    private fun awaitedDropWaitsForBeforePauseGate(awaitDestroy: Boolean) {
+        fixture().use { f ->
+            val b = f.push(f.root, "B")
+            f.expect(ROOT to listOf("A", "B"))
+            val model = f.model(b)
+            val removal = f.main {
+                b.useBeforePauseWait = true
+                f.activity.lifecycleScope.async {
+                    if (awaitDestroy) f.root.dropAndAwaitDestroy(b.id) else f.root.dropAndAwaitAbsence(b.id)
+                }
+            }
+            try {
+                f.await("the removed node is waiting before pause") {
+                    b.beforePauseWaitJobState.value != null
+                }
+                f.main {
+                    assertFalse(removal.isCompleted)
+                    assertEquals(listOf("A", "B"), f.root.labels())
+                    assertEquals(NavigationNodeState.RESUMED, b.state)
+                    assertTrue(f.hasResumedView(b))
+                    assertTrue(model.scope.isActive)
+                    assertTrue(assertNotNull(b.beforePauseWaitJobState.value).complete())
+                }
+                f.await("the awaited drop completes after releasing pause") { removal.isCompleted }
+                assertSame(b, runBlocking { removal.await() })
+                f.main {
+                    assertEquals(listOf("A"), f.root.labels())
+                    if (awaitDestroy) assertEquals(NavigationNodeState.NEW, b.state)
+                }
+                f.expect(ROOT to listOf("A"))
+                f.awaitDestroyed(b)
+            } finally {
+                f.main {
+                    b.beforePauseWaitJobState.value?.complete()
+                    removal.cancel()
                 }
             }
         }

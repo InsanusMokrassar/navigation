@@ -36,6 +36,8 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
     private val viewTag
         get() = config.id
 
+    internal var callbacksCollection: CallbacksCollection? = null
+
     private val _beforePauseWaitJobState = MutableRedeliverStateFlow<CompletableJob?>(null)
     private val descendantViews = MutableStateFlow<Map<NodeFragment<*, *>, Lifecycle>>(emptyMap())
 
@@ -64,7 +66,22 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
     private var fragment: NodeFragment<Config, Base>? = ((fragmentKClass.objectInstance ?: fragmentKClass.constructors.first {
         it.parameters.isEmpty()
     }.call()) as NodeFragment<Config, Base>).also {
+        callbacksCollection = it.callbacks
         it.setNode(this, _configState)
+    }
+
+
+    override suspend fun onBeforeCreate() {
+        super.onBeforeCreate()
+        callbacksCollection ?.onBeforeNavigationCreate()
+    }
+    override suspend fun onBeforeStart() {
+        super.onBeforeStart()
+        callbacksCollection ?.onBeforeNavigationStart()
+    }
+    override suspend fun onBeforeResume() {
+        super.onBeforeResume()
+        callbacksCollection ?.onBeforeNavigationResume()
     }
 
     override suspend fun onBeforePause() {
@@ -77,6 +94,16 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
             }
         }
         awaitDescendantEffects()
+
+        callbacksCollection ?.onBeforeNavigationPause()
+    }
+    override suspend fun onBeforeStop() {
+        super.onBeforeStop()
+        callbacksCollection ?.onBeforeNavigationStop()
+    }
+    override suspend fun onBeforeDestroy() {
+        super.onBeforeDestroy()
+        callbacksCollection ?.onBeforeNavigationDestroy()
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -141,6 +168,19 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
         return rootView.findViewsWithNavigationTag(viewTag).firstOrNull() ?.also(::placeFragment) != null
     }
 
+    override fun onCreate() {
+        super.onCreate()
+        callbacksCollection ?.onNavigationCreate()
+    }
+    override fun onStart() {
+        super.onStart()
+        callbacksCollection ?.onNavigationStart()
+    }
+    override fun onResume() {
+        super.onResume()
+        callbacksCollection ?.onNavigationResume()
+    }
+
     override fun onPause() {
         super.onPause()
 
@@ -163,11 +203,19 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
                 }
             }
         }
+        callbacksCollection ?.onNavigationPause()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        callbacksCollection ?.onNavigationStop()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         fragment = null
+        callbacksCollection ?.onNavigationDestroy()
+        callbacksCollection = null
     }
 
     override fun start(scope: CoroutineScope): Job {

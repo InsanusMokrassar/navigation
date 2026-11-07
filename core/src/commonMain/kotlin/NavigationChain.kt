@@ -83,15 +83,8 @@ class NavigationChain<Base>(
     }
 
     fun drop(node: NavigationNode<*, Base>): NavigationNode<out Base, Base>? {
-        var dropped = false
-
-        val newStack = stack.filterNot { currentNode ->
-            (currentNode === node).also {
-                dropped = true
-                log.d { "$currentNode (${currentNode.id}) is equal to ${node}: $it" }
-            }
-        }
-        if (!dropped) {
+        val contains = stack.any { it === node }
+        if (!contains) {
             return null
         }
 
@@ -99,7 +92,11 @@ class NavigationChain<Base>(
             node.changeState(NavigationNodeState.STARTED)
 
             log.d { "Stack before removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
-            _stackFlow.value = newStack
+            _stackFlow.value = _stackFlow.value.filterNot { currentNode ->
+                (currentNode === node).also {
+                    log.d { "$currentNode (${currentNode.id}) is equal to ${node}: $it" }
+                }
+            }
             log.d { "Stack after removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
 
             node.changeState(NavigationNodeState.NEW)
