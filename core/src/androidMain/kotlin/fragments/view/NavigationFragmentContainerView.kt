@@ -2,6 +2,7 @@ package dev.inmo.navigation.core.fragments.view
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.animation.Animation
 import android.widget.FrameLayout
 import androidx.annotation.AttrRes
 import dev.inmo.navigation.core.R
@@ -28,6 +29,17 @@ class NavigationFragmentContainerView(
         attrs: AttributeSet?,
         @AttrRes defStyleAttr: Int
     ) : this(context, attrs, defStyleAttr, 0)
+
+    override fun post(action: Runnable): Boolean {
+        // Fragment's disappearing-view animation also posts itself as a watchdog.
+        // In a Compose hierarchy two Handler callbacks can run between draws, ending
+        // the view transition before Animation.onAnimationEnd can complete removal.
+        if (action is Animation && isAttachedToWindow) {
+            postOnAnimation(action)
+            return true
+        }
+        return super.post(action)
+    }
 
     init {
         context.theme.obtainStyledAttributes(

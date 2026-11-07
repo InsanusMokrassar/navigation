@@ -2,6 +2,7 @@ package dev.inmo.navigation.mvvm.test
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
+import androidx.lifecycle.Lifecycle
 import dev.inmo.navigation.core.NavigationNodeState
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 import dev.inmo.navigation.core.repo.ConfigHolder
@@ -273,6 +274,284 @@ class FragmentNavigationTests {
         nestedPushAndPopSmoke(TestEffects.NONE)
     }
 
+    @Test
+    fun recreationWithoutLoadingFragmentRestartsNavigation() {
+        NavigationFixture(TestEffects.NONE, withLoadingFragment = false).use { f ->
+            val b = f.push(f.root, "B")
+            f.expect(ROOT to listOf("A", "B"))
+            f.child(b, "left", "Left")
+            f.expect(ROOT to listOf("A", "B"), "left" to listOf("Left"))
+            f.await("the hierarchy is saved before recreation without a Loading fragment") {
+                f.savedHierarchy()?.savedLabels()?.toSet() == setOf("A", "B", "Left")
+            }
+            val oldHost = f.activity
+            val oldJob = assertNotNull(f.main { oldHost.navigationJob })
+
+            f.recreate()
+
+            f.expect(ROOT to listOf("A", "B"), "left" to listOf("Left"))
+            assertNotSame(oldHost, f.activity)
+            assertFalse(oldJob.isActive)
+            assertTrue(assertNotNull(f.main { f.activity.navigationJob }).isActive)
+        }
+    }
+
+    @Test
+    fun recreationBindsNodesBeforeOnCreateAndPreservesUnrelatedFragmentsAndFactory() {
+        NavigationFixture(
+            TestEffects.NONE,
+            readNodeInOnCreate = true,
+            withCustomFragmentFactory = true,
+        ).use { f ->
+            assertTrue("A" in f.createdNodeLabels)
+            f.push(f.root, "B")
+            f.expect(ROOT to listOf("A", "B"))
+            val unrelated = f.addUnrelatedFragment() as UnrelatedTestFragment
+            f.await("the unrelated fragment is added") { f.unrelatedFragment === unrelated && unrelated.isAdded }
+            f.main { unrelated.savedMessage = "preserved across recreation" }
+            f.expect(ROOT to listOf("A", "B"))
+            f.await("the hierarchy is saved before recreation with a custom factory") {
+                f.savedHierarchy()?.savedLabels()?.toSet() == setOf("A", "B")
+            }
+            val factory = assertNotNull(f.customFragmentFactory)
+            val previousInstantiations = f.unrelatedInstantiationCount
+
+            f.recreate()
+
+            f.expect(ROOT to listOf("A", "B"))
+            assertTrue("B" in f.createdNodeLabels)
+            val restoredUnrelated = assertNotNull(f.unrelatedFragment) as UnrelatedTestFragment
+            assertNotSame(unrelated, restoredUnrelated)
+            assertEquals("preserved across recreation", f.main { restoredUnrelated.savedMessage })
+            assertEquals(previousInstantiations + 1, f.unrelatedInstantiationCount)
+            assertSame(factory, f.main { f.activity.supportFragmentManager.fragmentFactory })
+        }
+    }
+
+    @Test
+    fun closingHostDuringLegacyAnimationDestroysItsViews() {
+        NavigationFixture(TestEffects.CUSTOM_ANIMATIONS).use { f ->
+            val a = f.top()
+            val host = f.activity
+            val job = assertNotNull(f.main { host.navigationJob })
+            f.push(f.root, "B")
+            f.await("the outgoing legacy animation is running before host destruction") {
+                if (f.hasRunningAnimation(a)) {
+                    host.finish()
+                    true
+                } else {
+                    false
+                }
+            }
+
+            f.closeActivity()
+
+            f.await("the destroyed host has completed legacy effects and released its views") {
+                host.isDestroyed && !job.isActive && f.allViewsDestroyed
+            }
+            assertTrue(f.customAnimationRequestCount > 0)
+        }
+    }
+
+    @Test
+    fun stoppingAndResumingDuringLegacyAnimationKeepsNavigationUsable() {
+        NavigationFixture(TestEffects.CUSTOM_ANIMATIONS).use { f ->
+            val root = f.root
+            val a = f.top()
+            val host = f.activity
+            val job = assertNotNull(f.main { host.navigationJob })
+            val b = f.push(root, "B")
+            f.await("a running legacy animation is interrupted by backgrounding the host") {
+                if (f.hasRunningAnimation(a)) {
+                    f.backgroundHost()
+                    true
+                } else {
+                    false
+                }
+            }
+            f.await("the backgrounded host reaches CREATED") {
+                host.lifecycle.currentState == Lifecycle.State.CREATED
+            }
+
+            assertTrue(f.pausedWithRunningAnimation, "Stopping must interrupt an animation that has started")
+            assertEquals(Lifecycle.State.CREATED, f.main { host.lifecycle.currentState })
+            assertTrue(job.isActive)
+            f.returnToHost()
+            f.await("the navigation host resumes after its covering activity finishes") {
+                host.lifecycle.currentState == Lifecycle.State.RESUMED
+            }
+            f.expect(ROOT to listOf("A", "B"))
+            assertSame(root, f.root)
+            assertSame(b, f.pop(root))
+            f.expect(ROOT to listOf("A"))
+            f.awaitDestroyed(b)
+        }
+    }
+
+    @Test
+    fun ancestorPushAfterChildTransitionCaptureCompletesPendingFrameworkEffects() {
+        interruptNestedTransitionWithAncestor(TestEffects.FRAMEWORK, beforePreDraw = true)
+    }
+
+    @Test
+    fun ancestorPushDuringChildTransitionCompletesRunningFrameworkEffects() {
+        interruptNestedTransitionWithAncestor(TestEffects.FRAMEWORK, beforePreDraw = false)
+    }
+
+    @Test
+    fun ancestorPushAfterChildTransitionCaptureHandlesConfiguredAnimationResources() {
+        interruptNestedTransitionWithAncestor(TestEffects.FRAMEWORK_WITH_CUSTOM_ANIMATIONS, beforePreDraw = true)
+    }
+
+    @Test
+    fun ancestorPushDuringChildTransitionHandlesConfiguredAnimationResources() {
+        interruptNestedTransitionWithAncestor(TestEffects.FRAMEWORK_WITH_CUSTOM_ANIMATIONS, beforePreDraw = false)
+    }
+
+    @Test
+    fun ancestorPushCompletesWithAPostponedChildEntry() {
+        NavigationFixture().use { f ->
+            val left = f.child(f.top(), "left", "Left")
+            f.expect(ROOT to listOf("A"), "left" to listOf("Left"))
+            f.postponeNextChildEntry()
+            val postponed = f.push(left.chain, "Postponed")
+            f.await("the postponed child has an attached view but has not resumed") {
+                f.hasUnresumedView(postponed)
+            }
+            val model = f.model(postponed)
+
+            val b = f.push(f.root, "B")
+
+            // The test never releases the postponed entry; ancestor navigation must settle it.
+            f.expect(ROOT to listOf("A", "B"), "left" to listOf("Left", "Postponed"))
+            assertSame(b, f.pop(f.root))
+            f.expect(ROOT to listOf("A"), "left" to listOf("Left", "Postponed"))
+            f.awaitDestroyed(b)
+            assertSame(model, f.model(postponed))
+            assertTrue(model.scope.isActive)
+            assertSame(postponed, f.pop(left.chain))
+            f.expect(ROOT to listOf("A"), "left" to listOf("Left"))
+            f.awaitDestroyed(postponed)
+        }
+    }
+
+    @Test
+    fun closingHostWhileAncestorWaitsForAChildEffectCancelsNavigation() {
+        NavigationFixture().use { f ->
+            val a = f.top()
+            val parent = f.child(a, "left", "Parent")
+            val nested = f.child(parent, "detail", "Nested")
+            f.expect(
+                ROOT to listOf("A"),
+                "left" to listOf("Parent"),
+                "detail" to listOf("Nested"),
+            )
+            val host = f.activity
+            val job = assertNotNull(f.main { host.navigationJob })
+            var b: TestNode? = null
+            f.onNextTransitionStart(nested) { b = f.push(f.root, "B") }
+            val next = f.push(nested.chain, "Next")
+            f.await("the ancestor waits for its running child effect before host destruction") {
+                if (b != null && f.root.stackFlow.value.lastOrNull() === b &&
+                    a.state == NavigationNodeState.RESUMED && f.hasResumedView(a) &&
+                    f.hasUnresumedView(next) && f.activeTransitionCount > 0
+                ) {
+                    host.finish()
+                    true
+                } else {
+                    false
+                }
+            }
+
+            f.closeActivity()
+
+            f.await("host destruction cancels the waiting navigation and destroys all views") {
+                host.isDestroyed && !job.isActive && f.allViewsDestroyed
+            }
+        }
+    }
+
+    @Test
+    fun ancestorWaitingForCapturedChildEffectSurvivesHostStopAndResume() {
+        interruptNestedTransitionWithAncestor(TestEffects.FRAMEWORK, beforePreDraw = true, coverHost = true)
+    }
+
+    private fun interruptNestedTransitionWithAncestor(
+        effects: TestEffects,
+        beforePreDraw: Boolean,
+        coverHost: Boolean = false,
+    ) {
+        NavigationFixture(effects).use { f ->
+            val host = f.activity
+            val root = f.root
+            val job = assertNotNull(f.main { host.navigationJob })
+            val parent = f.child(f.top(), "left", "Parent")
+            val nested = f.child(parent, "detail", "Nested")
+            f.expect(
+                ROOT to listOf("A"),
+                "left" to listOf("Parent"),
+                "detail" to listOf("Nested"),
+            )
+            val nestedModel = f.model(nested)
+            val previousStarts = f.startedTransitionCount
+            var startsWhenAncestorWasPushed = -1
+            var pushedAncestor: TestNode? = null
+            val pushAncestor = {
+                startsWhenAncestorWasPushed = f.startedTransitionCount
+                pushedAncestor = f.push(f.root, "B")
+                if (coverHost) f.backgroundHost()
+            }
+            if (beforePreDraw) {
+                f.onNextTransitionCapture(nested, pushAncestor)
+            } else {
+                f.onNextTransitionStart(nested, pushAncestor)
+            }
+            val next = f.push(nested.chain, "Next")
+            f.await("the child effect triggers its ancestor push") { pushedAncestor != null }
+            if (beforePreDraw) {
+                assertEquals(previousStarts, startsWhenAncestorWasPushed)
+            } else {
+                assertTrue(startsWhenAncestorWasPushed > previousStarts)
+            }
+            if (coverHost) {
+                f.await("the host stops while ancestor navigation is waiting on the captured child effect") {
+                    host.lifecycle.currentState == Lifecycle.State.CREATED
+                }
+                assertTrue(job.isActive)
+                f.returnToHost()
+                f.await("the host resumes with the same navigation job") {
+                    host.lifecycle.currentState == Lifecycle.State.RESUMED
+                }
+                assertSame(root, f.root)
+                assertTrue(job.isActive)
+            }
+
+            f.expect(
+                ROOT to listOf("A", "B"),
+                "left" to listOf("Parent"),
+                "detail" to listOf("Nested", "Next"),
+            )
+            assertTrue(nestedModel.scope.isActive)
+            if (effects.customAnimations) assertTrue(f.customAnimationRequestCount > 0)
+            assertSame(assertNotNull(pushedAncestor), f.pop(f.root))
+            f.expect(
+                ROOT to listOf("A"),
+                "left" to listOf("Parent"),
+                "detail" to listOf("Nested", "Next"),
+            )
+            f.awaitDestroyed(assertNotNull(pushedAncestor))
+            assertSame(next, f.top(nested.chain))
+            assertSame(nestedModel, f.model(nested))
+            assertSame(next, f.pop(nested.chain))
+            f.expect(
+                ROOT to listOf("A"),
+                "left" to listOf("Parent"),
+                "detail" to listOf("Nested"),
+            )
+            f.awaitDestroyed(next)
+        }
+    }
+
     private fun nestedPushAndPopSmoke(effects: TestEffects) {
         NavigationFixture(effects).use { f ->
             val parent = f.child(f.top(), "left", "Parent")
@@ -297,7 +576,8 @@ class FragmentNavigationTests {
             f.awaitDestroyed(next)
             f.main {
                 when (effects) {
-                    TestEffects.FRAMEWORK -> assertTrue(f.startedTransitionCount > 0)
+                    TestEffects.FRAMEWORK, TestEffects.FRAMEWORK_WITH_CUSTOM_ANIMATIONS ->
+                        assertTrue(f.startedTransitionCount > 0)
                     TestEffects.CUSTOM_ANIMATIONS -> assertTrue(f.customAnimationRequestCount > 0)
                     TestEffects.NONE -> {
                         assertEquals(0, f.startedTransitionCount)

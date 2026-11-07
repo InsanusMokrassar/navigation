@@ -1,6 +1,8 @@
 package dev.inmo.navigation.mvvm.test
 
+import android.app.Activity
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -8,11 +10,13 @@ import android.os.SystemClock
 import android.transition.Fade
 import android.transition.Slide
 import android.transition.Transition
+import android.transition.TransitionValues
 import android.view.Choreographer
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
 import android.view.animation.Animation
+import android.widget.FrameLayout
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,6 +29,7 @@ import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentFactory
 import androidx.lifecycle.lifecycleScope
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
@@ -69,7 +74,12 @@ import org.koin.dsl.module
 internal typealias TestNode = AndroidFragmentNode<TestConfig, NavigationNodeDefaultConfig>
 internal typealias TestChain = NavigationChain<NavigationNodeDefaultConfig>
 
-internal enum class TestEffects { FRAMEWORK, CUSTOM_ANIMATIONS, NONE }
+internal enum class TestEffects(val frameworkTransitions: Boolean, val customAnimations: Boolean) {
+    FRAMEWORK(true, false),
+    CUSTOM_ANIMATIONS(false, true),
+    FRAMEWORK_WITH_CUSTOM_ANIMATIONS(true, true),
+    NONE(false, false),
+}
 
 @Serializable
 internal data class TestConfig(
@@ -100,21 +110,100 @@ private class SerializedConfigsRepo : NavigationConfigsRepo<NavigationNodeDefaul
 
 private class ViewRecord(val node: TestNode?, val view: View, var destroyed: Boolean = false)
 
-private class TestSession(val effects: TestEffects) {
+private class TestSession(
+    val effects: TestEffects,
+    val withLoadingFragment: Boolean,
+    val readNodeInOnCreate: Boolean,
+    withCustomFragmentFactory: Boolean,
+) {
     val repo = SerializedConfigsRepo()
     var root: TestChain? = null
     var activity: NavigationTestActivity? = null
+    var backgroundActivity: NavigationBackgroundActivity? = null
     val fragments = mutableMapOf<NavigationNodeId, NavigationTestFragment>()
     val models = mutableMapOf<NavigationNodeId, TestNavigationViewModel>()
     val views = mutableListOf<ViewRecord>()
     val transitions: MutableSet<Transition> = Collections.newSetFromMap(IdentityHashMap())
     var startedTransitions = 0
     var customAnimationRequests = 0
+    val captureActions = mutableMapOf<NavigationNodeId, () -> Unit>()
+    val transitionStartActions = mutableMapOf<NavigationNodeId, () -> Unit>()
+    var postponeNextChildEntry = false
+    var activityGeneration = 0
+    val createdNodeLabels = mutableMapOf<Int, MutableSet<String>>()
+    val lifecycleFailures = mutableListOf<String>()
+    var pausedWithRunningAnimation = false
+    var hasUnrelatedFragment = false
+    var unrelatedInstantiations = 0
+    val customFragmentFactory = if (withCustomFragmentFactory) object : FragmentFactory() {
+        override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
+            if (className == UnrelatedTestFragment::class.java.name) {
+                unrelatedInstantiations++
+                return UnrelatedTestFragment()
+            }
+            return super.instantiate(classLoader, className)
+        }
+    } else null
+
+    fun hasRunningAnimation(node: TestNode? = null): Boolean = views.any { record ->
+        (node == null || record.node === node) && !record.destroyed &&
+            record.view.isAttachedToWindow && record.view.animation?.let {
+                it.hasStarted() && !it.hasEnded()
+            } == true
+    }
+
+    fun isRetired(record: ViewRecord): Boolean {
+        val parent = record.view.parent
+        return record.destroyed && !record.view.isAttachedToWindow &&
+            fragments.values.none { it.view === record.view } &&
+            (parent == null || parent is View && !parent.isAttachedToWindow)
+    }
+}
+
+internal class UnrelatedTestFragment : Fragment() {
+    var savedMessage: String? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        savedMessage = savedInstanceState?.getString(STATE_MESSAGE)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(STATE_MESSAGE, savedMessage)
+    }
+
+    private companion object {
+        const val STATE_MESSAGE = "navigation-test-message"
+    }
 }
 
 private object TestHost {
     var session: TestSession? = null
     fun requireSession(): TestSession = checkNotNull(session)
+}
+
+/** Covers the navigation host through the normal Activity lifecycle without leaving the test task. */
+class NavigationBackgroundActivity : Activity() {
+    private var session: TestSession? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val activeSession = TestHost.session
+        if (activeSession == null) {
+            finish()
+            return
+        }
+        session = activeSession
+        activeSession.backgroundActivity = this
+        setContentView(FrameLayout(this).apply { setBackgroundColor(Color.BLACK) })
+    }
+
+    override fun onDestroy() {
+        session?.let { if (it.backgroundActivity === this) it.backgroundActivity = null }
+        session = null
+        super.onDestroy()
+    }
 }
 
 /** Uses the public MVVM entry point and ordinary asynchronous Fragment transactions. */
@@ -126,6 +215,8 @@ class NavigationTestActivity : NavigationMVVMSingleActivity() {
         TestHost.requireSession().apply {
             root = null
             activity = this@NavigationTestActivity
+            activityGeneration++
+            customFragmentFactory?.let { supportFragmentManager.fragmentFactory = it }
         }
         @Suppress("DEPRECATION") // Also supports API 26; applies only to this test window.
         window.addFlags(
@@ -136,7 +227,13 @@ class NavigationTestActivity : NavigationMVVMSingleActivity() {
         super.onCreate(savedInstanceState)
     }
 
-    override fun allocateLoadingFragment(): Fragment = Fragment()
+    override fun allocateLoadingFragment(): Fragment? =
+        if (TestHost.requireSession().withLoadingFragment) Fragment() else null
+
+    override fun onPause() {
+        TestHost.requireSession().apply { pausedWithRunningAnimation = hasRunningAnimation() }
+        super.onPause()
+    }
 
     override fun createInitialConfig(rootFragmentTag: String): NavigationNodeDefaultConfig =
         TestConfig(rootFragmentTag, "A")
@@ -157,7 +254,7 @@ class NavigationTestActivity : NavigationMVVMSingleActivity() {
                 scope = lifecycleScope,
                 manualHierarchyCheckerDelayMillis = 20L,
                 dropRedundantChainsOnRestore = true,
-                fragmentTransactionConfigurator = if (session.effects == TestEffects.CUSTOM_ANIMATIONS) {
+                fragmentTransactionConfigurator = if (session.effects.customAnimations) {
                     FragmentTransactionConfigurator.Default<NavigationNodeDefaultConfig> {
                         setCustomAnimations(android.R.anim.slide_in_left, android.R.anim.fade_out)
                     }
@@ -184,11 +281,41 @@ internal class NavigationTestFragment : ViewFragment<TestNavigationViewModel, Te
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (session.effects == TestEffects.FRAMEWORK) {
-            // Real framework effects reproduce the original MI 6 failure; AndroidX transitions do not.
-            enterTransition = tracked(Slide(Gravity.RIGHT))
-            exitTransition = tracked(Fade())
+        if (session.readNodeInOnCreate) {
+            val bound = boundNode
+            if (bound == null) {
+                // Record the regression before touching NodeFragment's blocking getters.
+                session.lifecycleFailures += "Unbound NavigationTestFragment reached onCreate"
+            } else {
+                if (node !== bound || config !== bound.config) {
+                    session.lifecycleFailures += "onCreate read a node or config different from its binding"
+                }
+                session.createdNodeLabels.getOrPut(session.activityGeneration) { mutableSetOf() } += node.config.label
+            }
         }
+        if (session.effects.frameworkTransitions) {
+            // Real framework effects reproduce the original MI 6 failure; AndroidX transitions do not.
+            enterTransition = tracked(object : Slide(Gravity.RIGHT) {
+                override fun captureStartValues(values: TransitionValues) {
+                    super.captureStartValues(values)
+                    transitionCaptured()
+                }
+            })
+            exitTransition = tracked(object : Fade() {
+                override fun captureStartValues(values: TransitionValues) {
+                    super.captureStartValues(values)
+                    transitionCaptured()
+                }
+            })
+        }
+        if (session.postponeNextChildEntry && boundNode?.chain?.parentNode != null) {
+            session.postponeNextChildEntry = false
+            postponeEnterTransition()
+        }
+    }
+
+    private fun transitionCaptured() {
+        boundNode?.let { session.captureActions.remove(it.id)?.invoke() }
     }
 
     private fun tracked(transition: Transition): Transition = transition.apply {
@@ -197,6 +324,7 @@ internal class NavigationTestFragment : ViewFragment<TestNavigationViewModel, Te
             override fun onTransitionStart(transition: Transition) {
                 session.transitions.add(transition)
                 session.startedTransitions++
+                boundNode?.let { session.transitionStartActions.remove(it.id)?.invoke() }
             }
             override fun onTransitionEnd(transition: Transition) { session.transitions.remove(transition) }
             override fun onTransitionCancel(transition: Transition) { session.transitions.remove(transition) }
@@ -242,8 +370,13 @@ internal class NavigationTestFragment : ViewFragment<TestNavigationViewModel, Te
 }
 
 @Suppress("UNCHECKED_CAST") // This fixture's provider only creates TestConfig/TestNode instances.
-internal class NavigationFixture(effects: TestEffects = TestEffects.FRAMEWORK) : Closeable {
-    private val session = TestSession(effects)
+internal class NavigationFixture(
+    effects: TestEffects = TestEffects.FRAMEWORK,
+    withLoadingFragment: Boolean = true,
+    readNodeInOnCreate: Boolean = false,
+    withCustomFragmentFactory: Boolean = false,
+) : Closeable {
+    private val session = TestSession(effects, withLoadingFragment, readNodeInOnCreate, withCustomFragmentFactory)
     private var scenario: ActivityScenario<NavigationTestActivity>? = null
 
     init {
@@ -267,8 +400,15 @@ internal class NavigationFixture(effects: TestEffects = TestEffects.FRAMEWORK) :
     val startedTransitionCount: Int get() = main { session.startedTransitions }
     val customAnimationRequestCount: Int get() = main { session.customAnimationRequests }
     val attachedViewCount: Int get() = main { session.views.count { it.view.isAttachedToWindow } }
-    val allViewsDestroyed: Boolean get() = main {
-        session.views.all { it.destroyed && it.view.parent == null && !it.view.isAttachedToWindow }
+    val allViewsDestroyed: Boolean get() = main { session.views.all(session::isRetired) }
+    val pausedWithRunningAnimation: Boolean get() = main { session.pausedWithRunningAnimation }
+    val createdNodeLabels: Set<String> get() = main {
+        session.createdNodeLabels[session.activityGeneration]?.toSet().orEmpty()
+    }
+    val customFragmentFactory: FragmentFactory? get() = session.customFragmentFactory
+    val unrelatedInstantiationCount: Int get() = main { session.unrelatedInstantiations }
+    val unrelatedFragment: Fragment? get() = main {
+        activity.supportFragmentManager.findFragmentByTag(UNRELATED_TAG)
     }
 
     fun top(chain: TestChain = root): TestNode = main { chain.stackFlow.value.last() as TestNode }
@@ -297,9 +437,38 @@ internal class NavigationFixture(effects: TestEffects = TestEffects.FRAMEWORK) :
         session.fragments[node.id]?.let { it.isResumed && it.view?.isAttachedToWindow == true } == true
     }
 
+    fun hasUnresumedView(node: TestNode): Boolean = main {
+        session.fragments[node.id]?.let { !it.isResumed && it.view?.isAttachedToWindow == true } == true
+    }
+
+    fun postponeNextChildEntry() = main {
+        check(!session.postponeNextChildEntry)
+        session.postponeNextChildEntry = true
+    }
+
+    fun hasRunningAnimation(node: TestNode): Boolean = main { session.hasRunningAnimation(node) }
+
+    /** Runs inside start-value capture, before the child transition reaches its first pre-draw. */
+    fun onNextTransitionCapture(node: TestNode, action: () -> Unit) = main {
+        check(session.captureActions.put(node.id, action) == null)
+    }
+
+    /** Runs inside the real transition's start callback on the main thread. */
+    fun onNextTransitionStart(node: TestNode, action: () -> Unit) = main {
+        check(session.transitionStartActions.put(node.id, action) == null)
+    }
+
+    fun addUnrelatedFragment(): Fragment = main {
+        val manager = activity.supportFragmentManager
+        val fragment = manager.fragmentFactory.instantiate(activity.classLoader, UnrelatedTestFragment::class.java.name)
+        session.hasUnrelatedFragment = true
+        manager.beginTransaction().add(fragment, UNRELATED_TAG).commit()
+        fragment
+    }
+
     fun awaitDestroyed(node: TestNode) = await("${node.config.label} destroyed and its ViewModel cancelled") {
         node.state == NavigationNodeState.NEW && !model(node).scope.isActive &&
-            session.views.filter { it.node === node }.all { it.destroyed && it.view.parent == null }
+            session.views.filter { it.node === node }.all(session::isRetired)
     }
 
     fun recreate() {
@@ -307,7 +476,15 @@ internal class NavigationFixture(effects: TestEffects = TestEffects.FRAMEWORK) :
         await("the recreated host starts navigation") { session.root != null && activity.navigationJob?.isActive == true }
     }
 
+    fun backgroundHost() = main {
+        check(session.backgroundActivity == null)
+        activity.startActivity(Intent(activity, NavigationBackgroundActivity::class.java))
+    }
+
+    fun returnToHost() = main { checkNotNull(session.backgroundActivity).finish() }
+
     fun closeActivity() {
+        main { session.backgroundActivity?.finish() }
         scenario?.close()
         scenario = null
     }
@@ -352,7 +529,12 @@ internal class NavigationFixture(effects: TestEffects = TestEffects.FRAMEWORK) :
             if (node.state != state) return "${node.config.label}: ${node.state}, expected $state"
         }
         val visible = nodeStates.filterValues { it == NavigationNodeState.RESUMED }.keys
-        val expectedFragments = visible.map { checkNotNull(session.fragments[it.id]) }.toSet()
+        val expectedFragments = visible.map { checkNotNull(session.fragments[it.id]) }.toMutableSet<Fragment>()
+        if (session.hasUnrelatedFragment) {
+            val unrelated = unrelatedFragment
+            if (unrelated !is UnrelatedTestFragment || !unrelated.isAdded) return "Unrelated fragment was not preserved"
+            expectedFragments += unrelated
+        }
         val addedFragments = activity.supportFragmentManager.fragments.filter { it.isAdded }.toSet()
         if (addedFragments != expectedFragments) return "Added fragments: $addedFragments; expected $expectedFragments"
         val visibleViews = visible.map { node ->
@@ -370,8 +552,8 @@ internal class NavigationFixture(effects: TestEffects = TestEffects.FRAMEWORK) :
             view
         }.toSet()
         val retired = session.views.filter { it.view !in visibleViews }
-        if (retired.any { !it.destroyed || it.view.isAttachedToWindow || it.view.parent != null }) {
-            return "Retired views still present: ${retired.filter { !it.destroyed || it.view.parent != null }.map {
+        if (retired.any { !session.isRetired(it) }) {
+            return "Retired views still present: ${retired.filter { !session.isRetired(it) }.map {
                 "${it.node?.config?.label}(destroyed=${it.destroyed}, attached=${it.view.isAttachedToWindow}, " +
                     "parent=${it.view.parent}, animationEnded=${it.view.animation?.hasEnded()})"
             }}"
@@ -401,6 +583,7 @@ internal class NavigationFixture(effects: TestEffects = TestEffects.FRAMEWORK) :
         callback = Choreographer.FrameCallback {
             if (!stopped.get()) {
                 try {
+                    check(session.lifecycleFailures.isEmpty()) { session.lifecycleFailures.joinToString() }
                     consecutive = if (condition()) consecutive + 1 else 0
                     if (consecutive >= stableFrames) {
                         stopped.set(true)
@@ -449,5 +632,6 @@ internal class NavigationFixture(effects: TestEffects = TestEffects.FRAMEWORK) :
 
     companion object {
         const val ROOT = "entrance"
+        private const val UNRELATED_TAG = "navigation-test-unrelated"
     }
 }
