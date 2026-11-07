@@ -71,6 +71,8 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
         fragment ?.let {
             view.id = view.id.takeIf { it != NO_ID } ?: View.generateViewId()
             fragmentManager.beginTransaction().apply {
+                // Batch remove/replace operations so their framework transitions complete together.
+                setReorderingAllowed(true)
                 runCatching {
                     fragmentTransactionConfigurator ?.apply {
                         onPlace(this@AndroidFragmentNode)
@@ -92,6 +94,7 @@ class AndroidFragmentNode<Config : Base, Base : NavigationNodeDefaultConfig>(
 
         fragment ?.let {
             fragmentManager.beginTransaction().apply {
+                setReorderingAllowed(true)
                 runCatching {
                     fragmentTransactionConfigurator ?.apply {
                         onRemove(this@AndroidFragmentNode)

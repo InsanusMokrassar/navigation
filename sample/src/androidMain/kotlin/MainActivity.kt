@@ -1,71 +1,49 @@
 package dev.inmo.navigation.sample
 
-import android.app.Application
-import android.content.Context
-import android.content.res.Resources
-import androidx.fragment.app.Fragment
-import dev.inmo.micro_utils.startup.launcher.Config
-import dev.inmo.micro_utils.startup.launcher.StartLauncherPlugin
-import dev.inmo.micro_utils.startup.plugin.StartPlugin
-import dev.inmo.navigation.compose.NavigationComposeSingleActivity
-import dev.inmo.navigation.core.NavigationChain
-import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
-import dev.inmo.navigation.core.fragments.transactions.FragmentTransactionConfigurator
-import dev.inmo.navigation.core.repo.ConfigHolder
-import dev.inmo.navigation.mvvm.NavigationMVVMSingleActivity
-import dev.inmo.navigation.sample.ui.LoadingFragment
-import dev.inmo.navigation.sample.ui.NavigationViewConfig
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.serialization.json.JsonObject
-import org.koin.core.context.stopKoin
-import org.koin.core.module.Module
-import kotlin.reflect.KClass
+import android.content.Intent
+import android.os.Bundle
+import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 
-class MainActivity : NavigationComposeSingleActivity<NavigationNodeDefaultConfig>() {
-    private class Plugin(private val mainActivity: MainActivity) : StartPlugin {
-        override fun Module.setupDI(config: JsonObject) {
-            single { mainActivity }
-            single<Context> { mainActivity }
-            single<Resources> { mainActivity.resources }
-            single<Application> { mainActivity.application }
+class MainActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        setContent {
+            MaterialTheme {
+                Surface(Modifier.fillMaxSize()) {
+                    Column(
+                        modifier = Modifier.safeDrawingPadding().padding(24.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(stringResource(R.string.choose_sample), style = MaterialTheme.typography.headlineSmall)
+                        Button(onClick = {
+                            startActivity(Intent(this@MainActivity, ComposeSampleActivity::class.java))
+                        }) {
+                            Text(stringResource(R.string.compose_sample))
+                        }
+                        Button(onClick = {
+                            startActivity(Intent(this@MainActivity, MVVMSampleActivity::class.java))
+                        }) {
+                            Text(stringResource(R.string.view_fragment_sample))
+                        }
+                    }
+                }
+            }
         }
-    }
-
-//    override val fragmentTransactionConfigurator: FragmentTransactionConfigurator<NavigationNodeDefaultConfig>? = FragmentTransactionConfigurator.Default {
-//        setCustomAnimations(
-//            /* enter = */ R.anim.slide_in,
-//            /* exit = */ R.anim.fade_out,
-//            /* popEnter = */ R.anim.fade_in,
-//            /* popExit = */ R.anim.slide_out,
-//        )
-//    }
-    private val plugins: List<StartPlugin> by lazy {
-        listOf(
-            Plugin(this),
-            AndroidPlugin
-        )
-    }
-    override val baseClassName: KClass<NavigationNodeDefaultConfig>
-        get() = NavigationNodeDefaultConfig::class
-
-    override fun createInitialConfigChain(): ConfigHolder.Chain<NavigationNodeDefaultConfig> {
-        return ConfigHolder.Chain(
-            ConfigHolder.Node(
-                NavigationViewConfig("", "Node"),
-                null,
-                emptyList()
-            )
-        )
-    }
-
-    override suspend fun onBeforeStartNavigation() {
-        stopKoin()
-        StartLauncherPlugin.start(
-            Config(
-                plugins
-            )
-        )
-
-        super.onBeforeStartNavigation()
     }
 }
