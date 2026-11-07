@@ -67,6 +67,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
+import kotlin.test.assertEquals
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
@@ -128,6 +129,8 @@ private class TestSession(
     var customAnimationRequests = 0
     val captureActions = mutableMapOf<NavigationNodeId, () -> Unit>()
     val transitionStartActions = mutableMapOf<NavigationNodeId, () -> Unit>()
+    val viewCreatedActions = mutableMapOf<NavigationNodeId, () -> Unit>()
+    val resumeActions = mutableMapOf<NavigationNodeId, () -> Unit>()
     var postponeNextChildEntry = false
     var activityGeneration = 0
     val createdNodeLabels = mutableMapOf<Int, MutableSet<String>>()
@@ -144,6 +147,13 @@ private class TestSession(
             return super.instantiate(classLoader, className)
         }
     } else null
+
+    fun assertEffectsMatchMode() {
+        if (effects == TestEffects.NONE) {
+            assertEquals(0, startedTransitions, "Framework transitions must stay disabled")
+            assertEquals(0, customAnimationRequests, "Animation resources must stay disabled")
+        }
+    }
 
     fun hasRunningAnimation(node: TestNode? = null): Boolean = views.any { record ->
         (node == null || record.node === node) && !record.destroyed &&
@@ -360,6 +370,12 @@ internal class NavigationTestFragment : ViewFragment<TestNavigationViewModel, Te
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewRecord = ViewRecord(boundNode, view).also(session.views::add)
+        boundNode?.let { session.viewCreatedActions.remove(it.id)?.invoke() }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        boundNode?.let { session.resumeActions.remove(it.id)?.invoke() }
     }
 
     override fun onDestroyView() {
@@ -456,6 +472,16 @@ internal class NavigationFixture(
     /** Runs inside the real transition's start callback on the main thread. */
     fun onNextTransitionStart(node: TestNode, action: () -> Unit) = main {
         check(session.transitionStartActions.put(node.id, action) == null)
+    }
+
+    /** Runs in the incoming Fragment's real onViewCreated callback, before it resumes. */
+    fun onNextViewCreated(node: TestNode, action: () -> Unit) = main {
+        check(session.viewCreatedActions.put(node.id, action) == null)
+    }
+
+    /** Runs in the incoming Fragment's real onResume callback, without requiring an effect. */
+    fun onNextResume(node: TestNode, action: () -> Unit) = main {
+        check(session.resumeActions.put(node.id, action) == null)
     }
 
     fun addUnrelatedFragment(): Fragment = main {
@@ -584,6 +610,7 @@ internal class NavigationFixture(
             if (!stopped.get()) {
                 try {
                     check(session.lifecycleFailures.isEmpty()) { session.lifecycleFailures.joinToString() }
+                    session.assertEffectsMatchMode()
                     consecutive = if (condition()) consecutive + 1 else 0
                     if (consecutive >= stableFrames) {
                         stopped.set(true)
@@ -620,6 +647,7 @@ internal class NavigationFixture(
     override fun close() {
         try {
             closeActivity()
+            main { session.assertEffectsMatchMode() }
         } finally {
             main {
                 // Host destruction stops navigation; retained nodes do not receive onDestroy.
