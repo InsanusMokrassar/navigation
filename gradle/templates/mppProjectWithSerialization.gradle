@@ -14,7 +14,13 @@ kotlin {
         }
     }
     js (IR) {
-        browser()
+        browser {
+            testTask {
+                useKarma {
+                    useChromeHeadlessNoSandbox()
+                }
+            }
+        }
         nodejs()
     }
     android {
