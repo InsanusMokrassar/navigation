@@ -102,6 +102,11 @@ class NavigationChain<Base>(
             node.changeState(NavigationNodeState.NEW)
 
             nodesIds.remove(node.id)
+
+            // Detaching cancels this chain's scope, so finish destruction first.
+            if (stack.isEmpty()) {
+                dropItself()
+            }
         }
         return node
     }
@@ -211,10 +216,6 @@ class NavigationChain<Base>(
                         nodeToJob.remove(it.id) ?.cancel()
                         nodeToJob[it.id] = it.start(subscope)
                     }
-                }
-
-                if (stack.isEmpty()) {
-                    dropItself()
                 }
             }
 
