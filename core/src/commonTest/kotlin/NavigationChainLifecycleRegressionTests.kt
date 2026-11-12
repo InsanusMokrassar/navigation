@@ -8,18 +8,23 @@ import dev.inmo.navigation.core.extensions.dropAndAwaitDestroy
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -521,5 +526,94 @@ class NavigationChainLifecycleRegressionTests : NavigationTest() {
         rejection?.let {
             assertFalse(it.message.isNullOrBlank(), "Reentrancy rejection must explain the invalid call")
         }
+    }
+
+    @Test
+    fun concurrentStateChangesWaitForTheActiveTransition() = runNavigationTest { fixture ->
+        val node = RecordingNode(fixture.root, "standalone")
+        node.changeState(NavigationNodeState.RESUMED)
+        val gate = DestroyGate()
+        node.beforePause = gate::awaitRelease
+
+        val firstChange = fixture.scope.async { node.changeState(NavigationNodeState.CREATED) }
+        runCurrent()
+        assertTrue(gate.entered.isCompleted)
+        val secondChange = fixture.scope.async { node.changeState(NavigationNodeState.NEW) }
+        runCurrent()
+
+        assertFalse(firstChange.isCompleted)
+        assertFalse(secondChange.isCompleted, "An unrelated caller must wait, not reject or overlap")
+        assertEquals(NavigationNodeState.RESUMED, node.state)
+        assertEquals(listOf("beforePause"), node.teardownCallbacks)
+
+        gate.release.complete(Unit)
+        runCurrent()
+
+        assertTrue(firstChange.isCompleted && secondChange.isCompleted)
+        firstChange.await()
+        secondChange.await()
+        assertEquals(NavigationNodeState.NEW, node.state)
+        assertEquals(
+            listOf("beforePause", "pause", "beforeStop", "stop", "beforeDestroy", "destroy"),
+            node.teardownCallbacks,
+        )
+    }
+
+    @Test
+    fun nestedTransitionsRetainReentrancyDetectionAcrossCoroutineContexts() = runNavigationTest { fixture ->
+        val first = RecordingNode(fixture.root, "first standalone")
+        val second = RecordingNode(fixture.root, "second standalone")
+        first.changeState(NavigationNodeState.RESUMED)
+        second.changeState(NavigationNodeState.RESUMED)
+        var rejection: IllegalStateException? = null
+        first.beforePause = { second.changeState(NavigationNodeState.CREATED) }
+        second.beforePause = {
+            withContext(CoroutineName("nested state change")) {
+                yield()
+                try {
+                    first.changeState(NavigationNodeState.NEW)
+                } catch (failure: IllegalStateException) {
+                    rejection = failure
+                }
+            }
+        }
+
+        val changing = fixture.scope.async { first.changeState(NavigationNodeState.CREATED) }
+        runCurrent()
+
+        assertTrue(changing.isCompleted, "A nested transition must not hide the first node's active transition")
+        changing.await()
+        assertFalse(assertNotNull(rejection).message.isNullOrBlank())
+        assertEquals(NavigationNodeState.CREATED, first.state)
+        assertEquals(NavigationNodeState.CREATED, second.state)
+    }
+
+    @Test
+    fun inheritedContextAllowsStateChangesAfterItsOriginalTransitionCompletes() = runNavigationTest { fixture ->
+        val node = RecordingNode(fixture.root, "standalone")
+        node.changeState(NavigationNodeState.RESUMED)
+        val release = CompletableDeferred<Unit>()
+        lateinit var inheritedChange: Deferred<Unit>
+        node.beforePause = {
+            // Keep the callback's context, but give this task an independent lifetime.
+            inheritedChange = fixture.scope.async(currentCoroutineContext().minusKey(Job)) {
+                release.await()
+                node.changeState(NavigationNodeState.NEW)
+            }
+        }
+
+        val originalChange = fixture.scope.async { node.changeState(NavigationNodeState.STARTED) }
+        runCurrent()
+        assertTrue(originalChange.isCompleted)
+        originalChange.await()
+        assertFalse(inheritedChange.isCompleted)
+        assertEquals(NavigationNodeState.STARTED, node.state)
+
+        release.complete(Unit)
+        runCurrent()
+
+        assertTrue(inheritedChange.isCompleted)
+        inheritedChange.await()
+        assertEquals(NavigationNodeState.NEW, node.state)
     }
 }
