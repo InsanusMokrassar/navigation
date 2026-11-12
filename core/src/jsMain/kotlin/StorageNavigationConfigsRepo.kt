@@ -4,6 +4,7 @@ import dev.inmo.navigation.core.repo.ConfigHolder
 import dev.inmo.navigation.core.repo.NavigationConfigsRepo
 import kotlinx.browser.localStorage
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.StringFormat
 import org.w3c.dom.Storage
 
@@ -18,11 +19,17 @@ class StorageNavigationConfigsRepo<T>(
         storage.setItem(key, serialized)
     }
 
+    /**
+     * Treats undecodable saved state as absent. The stored value remains until the next [save],
+     * so reading invalid state does not require a successful storage write.
+     */
     override fun get(): ConfigHolder<T>? {
-        return format.decodeFromString(
-            serializer,
-            storage.getItem(key) ?: return null
-        )
+        val serialized = storage.getItem(key) ?: return null
+        return try {
+            format.decodeFromString(serializer, serialized)
+        } catch (_: SerializationException) {
+            null
+        }
     }
 }
 

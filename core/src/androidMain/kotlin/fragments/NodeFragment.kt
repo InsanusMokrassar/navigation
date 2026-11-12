@@ -9,6 +9,7 @@ import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 
 abstract class NodeFragment<Config : Base, Base : NavigationNodeDefaultConfig> : Fragment() {
+    @Volatile
     private var _node: AndroidFragmentNode<Config, Base>? = null
     protected val Log by lazy {
         logger
@@ -70,48 +71,24 @@ abstract class NodeFragment<Config : Base, Base : NavigationNodeDefaultConfig> :
         super.onDestroyView()
     }
 
-    private var _nodeSyncObject: Object? = Object()
+    /** Available after navigation binds this Fragment, before its ordinary lifecycle callbacks. */
     protected var node: AndroidFragmentNode<Config, Base>
-        get() = _nodeSyncObject ?.let {
-            synchronized(it) {
-                while (_node == null && _nodeSyncObject != null) {
-                    it.wait()
-                }
-                _node!!
-            }
-        } ?: _node!!
-        private set(value) {
-            _nodeSyncObject ?.let {
-                synchronized(it) {
-                    _node = value
-                    it.notifyAll()
-                    _nodeSyncObject = null
-                }
-            } ?: let {
-                _node = value
-            }
+        get() = checkNotNull(_node) {
+            "NodeFragment.node is unavailable before navigation binds the Fragment. " +
+                "Activities using initNavigation() must call prepareNavigationRestore() before super.onCreate(savedInstanceState)."
         }
+        private set(value) {
+            _node = value
+        }
+    @Volatile
     private var __configState: MutableStateFlow<Config>? = null
-    private var _configStateSyncObject: Object? = Object()
     protected var _configState: MutableStateFlow<Config>
-        get() = _configStateSyncObject ?.let {
-            synchronized(it) {
-                while (__configState == null && _configStateSyncObject != null) {
-                    it.wait()
-                }
-                __configState!!
-            }
-        } ?: __configState!!
+        get() = checkNotNull(__configState) {
+            "NodeFragment.config is unavailable before navigation binds the Fragment. " +
+                "Activities using initNavigation() must call prepareNavigationRestore() before super.onCreate(savedInstanceState)."
+        }
         set(value) {
-            _configStateSyncObject ?.let {
-                synchronized(it) {
-                    __configState = value
-                    it.notifyAll()
-                    _configStateSyncObject = null
-                }
-            } ?: let {
-                __configState = value
-            }
+            __configState = value
         }
     protected var config: Config
         get() = _configState.value

@@ -10,39 +10,70 @@ import dev.inmo.navigation.core.onDestroyFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.take
 
-@Composable
-internal fun <Base> DrawNode(node: NavigationNode<out Base, Base>) {
-    when {
-        node is ComposeNode -> {
-            val drawState = node.drawerState.collectAsState()
-            drawState.value ?.invoke()
-        }
+private class DrawingChildren(private val parent: DrawingChildren?) {
+    var count by mutableStateOf(0)
+        private set
 
-        else -> {
+    fun changeCount(change: Int) {
+        count += change
+        parent?.changeCount(change)
+    }
+}
+
+private val LocalDrawingChildren = compositionLocalOf<DrawingChildren?> { null }
+
+@Composable
+internal fun <Base> DrawNode(node: NavigationNode<out Base, Base>, drawSubchains: Boolean = true): Boolean {
+    val parentDrawingChildren = LocalDrawingChildren.current
+    val drawingChildren = remember(parentDrawingChildren, node) { DrawingChildren(parentDrawingChildren) }
+    val requestedDrawer = if (node is ComposeNode) node.drawerState.collectAsState().value else null
+    var previousDrawer by remember(node) { mutableStateOf(requestedDrawer) }
+    // A parent pauses before its descendants, whose animations still need the parent's composition.
+    val drawer = requestedDrawer ?: previousDrawer.takeIf { drawingChildren.count > 0 }
+    val drawing = if (node is ComposeNode) drawer != null else drawSubchains || drawingChildren.count > 0
+    SideEffect { previousDrawer = drawer }
+
+    // Only requested Compose drawers contribute activity; empty containers and retained drawers do not.
+    val activeDrawer = requestedDrawer != null
+    DisposableEffect(parentDrawingChildren, node, activeDrawer) {
+        if (activeDrawer) parentDrawingChildren?.changeCount(1)
+        onDispose {
+            if (activeDrawer) parentDrawingChildren?.changeCount(-1)
+        }
+    }
+    CompositionLocalProvider(LocalDrawingChildren provides drawingChildren) {
+        if (node is ComposeNode) {
+            drawer?.invoke()
+        } else if (drawing) {
             SubchainsHandling<Base>()
         }
     }
+    return drawing
 }
 /**
- * Collecting [NavigationChain.stackFlow] and always [DrawChain] only the latest element in [NavigationChain.stackFlow]
+ * Draws the latest node and keeps outgoing compositions until their drawers and descendants finish pausing.
  */
 @Composable
 internal fun <Base> DrawStackNodes() {
     val chain = getChainFromLocalProvider<Base>() ?: return
     val stack = chain.stackFlow.collectAsState()
-    val latestNode = remember(stack.value.lastOrNull()) {
-        stack.value.lastOrNull()
-    }
+    val latestNode = stack.value.lastOrNull()
     val provider = InternalLocalComposeInjectedChainsAndNodesProvider.current
-    key(latestNode, latestNode ?.hashCode()) {
-        if (latestNode != null) {
-            doWithNodeInLocalProvider(latestNode) {
-                if (latestNode !in provider.nodes) {
-                    DrawNode(latestNode)
+    var retainedNodes by remember(chain) { mutableStateOf(emptyList<NavigationNode<out Base, Base>>()) }
+    val drawingNodes = mutableListOf<NavigationNode<out Base, Base>>()
+    // Reversed replacement removes the old entry before awaiting its pause animation.
+    (retainedNodes + stack.value).distinct().forEach { node ->
+        key(node, node.hashCode()) {
+            if (node is ComposeNode || node === latestNode || node in retainedNodes) {
+                doWithNodeInLocalProvider(node) {
+                    if (node !in provider.nodes) {
+                        if (DrawNode(node, drawSubchains = node === latestNode)) drawingNodes.add(node)
+                    }
                 }
             }
         }
     }
+    SideEffect { retainedNodes = drawingNodes }
 }
 
 /**

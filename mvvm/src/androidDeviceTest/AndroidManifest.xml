@@ -9,5 +9,13 @@
             android:name="dev.inmo.navigation.mvvm.test.NavigationBackgroundActivity"
             android:exported="false"
             android:theme="@android:style/Theme.Material.Light.NoActionBar" />
+        <activity
+            android:name="dev.inmo.navigation.mvvm.test.PublicExtensionNavigationActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
+        <activity
+            android:name="dev.inmo.navigation.mvvm.test.DelayedProductionNavigationActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
     </application>
 </manifest>

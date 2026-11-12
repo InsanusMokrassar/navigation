@@ -24,6 +24,29 @@ There are several types of artifacts:
     * [ComposeView](./mvvm/src/commonMain/kotlin/compose/ComposeView.kt)
     * Platforms-specific realizations of `View`s
 
+## Android Fragment hosts
+
+When using the core or MVVM `AppCompatActivity.initNavigation` extension on a plain Activity, call
+`dev.inmo.navigation.core.prepareNavigationRestore` before `super.onCreate` on every creation:
+
+```kotlin
+override fun onCreate(savedInstanceState: Bundle?) {
+    prepareNavigationRestore()
+    super.onCreate(savedInstanceState)
+    setContentView(R.layout.activity_main)
+    initNavigation(/* your existing navigation configuration */)
+}
+```
+
+This preparation removes only restored `NodeFragment` instances before their lifecycle callbacks run;
+navigation rebuilds and binds them from its configuration repository. Other Fragments and a custom
+`FragmentFactory` keep their normal restoration behavior. `NavigationMVVMSingleActivity` already performs
+the preparation, so its subclasses do not need an additional call.
+
+Existing plain Activity hosts must add this preparation call. Calling `initNavigation` after
+`super.onCreate` alone is too late to prepare restored Fragments. Accessing an unbound `node` or `config`
+now throws an informative `IllegalStateException` immediately instead of waiting indefinitely.
+
 ## Installation
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/dev.inmo/navigation.core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/dev.inmo/navigation.core)

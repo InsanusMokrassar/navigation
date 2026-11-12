@@ -16,6 +16,7 @@ class NavigationChain<Base>(
     internal val nodeFactory: NavigationNodeFactory<Base>,
     val id: NavigationChainId? = null
 ) {
+    internal val lifetime: Job = SupervisorJob(parentNode?.lifetime)
     private val log by lazy {
         TagLogger(toString())
     }
@@ -59,10 +60,42 @@ class NavigationChain<Base>(
     }
 
     private val nodesChangesChannel: Channel<suspend () -> Unit> = Channel(Channel.UNLIMITED)
+    private val nodesChangesMutex = Mutex()
     private var nodesChangesJobMutex = Mutex()
     private var nodesChangesJob: Job? = null
+    private var isDestroyingSubtree = false
+
+    init {
+        lifetime.invokeOnCompletion { nodesChangesChannel.cancel() }
+    }
+
+    /**
+     * Permanently releases this hierarchy's resources and cancels its navigation workers, including
+     * nodes whose pushes are still queued. This is idempotent and does not run UI lifecycle callbacks
+     * or wait for animations. Use it when the owner is destroyed, after saving any required state.
+     *
+     * For a resumable stop, cancel the job returned by [start] instead. A disposed chain cannot restart.
+     */
+    fun dispose() {
+        lifetime.cancel()
+    }
+
+    private suspend fun destroySubtree() {
+        nodesChangesMutex.withLock {
+            // Run in the removing ancestor's scope, even if this chain has no
+            // worker. Queued updates must not revive an explicitly removed subtree.
+            isDestroyingSubtree = true
+            stack.forEach { node ->
+                node.changeState(minOf(node.state, NavigationNodeState.STARTED))
+                node.subchains.forEach { it.destroySubtree() }
+                node.changeState(NavigationNodeState.NEW)
+                node.lifetime.cancel()
+            }
+        }
+    }
 
     fun push(config: Base): NavigationNode<out Base, Base>? {
+        if (!lifetime.isActive) return null
         val newNode = nodeFactory.createNode(this, config) ?: let {
             log.d { "Unable to create node for $config" }
             return null
@@ -83,27 +116,47 @@ class NavigationChain<Base>(
     }
 
     fun drop(node: NavigationNode<*, Base>): NavigationNode<out Base, Base>? {
+        if (!lifetime.isActive) return null
         val contains = stack.any { it === node }
         if (!contains) {
             return null
         }
 
         nodesChangesChannel.trySend {
-            node.changeState(NavigationNodeState.STARTED)
-
-            log.d { "Stack before removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
-            _stackFlow.value = _stackFlow.value.filterNot { currentNode ->
-                (currentNode === node).also {
-                    log.d { "$currentNode (${currentNode.id}) is equal to ${node}: $it" }
-                }
+            removeNode(node)
+            if (stack.isEmpty()) {
+                detachFromParent()
             }
-            log.d { "Stack after removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
-
-            node.changeState(NavigationNodeState.NEW)
-
-            nodesIds.remove(node.id)
         }
         return node
+    }
+
+    private suspend fun removeNode(node: NavigationNode<*, Base>) {
+        if (stack.none { it === node }) return
+        node.changeState(minOf(node.state, NavigationNodeState.STARTED))
+        // Removing the parent cancels its descendants' jobs. Await their
+        // serialized teardown first, including suspending lifecycle callbacks.
+        node.subchains.forEach { it.destroySubtree() }
+
+        log.d { "Stack before removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
+        _stackFlow.value = _stackFlow.value.filterNot { currentNode ->
+            (currentNode === node).also {
+                log.d { "$currentNode (${currentNode.id}) is equal to ${node}: $it" }
+            }
+        }
+        log.d { "Stack after removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
+
+        node.changeState(NavigationNodeState.NEW)
+        node.lifetime.cancel()
+        nodesIds.remove(node.id)
+    }
+
+    private fun detachFromParent() {
+        // Detaching cancels this chain's scope, so finish destruction first.
+        parentNode?._subchainsFlow?.let { subchains ->
+            subchains.value = subchains.value.filterNot { it === this }
+            dispose()
+        }
     }
 
     fun drop(id: NavigationNodeId): NavigationNode<out Base, Base>? {
@@ -115,13 +168,17 @@ class NavigationChain<Base>(
         node: NavigationNode<*, Base>,
         config: Base
     ): Pair<NavigationNode<out Base, Base>, NavigationNode<out Base, Base>>? {
+        if (!lifetime.isActive) return null
         val i = stack.indexOfFirst { it === node }.takeIf { it > -1 } ?: return null
 
         val newNode = nodeFactory.createNode(this, config) ?: return null
 
         nodesChangesChannel.trySend {
             val i = stack.indexOfFirst { it === node }.takeIf { it > -1 } ?: return@trySend
+            node.changeState(minOf(node.state, NavigationNodeState.STARTED))
+            node.subchains.forEach { it.destroySubtree() }
             node.changeState(NavigationNodeState.NEW)
+            node.lifetime.cancel()
 
             nodesIds.remove(node.id)
             _stackFlow.value = stack.withReplacedAt(i) { newNode }
@@ -135,6 +192,7 @@ class NavigationChain<Base>(
         node: NavigationNode<*, Base>,
         config: Base
     ): Pair<NavigationNode<out Base, Base>, NavigationNode<out Base, Base>>? {
+        if (!lifetime.isActive) return null
         val i = stack.indexOfFirst { it === node }.takeIf { it > -1 } ?: return null
         val newNode = nodeFactory.createNode(this, config) ?: return null
 
@@ -144,7 +202,10 @@ class NavigationChain<Base>(
             nodesIds.remove(node.id)
             nodesIds[newNode.id] = newNode
 
+            node.changeState(minOf(node.state, NavigationNodeState.STARTED))
+            node.subchains.forEach { it.destroySubtree() }
             node.changeState(NavigationNodeState.NEW)
+            node.lifetime.cancel()
         }
 
         return node to newNode
@@ -162,17 +223,32 @@ class NavigationChain<Base>(
         config: Base
     ) = replace(NavigationNodeId(id), config)
 
+    /** Enqueues removal of all nodes present when this command runs. */
     fun clear() {
-        while (stack.isNotEmpty()) {
-            pop()
-        }
+        enqueueClear(detachEmptyChain = false)
     }
+
+    internal fun clearAndDetach(): Boolean = enqueueClear(detachEmptyChain = true)
+
+    private fun enqueueClear(detachEmptyChain: Boolean): Boolean = nodesChangesChannel.trySend {
+        // Take the snapshot in the worker so earlier queued pushes are included.
+        val nodes = stack.asReversed()
+        nodes.forEach { removeNode(it) }
+        if (nodes.isNotEmpty() || detachEmptyChain) {
+            detachFromParent()
+        }
+    }.isSuccess
+
+    /** Returns whether removal from the parent was accepted; teardown completes asynchronously. */
     fun dropItself(): Boolean {
         return parentNode ?.removeSubChain(this) == true
     }
 
     fun start(scope: CoroutineScope): Job {
+        check(lifetime.isActive) { "Cannot start a disposed navigation chain" }
         val subscope = scope.LinkedSupervisorScope()
+        val lifetimeHandle = lifetime.invokeOnCompletion { subscope.cancel() }
+        subscope.coroutineContext.job.invokeOnCompletion { lifetimeHandle.dispose() }
 
         log.d { "Starting chain" }
 
@@ -212,10 +288,6 @@ class NavigationChain<Base>(
                         nodeToJob[it.id] = it.start(subscope)
                     }
                 }
-
-                if (stack.isEmpty()) {
-                    dropItself()
-                }
             }
 
         subscope.launchLoggingDropExceptions {
@@ -223,7 +295,16 @@ class NavigationChain<Base>(
                 nodesChangesJob ?.cancel()
                 nodesChangesJob = subscope.launch {
                     for (lambda in nodesChangesChannel) {
-                        lambda()
+                        try {
+                            nodesChangesMutex.withLock {
+                                if (!isDestroyingSubtree) lambda()
+                            }
+                        } catch (failure: Throwable) {
+                            // A callback may throw CancellationException without cancelling this worker.
+                            // Only an actual job cancellation should stop later commands.
+                            currentCoroutineContext().ensureActive()
+                            log.e(failure) { "Unable to apply navigation chain update" }
+                        }
                     }
                 }
             }

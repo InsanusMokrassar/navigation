@@ -10,6 +10,8 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlin.coroutines.AbstractCoroutineContextElement
+import kotlin.coroutines.CoroutineContext
 
 abstract class NavigationNode<Config : Base, Base>(
     open val id: NavigationNodeId = NavigationNodeId()
@@ -19,6 +21,14 @@ abstract class NavigationNode<Config : Base, Base>(
     }
 
     abstract val chain: NavigationChain<Base>
+
+    /**
+     * Resource lifetime, cancelled when this node is destroyed or its owning chain is [disposed][NavigationChain.dispose].
+     * Unlike [start]'s job it remains active while navigation workers are stopped for a later restart.
+     * Owner disposal does not run UI lifecycle callbacks or change the last recorded [state].
+     */
+    val lifetime: Job by lazy { SupervisorJob(chain.lifetime) }
+
     abstract val configState: StateFlow<Config>
     open val config: Config
         get() = configState.value
@@ -41,73 +51,93 @@ abstract class NavigationNode<Config : Base, Base>(
         get() = _statesFlow.value
 
     private val changeStateMutex = Mutex()
+    private class StateChangeContext(key: CoroutineContext.Key<StateChangeContext>) : AbstractCoroutineContextElement(key)
+    private val changeStateContextKey = object : CoroutineContext.Key<StateChangeContext> {}
+
     /**
      * Transitions this node to the specified state by applying each required adjacent lifecycle change.
      *
      * Lifecycle callbacks are invoked before and after every transition step. State change events are
      * emitted before callbacks for downward transitions and after callbacks for upward transitions.
-     * Transitions are serialized to prevent concurrent state changes.
+     * Transitions are serialized to prevent concurrent state changes. Recursive calls for this node
+     * from its active transition's coroutine context (including child coroutines) are rejected.
      *
      * @param newState The target lifecycle state for this node.
+     * @throws IllegalStateException if this node already has an active transition in the caller's context.
      */
     suspend fun changeState(newState: NavigationNodeState) {
-        changeStateMutex.withLock {
-            val changes = NavigationStateChangeList(state, newState)
+        val inheritedChange = currentCoroutineContext()[changeStateContextKey]
+        // A child may retain this context after the transition ends; reject only an active owner.
+        check(inheritedChange == null || !changeStateMutex.holdsLock(inheritedChange)) {
+            "Reentrant changeState is not allowed for node $id during its lifecycle callback"
+        }
+        val owner = StateChangeContext(changeStateContextKey)
+        changeStateMutex.withLock(owner) {
+            // Carry failures across the context boundary without coroutine exception wrapping.
+            withContext(owner) {
+                runCatching {
+                    val changes = NavigationStateChangeList(state, newState)
 
-            changes.forEach { change ->
-                when (change.type) {
-                    NavigationStateChange.Type.CREATE -> {
-                        onBeforeCreate()
-                    }
-                    NavigationStateChange.Type.START -> {
-                        onBeforeStart()
-                    }
-                    NavigationStateChange.Type.RESUME -> {
-                        onBeforeResume()
-                    }
-                    NavigationStateChange.Type.PAUSE -> {
-                        onBeforePause()
-                    }
-                    NavigationStateChange.Type.STOP -> {
-                        onBeforeStop()
-                    }
-                    NavigationStateChange.Type.DESTROY -> {
-                        onBeforeDestroy()
+                    changes.forEach { change ->
+                        when (change.type) {
+                            NavigationStateChange.Type.CREATE -> {
+                                onBeforeCreate()
+                            }
+                            NavigationStateChange.Type.START -> {
+                                onBeforeStart()
+                            }
+                            NavigationStateChange.Type.RESUME -> {
+                                onBeforeResume()
+                            }
+                            NavigationStateChange.Type.PAUSE -> {
+                                onBeforePause()
+                            }
+                            NavigationStateChange.Type.STOP -> {
+                                onBeforeStop()
+                            }
+                            NavigationStateChange.Type.DESTROY -> {
+                                onBeforeDestroy()
+                            }
+                        }
+                        _statesFlow.value = change.to
+
+                        if (change.type == NavigationStateChange.Type.DESTROY) {
+                            lifetime.cancel()
+                        }
+
+                        if (change.isNegative) {
+                            _stateChanges.tryEmit(change)
+                        }
+
+                        when (change.type) {
+                            NavigationStateChange.Type.CREATE -> {
+                                onCreate()
+                            }
+                            NavigationStateChange.Type.START -> {
+                                onStart()
+                            }
+                            NavigationStateChange.Type.RESUME -> {
+                                onResume()
+                            }
+                            NavigationStateChange.Type.PAUSE -> {
+                                onPause()
+                            }
+                            NavigationStateChange.Type.STOP -> {
+                                onStop()
+                            }
+                            NavigationStateChange.Type.DESTROY -> {
+                                onDestroy()
+                            }
+                        }
+
+                        if (change.isPositive) {
+                            _stateChanges.tryEmit(change)
+                        }
+
+                        log.d { "State has been changed from ${change.from} to ${change.to}" }
                     }
                 }
-                _statesFlow.value = change.to
-
-                if (change.isNegative) {
-                    _stateChanges.tryEmit(change)
-                }
-
-                when (change.type) {
-                    NavigationStateChange.Type.CREATE -> {
-                        onCreate()
-                    }
-                    NavigationStateChange.Type.START -> {
-                        onStart()
-                    }
-                    NavigationStateChange.Type.RESUME -> {
-                        onResume()
-                    }
-                    NavigationStateChange.Type.PAUSE -> {
-                        onPause()
-                    }
-                    NavigationStateChange.Type.STOP -> {
-                        onStop()
-                    }
-                    NavigationStateChange.Type.DESTROY -> {
-                        onDestroy()
-                    }
-                }
-
-                if (change.isPositive) {
-                    _stateChanges.tryEmit(change)
-                }
-
-                log.d { "State has been changed from ${change.from} to ${change.to}" }
-            }
+            }.getOrThrow()
         }
     }
 
@@ -159,20 +189,22 @@ abstract class NavigationNode<Config : Base, Base>(
         }
     }
 
+    /**
+     * Returns whether removal was accepted; the chain stays attached until its nodes are destroyed.
+     * Removal runs on the chain's worker after preceding commands, so an unstarted chain must be started.
+     */
     fun removeSubChain(chain: NavigationChain<Base>): Boolean {
         log.d { "Removing chain $chain" }
         val containsChain = _subchainsFlow.value.any { it === chain }
-        if (containsChain) {
-            chain.clear()
-        }
-        _subchainsFlow.value = _subchainsFlow.value.filter { it !== chain }
-        log.d { "Removed chain $chain" }
-        return containsChain && !subchains.contains(chain)
+        return containsChain && chain.clearAndDetach()
     }
 
     fun createSubChain(config: Base, id: NavigationChainId? = null): Pair<NavigationNode<out Base, Base>, NavigationChain<Base>>? {
         val newSubChain = createEmptySubChainWithoutAttaching(id)
-        val createdNode = newSubChain.push(config) ?: return null
+        val createdNode = newSubChain.push(config) ?: run {
+            newSubChain.dispose()
+            return null
+        }
         _subchainsFlow.value += newSubChain
         log.d { "Stack after adding of $config subchain: ${subchains.joinToString("; ") { it.stackFlow.value.joinToString { it.id.string } }}" }
         return createdNode to newSubChain

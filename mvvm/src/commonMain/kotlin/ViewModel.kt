@@ -2,21 +2,19 @@ package dev.inmo.navigation.mvvm
 
 import dev.inmo.kslog.common.d
 import dev.inmo.kslog.common.logger
-import dev.inmo.micro_utils.coroutines.subscribeSafelyWithoutExceptions
 import dev.inmo.navigation.core.NavigationNode
-import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
-import dev.inmo.navigation.core.onDestroyFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.job
 
 /**
  * This is an abstract class of ViewModel for MVVM pattern.
  *
- * It has its own scope bind to [NavigationNode] lifecycle: when [NavigationNode] will be destroyed, its
- * [scope] will be cancelled
+ * Its [scope] is cancelled when the [NavigationNode] is destroyed or its owner disposes the hierarchy.
+ * Stopping and restarting navigation workers preserves the model and its running work.
  */
 abstract class ViewModel<T>(
     node: NavigationNode<out T, T>
@@ -25,11 +23,10 @@ abstract class ViewModel<T>(
     protected val log by lazy { logger }
 
     init {
-        node.onDestroyFlow.subscribeSafelyWithoutExceptions(scope) {
-            if (scope.isActive) {
-                scope.cancel()
-            }
-        }
+        // A retained lifetime also handles models created after disposal, without a flow subscription
+        // race. Cancellation is independent of Fragment attachment and suspending UI callbacks.
+        val lifetimeHandle = node.lifetime.invokeOnCompletion { scope.cancel() }
+        scope.coroutineContext.job.invokeOnCompletion { lifetimeHandle.dispose() }
     }
 
     open fun onCreate() {
