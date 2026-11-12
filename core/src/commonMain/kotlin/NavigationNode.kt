@@ -159,15 +159,14 @@ abstract class NavigationNode<Config : Base, Base>(
         }
     }
 
+    /**
+     * Returns whether removal was accepted; the chain stays attached until its nodes are destroyed.
+     * Removal runs on the chain's worker after preceding commands, so an unstarted chain must be started.
+     */
     fun removeSubChain(chain: NavigationChain<Base>): Boolean {
         log.d { "Removing chain $chain" }
         val containsChain = _subchainsFlow.value.any { it === chain }
-        if (containsChain) {
-            chain.clear()
-        }
-        _subchainsFlow.value = _subchainsFlow.value.filter { it !== chain }
-        log.d { "Removed chain $chain" }
-        return containsChain && !subchains.contains(chain)
+        return containsChain && chain.clearAndDetach()
     }
 
     fun createSubChain(config: Base, id: NavigationChainId? = null): Pair<NavigationNode<out Base, Base>, NavigationChain<Base>>? {

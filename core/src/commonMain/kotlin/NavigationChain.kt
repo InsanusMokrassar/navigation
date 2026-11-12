@@ -104,29 +104,38 @@ class NavigationChain<Base>(
         }
 
         nodesChangesChannel.trySend {
-            node.changeState(NavigationNodeState.STARTED)
-            // Removing the parent cancels its descendants' jobs. Await their
-            // serialized teardown first, including suspending lifecycle callbacks.
-            node.subchains.forEach { it.destroySubtree() }
-
-            log.d { "Stack before removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
-            _stackFlow.value = _stackFlow.value.filterNot { currentNode ->
-                (currentNode === node).also {
-                    log.d { "$currentNode (${currentNode.id}) is equal to ${node}: $it" }
-                }
-            }
-            log.d { "Stack after removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
-
-            node.changeState(NavigationNodeState.NEW)
-
-            nodesIds.remove(node.id)
-
-            // Detaching cancels this chain's scope, so finish destruction first.
+            removeNode(node)
             if (stack.isEmpty()) {
-                dropItself()
+                detachFromParent()
             }
         }
         return node
+    }
+
+    private suspend fun removeNode(node: NavigationNode<*, Base>) {
+        if (stack.none { it === node }) return
+        node.changeState(minOf(node.state, NavigationNodeState.STARTED))
+        // Removing the parent cancels its descendants' jobs. Await their
+        // serialized teardown first, including suspending lifecycle callbacks.
+        node.subchains.forEach { it.destroySubtree() }
+
+        log.d { "Stack before removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
+        _stackFlow.value = _stackFlow.value.filterNot { currentNode ->
+            (currentNode === node).also {
+                log.d { "$currentNode (${currentNode.id}) is equal to ${node}: $it" }
+            }
+        }
+        log.d { "Stack after removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
+
+        node.changeState(NavigationNodeState.NEW)
+        nodesIds.remove(node.id)
+    }
+
+    private fun detachFromParent() {
+        // Detaching cancels this chain's scope, so finish destruction first.
+        parentNode?._subchainsFlow?.let { subchains ->
+            subchains.value = subchains.value.filterNot { it === this }
+        }
     }
 
     fun drop(id: NavigationNodeId): NavigationNode<out Base, Base>? {
@@ -189,11 +198,23 @@ class NavigationChain<Base>(
         config: Base
     ) = replace(NavigationNodeId(id), config)
 
+    /** Enqueues removal of all nodes present when this command runs. */
     fun clear() {
-        while (stack.isNotEmpty()) {
-            pop()
-        }
+        enqueueClear(detachEmptyChain = false)
     }
+
+    internal fun clearAndDetach(): Boolean = enqueueClear(detachEmptyChain = true)
+
+    private fun enqueueClear(detachEmptyChain: Boolean): Boolean = nodesChangesChannel.trySend {
+        // Take the snapshot in the worker so earlier queued pushes are included.
+        val nodes = stack.asReversed()
+        nodes.forEach { removeNode(it) }
+        if (nodes.isNotEmpty() || detachEmptyChain) {
+            detachFromParent()
+        }
+    }.isSuccess
+
+    /** Returns whether removal from the parent was accepted; teardown completes asynchronously. */
     fun dropItself(): Boolean {
         return parentNode ?.removeSubChain(this) == true
     }

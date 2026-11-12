@@ -137,6 +137,78 @@ class NavigationChainLifecycleRegressionTests : NavigationTest() {
     }
 
     @Test
+    fun clearUsesTheStackAtItsPlaceInTheNavigationQueue() = runNavigationTest { fixture ->
+        val first = assertNotNull(fixture.root.push("first"))
+        val second = assertNotNull(fixture.root.push("second"))
+        assertTrue(fixture.root.stackFlow.value.isEmpty(), "Both pushes must still be queued")
+        fixture.root.clear()
+        val next = assertNotNull(fixture.root.push("next")) as RecordingNode
+        runCurrent()
+
+        assertEquals(listOf(next), fixture.root.stackFlow.value)
+        assertEquals(NavigationNodeState.NEW, first.state)
+        assertEquals(NavigationNodeState.NEW, second.state)
+        assertEquals(NavigationNodeState.RESUMED, next.state)
+
+        // Both pop calls observe the same node before the worker runs. Clear must
+        // use the stack left by the first pop, and the stale drop must be harmless.
+        assertSame(next, fixture.root.pop())
+        fixture.root.clear()
+        assertSame(next, fixture.root.pop())
+        runCurrent()
+
+        assertTrue(fixture.root.stackFlow.value.isEmpty())
+        assertEquals(NavigationNodeState.NEW, next.state)
+        assertEquals(1, next.teardownCallbacks.count { it == "destroy" })
+        assertTrue(fixture.rootJob.isActive)
+        assertTrue(fixture.reportedErrors.isEmpty())
+    }
+
+    @Test
+    fun removingASubchainWaitsForTheWholeClearBatchToFinish() = runNavigationTest { fixture ->
+        val parent = fixture.push("parent")
+        val (first, subchain) = fixture.child(parent, "first")
+        val second = fixture.push("second", subchain)
+        val gate = DestroyGate()
+        second.beforeDestroy = gate::awaitRelease
+
+        assertTrue(parent.removeSubChain(subchain))
+        runCurrent()
+
+        assertTrue(gate.entered.isCompleted)
+        assertTrue(subchain in parent.subchains, "Detachment must wait for the clear batch")
+        assertFalse(gate.cancelled)
+        assertEquals(listOf(first), subchain.stackFlow.value)
+
+        gate.release.complete(Unit)
+        runCurrent()
+
+        assertTrue(gate.completed && !gate.cancelled)
+        assertTrue(subchain.stackFlow.value.isEmpty())
+        assertFalse(subchain in parent.subchains)
+        listOf(first, second).forEach { node ->
+            assertEquals(NavigationNodeState.NEW, node.state)
+            assertEquals(1, node.teardownCallbacks.count { it == "destroy" })
+        }
+        assertFalse(parent.removeSubChain(subchain), "An already detached chain cannot be removed")
+        assertTrue(fixture.reportedErrors.isEmpty())
+    }
+
+    @Test
+    fun removingAnEmptySubchainFinishesWhenItsWorkerStarts() = runNavigationTest { fixture ->
+        val parent = fixture.push("parent")
+        val subchain = parent.createEmptySubChain()
+
+        assertTrue(subchain.stackFlow.value.isEmpty())
+        assertTrue(subchain.dropItself())
+        assertTrue(subchain in parent.subchains, "Removal is accepted before the new worker starts")
+        runCurrent()
+
+        assertFalse(subchain in parent.subchains)
+        assertTrue(fixture.reportedErrors.isEmpty())
+    }
+
+    @Test
     fun failingDropCallbackReportsTheErrorAndAllowsTheNextPushToRun() = runNavigationTest { fixture ->
         val first = fixture.push("first")
         val failure = IllegalStateException("onBeforePause failed for first")
