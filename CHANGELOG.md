@@ -2,6 +2,25 @@
 
 ## 0.11.0
 
+* `Core`:
+  * Fix `clear`, `removeSubChain` and `dropItself` to finish queued teardown before detaching chains, including last-child removal
+  * Destroy descendants before completing `drop`, `replace` and `reversedReplace`, including suspended lifecycle callbacks
+  * Log navigation command failures without stopping command processing and preserve coroutine cancellation
+  * Reject recursive `changeState` calls for the same node with an informative error while serializing concurrent transitions
+  * Add `NavigationChain.dispose()` for final resource cleanup and keep cancellation of the `start` job resumable
+  * Cancel `NavigationNode.lifetime` on node or host final disposal
+* `Compose`:
+  * Retain outgoing compositions until pause callbacks finish for `push`, `reversedReplace` and nested pauses
+* `Android`:
+  * Add `AppCompatActivity.prepareNavigationRestore`, required before `super.onCreate` in plain activity hosts, while preserving unrelated restored fragments
+  * Fail with an informative error when unbound `NodeFragment.node` or `NodeFragment.config` getters are accessed
+  * Launch navigation startup in the activity `lifecycleScope` and reject destroyed hosts
+* `MVVM`:
+  * Prepare fragment restoration automatically in `NavigationMVVMSingleActivity`
+  * Cancel `ViewModel` scopes on node or host final disposal, including queued and unattached models
+* `JS` realizations:
+  * Treat decoder `SerializationException` as missing saved state and use default initialization
+  * Preserve storage errors, unexpected failures and cancellation, and replace invalid stored state on the next save
 * `Tests`:
   * Add bounded regression tests for chain clearing, lifecycle callback failures, reentrant state changes and subtree destruction
   * Cover Compose pause animation disposal and JS saved-state recovery
