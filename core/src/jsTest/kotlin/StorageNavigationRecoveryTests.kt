@@ -2,6 +2,7 @@ package dev.inmo.navigation.core
 
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 import dev.inmo.navigation.core.repo.ConfigHolder
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -12,14 +13,20 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.json.Json
 import org.w3c.dom.Storage
 import kotlin.js.unsafeCast
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -121,4 +128,50 @@ class StorageNavigationRecoveryTests {
         """.trimIndent(),
         "default",
     )
+
+    @Test
+    fun invalidSavedStateCanBeReadAgainAndReplacedBySave() {
+        val storage = memoryStorage()
+        val key = "navigation-recovery-test"
+        val invalidState = "{broken-json"
+        storage.setItem(key, invalidState)
+        val repo = StorageNavigationConfigsRepo(json, serializer, key, storage)
+
+        repeat(2) { assertNull(repo.get()) }
+        assertEquals(invalidState, storage.getItem(key))
+
+        val saved = holder("saved")
+        repo.save(saved)
+        assertEquals(saved, repo.get())
+    }
+
+    @Test
+    fun storageAccessFailuresPropagate() {
+        for (failure in listOf(IllegalStateException("storage unavailable"), SerializationException("storage failure"))) {
+            val storage = memoryStorage()
+            storage.asDynamic().getItem = { _: String -> throw failure }
+            val repo = StorageNavigationConfigsRepo(json, serializer, storage = storage)
+
+            assertSame(failure, assertFails { repo.get() })
+        }
+    }
+
+    @Test
+    fun cancellationAndUnexpectedDecoderFailuresPropagate() {
+        val storage = memoryStorage()
+        val key = "navigation-recovery-test"
+        storage.setItem(key, json.encodeToString(serializer, holder("saved")))
+        for (failure in listOf(
+            CancellationException("cancelled"),
+            IllegalArgumentException("invalid serializer argument"),
+            IllegalStateException("unexpected serializer state"),
+        )) {
+            val failingSerializer = object : KSerializer<ConfigHolder<TestConfig>> by serializer {
+                override fun deserialize(decoder: Decoder): ConfigHolder<TestConfig> = throw failure
+            }
+            val repo = StorageNavigationConfigsRepo(json, failingSerializer, key, storage)
+
+            assertSame(failure, assertFails { repo.get() })
+        }
+    }
 }
