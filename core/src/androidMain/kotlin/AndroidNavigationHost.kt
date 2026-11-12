@@ -1,7 +1,9 @@
 package dev.inmo.navigation.core
 
+import android.content.Context
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.contextaware.OnContextAvailableListener
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -10,12 +12,44 @@ import dev.inmo.micro_utils.common.rootView
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 import dev.inmo.navigation.core.fragments.AndroidNavigationNodeFactory
+import dev.inmo.navigation.core.fragments.NodeFragment
 import dev.inmo.navigation.core.fragments.transactions.FragmentTransactionConfigurator
 import dev.inmo.navigation.core.repo.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
+
+/**
+ * Prepares Fragment restoration for an Activity using [initNavigation]. Call this before
+ * `super.onCreate(savedInstanceState)` on every Activity creation, or from the Activity initializer.
+ * [initNavigation] itself is called after the Activity's content view is ready.
+ *
+ * Navigation restores its hierarchy from [NavigationConfigsRepo] and binds fresh [NodeFragment]
+ * instances. Discard FragmentManager's restored navigation instances before their lifecycle starts;
+ * other Fragments and the Activity's FragmentFactory retain their normal restoration behavior.
+ *
+ * @throws IllegalStateException if called after the Activity's context has become available during
+ * `super.onCreate`, when restored Fragment lifecycle callbacks can already have run.
+ */
+fun AppCompatActivity.prepareNavigationRestore() {
+    check(peekAvailableContext() == null) {
+        "prepareNavigationRestore() must be called before super.onCreate(savedInstanceState)."
+    }
+    addOnContextAvailableListener(object : OnContextAvailableListener {
+        override fun onContextAvailable(context: Context) {
+            removeOnContextAvailableListener(this)
+            // FragmentActivity's earlier context listener restores its instances before this runs.
+            val restoredNodes = supportFragmentManager.fragments.filterIsInstance<NodeFragment<*, *>>()
+            if (restoredNodes.isNotEmpty()) {
+                supportFragmentManager.beginTransaction().apply {
+                    setReorderingAllowed(true)
+                    restoredNodes.forEach { remove(it) }
+                }.commitNow()
+            }
+        }
+    })
+}
 
 open class AndroidNavigationHost<T : NavigationNodeDefaultConfig>(
     protected val configsRepo: NavigationConfigsRepo<T>,
@@ -69,6 +103,11 @@ open class AndroidNavigationHost<T : NavigationNodeDefaultConfig>(
     }
 }
 
+/**
+ * Starts navigation after the Activity's content view is ready. Call [prepareNavigationRestore]
+ * before `super.onCreate(savedInstanceState)` so restored navigation Fragments cannot receive
+ * lifecycle callbacks before their nodes are bound.
+ */
 inline fun <reified T : NavigationNodeDefaultConfig> AppCompatActivity.initNavigation(
     startChain: ConfigHolder<T>,
     configsRepo: NavigationConfigsRepo<T> = AndroidSPConfigsRepo(
@@ -106,6 +145,11 @@ inline fun <reified T : NavigationNodeDefaultConfig> AppCompatActivity.initNavig
     }
 }
 
+/**
+ * Starts navigation after the Activity's content view is ready. Call [prepareNavigationRestore]
+ * before `super.onCreate(savedInstanceState)` so restored navigation Fragments cannot receive
+ * lifecycle callbacks before their nodes are bound.
+ */
 inline fun <reified T : NavigationNodeDefaultConfig> AppCompatActivity.initNavigation(
     startConfig: T,
     configsRepo: NavigationConfigsRepo<T> = AndroidSPConfigsRepo(

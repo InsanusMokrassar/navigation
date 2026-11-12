@@ -20,6 +20,7 @@ import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 import dev.inmo.navigation.core.fragments.NodeFragment
 import dev.inmo.navigation.core.initNavigation as initCoreNavigation
 import dev.inmo.navigation.core.navigationTag
+import dev.inmo.navigation.core.prepareNavigationRestore
 import dev.inmo.navigation.core.repo.NavigationConfigsRepo
 import dev.inmo.navigation.mvvm.NavigationFragmentInfoProvider
 import dev.inmo.navigation.mvvm.NavigationMVVMSingleActivity
@@ -45,6 +46,7 @@ import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertNotSame
 import kotlin.test.assertTrue
 
@@ -58,12 +60,26 @@ class AndroidHostLifecycleRegressionTests {
             f.awaitPublicHost()
             assertTrue(f.main { f.session.boundLifecycleReads > 0 }, "First-launch lifecycle getters must work")
             val oldActivity = f.activity
+            val unrelated = f.main {
+                UnrelatedTestFragment().also { fragment ->
+                    oldActivity.supportFragmentManager.beginTransaction()
+                        .add(fragment, "unrelated").commitNow()
+                    fragment.savedMessage = "preserved across public host recreation"
+                }
+            }
 
             f.recreate()
             f.awaitPublicHost()
 
             assertNotSame(oldActivity, f.activity)
             assertEquals(1, f.main { f.session.savedStateRecreations })
+            f.main {
+                val restored = assertIs<UnrelatedTestFragment>(
+                    f.activity.supportFragmentManager.findFragmentByTag("unrelated"),
+                )
+                assertNotSame(unrelated, restored)
+                assertEquals("preserved across public host recreation", restored.savedMessage)
+            }
             val probes = f.main { f.session.getterProbes.toList() }
             // A fix may bind restored instances or discard them before onCreate. Both are valid.
             val diagnostics = probes.map { probe ->
@@ -76,6 +92,29 @@ class AndroidHostLifecycleRegressionTests {
                     "unblock a synchronous getter on Main: ${diagnostics.joinToString()}",
             )
         }
+    }
+
+    @Test
+    fun publicExtensionWithoutPreparationFailsUnboundGettersPromptly() {
+        HostLifecycleFixture(probeRestoredGetters = true, prepareRestoration = false).use { f ->
+            f.awaitPublicHost()
+            f.recreate()
+            f.awaitPublicHost()
+
+            val probes = f.main { f.session.getterProbes.toList() }
+            assertEquals(2, probes.size, "The restored unbound Fragment must probe both getters")
+            probes.forEach { it.assertUnboundFailure() }
+        }
+    }
+
+    @Test
+    fun unboundNodeAndConfigAccessFailsPromptly() {
+        val fragment = object : NodeFragment<TestConfig, NavigationNodeDefaultConfig>() {
+            fun readNode() = node
+            fun readConfig() = config
+        }
+        BoundedGetterProbe("node") { fragment.readNode() }.use { it.assertUnboundFailure() }
+        BoundedGetterProbe("config") { fragment.readConfig() }.use { it.assertUnboundFailure() }
     }
 
     @Test
@@ -146,7 +185,7 @@ class AndroidHostLifecycleRegressionTests {
     }
 }
 
-internal class HostLifecycleSession(val probeRestoredGetters: Boolean) {
+internal class HostLifecycleSession(val probeRestoredGetters: Boolean, val prepareRestoration: Boolean) {
     val repo = NavigationConfigsRepo.InMemory<NavigationNodeDefaultConfig>()
     val activities = mutableListOf<AppCompatActivity>()
     val hosts = mutableListOf<AndroidNavigationHost<NavigationNodeDefaultConfig>>()
@@ -172,6 +211,7 @@ class PublicExtensionNavigationActivity : AppCompatActivity() {
         val session = HostLifecycleSessionHolder.requireSession()
         session.activities += this
         if (savedInstanceState != null) session.savedStateRecreations++
+        if (session.prepareRestoration) prepareNavigationRestore()
         super.onCreate(savedInstanceState)
         setContentView(FrameLayout(this).apply {
             id = CONTAINER_ID
@@ -234,8 +274,8 @@ internal class HostLifecycleFragment : NodeFragment<TestConfig, NavigationNodeDe
             check(node === boundNode && config === boundNode?.config)
             session.boundLifecycleReads++
         } else if (session.probeRestoredGetters) {
-            // Main must remain responsive. These workers call the actual getters that an ordinary
-            // onCreate would call, then the fixture interrupts their Object.wait during cleanup.
+            // Bound the failure if a getter regresses to waiting: Main must remain responsive,
+            // and cleanup can interrupt the worker instead of leaving the instrumentation in an ANR.
             session.getterProbes += BoundedGetterProbe("node") { node }
             session.getterProbes += BoundedGetterProbe("config") { config }
         }
@@ -276,6 +316,13 @@ internal class BoundedGetterProbe(private val name: String, read: () -> Any?) : 
 
     fun completedSuccessfully() = done.await(1, TimeUnit.SECONDS) && result.get()?.isSuccess == true
 
+    fun assertUnboundFailure() {
+        assertTrue(done.await(1, TimeUnit.SECONDS), "An unbound getter must not wait: ${diagnostic()}")
+        val failure = assertIs<IllegalStateException>(result.get()?.exceptionOrNull(), diagnostic())
+        assertTrue(failure.message.orEmpty().contains("prepareNavigationRestore()"), diagnostic())
+        assertTrue(failure.message.orEmpty().contains("before super.onCreate"), diagnostic())
+    }
+
     fun diagnostic() = "$name: thread=${thread.state}, result=${result.get()}, " +
         "stack=${thread.stackTrace.take(6).joinToString(" <- ")}"
 
@@ -289,8 +336,9 @@ internal class BoundedGetterProbe(private val name: String, read: () -> Any?) : 
 private class HostLifecycleFixture(
     probeRestoredGetters: Boolean = false,
     delayedStartup: Boolean = false,
+    prepareRestoration: Boolean = true,
 ) : Closeable {
-    val session = HostLifecycleSession(probeRestoredGetters)
+    val session = HostLifecycleSession(probeRestoredGetters, prepareRestoration)
     private var scenario: ActivityScenario<Activity>? = null
 
     init {

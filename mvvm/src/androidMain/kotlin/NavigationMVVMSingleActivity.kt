@@ -3,7 +3,6 @@ package dev.inmo.navigation.mvvm
 import android.os.Bundle
 import android.view.View
 import androidx.activity.OnBackPressedCallback
-import androidx.activity.contextaware.OnContextAvailableListener
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import dev.inmo.kslog.common.d
@@ -13,9 +12,9 @@ import dev.inmo.micro_utils.coroutines.launchSafelyWithoutExceptions
 import dev.inmo.micro_utils.koin.getAllDistinct
 import dev.inmo.navigation.core.AndroidNavigationHost
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
-import dev.inmo.navigation.core.fragments.NodeFragment
 import dev.inmo.navigation.core.fragments.transactions.FragmentTransactionConfigurator
 import dev.inmo.navigation.core.navigationTag
+import dev.inmo.navigation.core.prepareNavigationRestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.koin.core.component.KoinComponent
@@ -39,26 +38,8 @@ abstract class NavigationMVVMSingleActivity : AppCompatActivity(), KoinComponent
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // ConfigHolder restores navigation nodes and binds fresh Fragment instances.
-        // FragmentActivity's earlier context listener restores its own instances;
-        // discard those before dispatchCreate can call an unbound node's lifecycle.
-        val restoreListener = savedInstanceState?.let {
-            OnContextAvailableListener {
-                val restoredNodes = supportFragmentManager.fragments.filterIsInstance<NodeFragment<*, *>>()
-                if (restoredNodes.isNotEmpty()) {
-                    supportFragmentManager.beginTransaction().apply {
-                        setReorderingAllowed(true)
-                        restoredNodes.forEach { remove(it) }
-                    }.commitNow()
-                }
-            }
-        }
-        restoreListener?.let(::addOnContextAvailableListener)
-        try {
-            super.onCreate(savedInstanceState)
-        } finally {
-            restoreListener?.let(::removeOnContextAvailableListener)
-        }
+        prepareNavigationRestore()
+        super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         val loadingFragment = allocateLoadingFragment()

@@ -12,6 +12,7 @@ import dev.inmo.navigation.core.FragmentsClassesFactory
 import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 import dev.inmo.navigation.core.fragments.transactions.FragmentTransactionConfigurator
 import dev.inmo.navigation.core.initNavigation
+import dev.inmo.navigation.core.prepareNavigationRestore
 import dev.inmo.navigation.core.repo.NavigationConfigsRepo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -19,6 +20,11 @@ import kotlinx.coroutines.SupervisorJob
 import kotlin.reflect.KClass
 import kotlin.reflect.full.allSuperclasses
 
+/**
+ * Starts navigation after the Activity's content view is ready. On a plain [AppCompatActivity], call
+ * [prepareNavigationRestore] before `super.onCreate(savedInstanceState)` on every creation.
+ * [NavigationMVVMSingleActivity] performs that preparation automatically.
+ */
 inline fun <reified T : NavigationNodeDefaultConfig> AppCompatActivity.initNavigation(
     startConfig: T,
     navigationFragmentInfoProviders: List<NavigationFragmentInfoProvider>,
