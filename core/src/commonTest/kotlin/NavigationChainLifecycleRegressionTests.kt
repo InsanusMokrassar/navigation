@@ -209,9 +209,19 @@ class NavigationChainLifecycleRegressionTests : NavigationTest() {
     }
 
     @Test
-    fun failingDropCallbackReportsTheErrorAndAllowsTheNextPushToRun() = runNavigationTest { fixture ->
+    fun failingDropCallbackReportsTheErrorAndAllowsTheNextPushToRun() =
+        dropCallbackFailureReportsTheErrorAndAllowsTheNextPushToRun(
+            IllegalStateException("onBeforePause failed for first")
+        )
+
+    @Test
+    fun cancellingDropCallbackReportsTheErrorAndAllowsTheNextPushToRun() =
+        dropCallbackFailureReportsTheErrorAndAllowsTheNextPushToRun(
+            CancellationException("onBeforePause cancelled its own operation")
+        )
+
+    private fun dropCallbackFailureReportsTheErrorAndAllowsTheNextPushToRun(failure: Throwable) = runNavigationTest { fixture ->
         val first = fixture.push("first")
-        val failure = IllegalStateException("onBeforePause failed for first")
         first.beforePause = {
             // Fail only this drop; a later state actualization must be able to succeed.
             first.beforePause = {}
@@ -235,6 +245,35 @@ class NavigationChainLifecycleRegressionTests : NavigationTest() {
         )
         assertEquals(NavigationNodeState.RESUMED, next.state)
         assertTrue(fixture.rootJob.isActive, "A usable chain must retain its running job")
+    }
+
+    @Test
+    fun cancellingTheChainStopsItsCallbackAndLeavesQueuedCommandsForRestart() = runNavigationTest { fixture ->
+        val first = fixture.push("first")
+        val gate = DestroyGate()
+        first.beforePause = gate::awaitRelease
+        fixture.root.drop(first)
+        runCurrent()
+        assertTrue(gate.entered.isCompleted)
+
+        val next = assertNotNull(fixture.root.push("next"))
+        fixture.rootJob.cancel()
+        runCurrent()
+
+        assertTrue(fixture.rootJob.isCancelled)
+        assertTrue(gate.cancelled)
+        assertFalse(gate.completed)
+        assertEquals(listOf(first), fixture.root.stackFlow.value, "Cancelled workers must not run queued commands")
+        assertTrue(fixture.reportedErrors.isEmpty(), "Job cancellation must not be reported as a callback failure")
+
+        first.beforePause = {}
+        val restartedJob = fixture.root.start(fixture.scope)
+        runCurrent()
+
+        assertTrue(restartedJob.isActive)
+        assertEquals(listOf(first, next), fixture.root.stackFlow.value)
+        assertEquals(NavigationNodeState.RESUMED, next.state)
+        assertTrue(fixture.reportedErrors.isEmpty())
     }
 
     @Test

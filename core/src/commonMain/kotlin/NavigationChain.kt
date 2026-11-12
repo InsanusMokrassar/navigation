@@ -267,8 +267,15 @@ class NavigationChain<Base>(
                 nodesChangesJob ?.cancel()
                 nodesChangesJob = subscope.launch {
                     for (lambda in nodesChangesChannel) {
-                        nodesChangesMutex.withLock {
-                            if (!isDestroyingSubtree) lambda()
+                        try {
+                            nodesChangesMutex.withLock {
+                                if (!isDestroyingSubtree) lambda()
+                            }
+                        } catch (failure: Throwable) {
+                            // A callback may throw CancellationException without cancelling this worker.
+                            // Only an actual job cancellation should stop later commands.
+                            currentCoroutineContext().ensureActive()
+                            log.e(failure) { "Unable to apply navigation chain update" }
                         }
                     }
                 }
