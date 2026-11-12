@@ -5,6 +5,8 @@ import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import dev.inmo.kslog.common.d
 import dev.inmo.kslog.common.logger
 import dev.inmo.micro_utils.coroutines.doInUI
@@ -15,7 +17,6 @@ import dev.inmo.navigation.core.configs.NavigationNodeDefaultConfig
 import dev.inmo.navigation.core.fragments.transactions.FragmentTransactionConfigurator
 import dev.inmo.navigation.core.navigationTag
 import dev.inmo.navigation.core.prepareNavigationRestore
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.koin.core.component.KoinComponent
 
@@ -31,7 +32,7 @@ abstract class NavigationMVVMSingleActivity : AppCompatActivity(), KoinComponent
         val currentFragment = supportFragmentManager.findFragmentById(R.id.main_activity_main_fragment)
 
         if (currentFragment === latestLoadingFragment || currentFragment == null) {
-            CoroutineScope(Dispatchers.Default).launchSafelyWithoutExceptions {
+            lifecycleScope.launchSafelyWithoutExceptions(Dispatchers.Default) {
                 onStartNavigation(rootFragmentTag)
             }
         }
@@ -67,6 +68,7 @@ abstract class NavigationMVVMSingleActivity : AppCompatActivity(), KoinComponent
 
     open suspend fun onStartNavigation(rootFragmentTag: String) {
         doInUI {
+            if (isDestroyed || lifecycle.currentState == Lifecycle.State.DESTROYED) return@doInUI
             currentAndroidNavigationHost ?.job ?.cancel()
             currentAndroidNavigationHost = initNavigation<NavigationNodeDefaultConfig>(
                 createInitialConfig(rootFragmentTag),

@@ -30,6 +30,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -142,6 +143,50 @@ class AndroidHostLifecycleRegressionTests {
                     "initialConfigCallsAfterDestroy=${state.first}, hostCreated=${state.second}, " +
                     "navigationJobActive=${state.third}",
             )
+        }
+    }
+
+    @Test
+    fun destroyedActivityRejectsNonCancellableStartupFromCustomCaller() {
+        HostLifecycleFixture(delayedStartup = true).use { f ->
+            f.awaitStartupEntered()
+            val activity = f.activity as DelayedProductionNavigationActivity
+            f.closeActivity()
+            assertTrue(f.main { activity.isDestroyed })
+            // Destruction must cancel the original override even while its startup gate is closed.
+            f.awaitStartupFinished()
+            assertFalse(f.session.startupRelease.isCompleted)
+            f.session.startupRelease.complete(Unit)
+
+            // The public suspend entry point must also guard callers outside the Activity's scope.
+            runBlocking(NonCancellable) {
+                withTimeout(5_000) { activity.onStartNavigation("destroyed-host") }
+            }
+
+            f.main {
+                assertEquals(0, f.session.initialConfigCallsAfterDestroy)
+                assertEquals(null, activity.navigationHost)
+            }
+        }
+    }
+
+    @Test
+    fun delayedProductionNavigationStartupCreatesHostWhileActivityIsAlive() {
+        HostLifecycleFixture(delayedStartup = true).use { f ->
+            f.awaitStartupEntered()
+            val activity = f.activity as DelayedProductionNavigationActivity
+            assertEquals(null, f.main { activity.navigationHost })
+            f.session.startupRelease.complete(Unit)
+            f.awaitStartupFinished()
+
+            runBlocking {
+                withTimeout(5_000) {
+                    while (!f.main {
+                        activity.navigationHost?.job?.isActive == true &&
+                            f.session.fragments.any { it.activity === activity && it.isBoundAndResumed() }
+                    }) delay(10)
+                }
+            }
         }
     }
 
