@@ -16,6 +16,7 @@ class NavigationChain<Base>(
     internal val nodeFactory: NavigationNodeFactory<Base>,
     val id: NavigationChainId? = null
 ) {
+    internal val lifetime: Job = SupervisorJob(parentNode?.lifetime)
     private val log by lazy {
         TagLogger(toString())
     }
@@ -64,6 +65,21 @@ class NavigationChain<Base>(
     private var nodesChangesJob: Job? = null
     private var isDestroyingSubtree = false
 
+    init {
+        lifetime.invokeOnCompletion { nodesChangesChannel.cancel() }
+    }
+
+    /**
+     * Permanently releases this hierarchy's resources and cancels its navigation workers, including
+     * nodes whose pushes are still queued. This is idempotent and does not run UI lifecycle callbacks
+     * or wait for animations. Use it when the owner is destroyed, after saving any required state.
+     *
+     * For a resumable stop, cancel the job returned by [start] instead. A disposed chain cannot restart.
+     */
+    fun dispose() {
+        lifetime.cancel()
+    }
+
     private suspend fun destroySubtree() {
         nodesChangesMutex.withLock {
             // Run in the removing ancestor's scope, even if this chain has no
@@ -73,11 +89,13 @@ class NavigationChain<Base>(
                 node.changeState(minOf(node.state, NavigationNodeState.STARTED))
                 node.subchains.forEach { it.destroySubtree() }
                 node.changeState(NavigationNodeState.NEW)
+                node.lifetime.cancel()
             }
         }
     }
 
     fun push(config: Base): NavigationNode<out Base, Base>? {
+        if (!lifetime.isActive) return null
         val newNode = nodeFactory.createNode(this, config) ?: let {
             log.d { "Unable to create node for $config" }
             return null
@@ -98,6 +116,7 @@ class NavigationChain<Base>(
     }
 
     fun drop(node: NavigationNode<*, Base>): NavigationNode<out Base, Base>? {
+        if (!lifetime.isActive) return null
         val contains = stack.any { it === node }
         if (!contains) {
             return null
@@ -128,6 +147,7 @@ class NavigationChain<Base>(
         log.d { "Stack after removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
 
         node.changeState(NavigationNodeState.NEW)
+        node.lifetime.cancel()
         nodesIds.remove(node.id)
     }
 
@@ -135,6 +155,7 @@ class NavigationChain<Base>(
         // Detaching cancels this chain's scope, so finish destruction first.
         parentNode?._subchainsFlow?.let { subchains ->
             subchains.value = subchains.value.filterNot { it === this }
+            dispose()
         }
     }
 
@@ -147,6 +168,7 @@ class NavigationChain<Base>(
         node: NavigationNode<*, Base>,
         config: Base
     ): Pair<NavigationNode<out Base, Base>, NavigationNode<out Base, Base>>? {
+        if (!lifetime.isActive) return null
         val i = stack.indexOfFirst { it === node }.takeIf { it > -1 } ?: return null
 
         val newNode = nodeFactory.createNode(this, config) ?: return null
@@ -156,6 +178,7 @@ class NavigationChain<Base>(
             node.changeState(minOf(node.state, NavigationNodeState.STARTED))
             node.subchains.forEach { it.destroySubtree() }
             node.changeState(NavigationNodeState.NEW)
+            node.lifetime.cancel()
 
             nodesIds.remove(node.id)
             _stackFlow.value = stack.withReplacedAt(i) { newNode }
@@ -169,6 +192,7 @@ class NavigationChain<Base>(
         node: NavigationNode<*, Base>,
         config: Base
     ): Pair<NavigationNode<out Base, Base>, NavigationNode<out Base, Base>>? {
+        if (!lifetime.isActive) return null
         val i = stack.indexOfFirst { it === node }.takeIf { it > -1 } ?: return null
         val newNode = nodeFactory.createNode(this, config) ?: return null
 
@@ -181,6 +205,7 @@ class NavigationChain<Base>(
             node.changeState(minOf(node.state, NavigationNodeState.STARTED))
             node.subchains.forEach { it.destroySubtree() }
             node.changeState(NavigationNodeState.NEW)
+            node.lifetime.cancel()
         }
 
         return node to newNode
@@ -220,7 +245,10 @@ class NavigationChain<Base>(
     }
 
     fun start(scope: CoroutineScope): Job {
+        check(lifetime.isActive) { "Cannot start a disposed navigation chain" }
         val subscope = scope.LinkedSupervisorScope()
+        val lifetimeHandle = lifetime.invokeOnCompletion { subscope.cancel() }
+        subscope.coroutineContext.job.invokeOnCompletion { lifetimeHandle.dispose() }
 
         log.d { "Starting chain" }
 

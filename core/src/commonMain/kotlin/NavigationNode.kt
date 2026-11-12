@@ -21,6 +21,14 @@ abstract class NavigationNode<Config : Base, Base>(
     }
 
     abstract val chain: NavigationChain<Base>
+
+    /**
+     * Resource lifetime, cancelled when this node is destroyed or its owning chain is [disposed][NavigationChain.dispose].
+     * Unlike [start]'s job it remains active while navigation workers are stopped for a later restart.
+     * Owner disposal does not run UI lifecycle callbacks or change the last recorded [state].
+     */
+    val lifetime: Job by lazy { SupervisorJob(chain.lifetime) }
+
     abstract val configState: StateFlow<Config>
     open val config: Config
         get() = configState.value
@@ -92,6 +100,10 @@ abstract class NavigationNode<Config : Base, Base>(
                             }
                         }
                         _statesFlow.value = change.to
+
+                        if (change.type == NavigationStateChange.Type.DESTROY) {
+                            lifetime.cancel()
+                        }
 
                         if (change.isNegative) {
                             _stateChanges.tryEmit(change)
@@ -189,7 +201,10 @@ abstract class NavigationNode<Config : Base, Base>(
 
     fun createSubChain(config: Base, id: NavigationChainId? = null): Pair<NavigationNode<out Base, Base>, NavigationChain<Base>>? {
         val newSubChain = createEmptySubChainWithoutAttaching(id)
-        val createdNode = newSubChain.push(config) ?: return null
+        val createdNode = newSubChain.push(config) ?: run {
+            newSubChain.dispose()
+            return null
+        }
         _subchainsFlow.value += newSubChain
         log.d { "Stack after adding of $config subchain: ${subchains.joinToString("; ") { it.stackFlow.value.joinToString { it.id.string } }}" }
         return createdNode to newSubChain

@@ -97,7 +97,13 @@ open class AndroidNavigationHost<T : NavigationNodeDefaultConfig>(
                     configsRepo.get() ?: startChain,
                     factory = nodesFactory,
                     dropRedundantChainsOnRestore = dropRedundantChainsOnRestore
-                ) ?.start(subscope)
+                ) ?.let { hierarchy ->
+                    // This host owns the restored hierarchy permanently. A chain's ordinary start
+                    // job remains restartable; completing the host releases its models even if
+                    // Fragments are already detached and can no longer finish UI transitions.
+                    subscope.coroutineContext.job.invokeOnCompletion { hierarchy.dispose() }
+                    if (subscope.isActive) hierarchy.start(subscope)
+                }
             }
         }
     }

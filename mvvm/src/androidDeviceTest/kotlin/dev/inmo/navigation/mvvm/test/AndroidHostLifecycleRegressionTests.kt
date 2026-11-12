@@ -48,6 +48,7 @@ import org.koin.dsl.module
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlin.test.assertNotSame
 import kotlin.test.assertTrue
 
@@ -208,6 +209,29 @@ class AndroidHostLifecycleRegressionTests {
     }
 
     @Test
+    fun finishingHostCancelsModelsWhoseFragmentsNeverAttached() {
+        HostLifecycleFixture().use { f ->
+            f.awaitPublicHost()
+            val pendingNode = f.main {
+                val root = f.session.fragments.last().navigationNode
+                assertNotNull(root.createSubChain(TestConfig("missing-child-container", "Pending"))).first
+            }
+            val models = f.main { f.session.models.toList() }
+            assertEquals(2, models.size, "The unattached child must construct its own model")
+            f.awaitModelWorkStarted(models)
+            f.main {
+                assertTrue(f.session.fragments.none { it.navigationNode === pendingNode })
+                // Completing this pause gate would require a UI which never attached.
+                (pendingNode as TestNode).useBeforePauseWait = true
+            }
+
+            f.closeActivity()
+
+            f.assertModelsStopped(models, "Host finish with an unattached child")
+        }
+    }
+
+    @Test
     fun recreatingHostCancelsOldViewModelsAndKeepsReplacementModelsActive() {
         HostLifecycleFixture().use { f ->
             f.awaitPublicHost()
@@ -305,6 +329,7 @@ class DelayedProductionNavigationActivity : NavigationMVVMSingleActivity() {
 internal class HostLifecycleFragment : NodeFragment<TestConfig, NavigationNodeDefaultConfig>() {
     private val session = HostLifecycleSessionHolder.requireSession()
     private var boundNode: TestNode? = null
+    internal val navigationNode get() = checkNotNull(boundNode)
 
     override fun onSetNode(node: TestNode, configStateFlow: MutableStateFlow<TestConfig>) {
         super.onSetNode(node, configStateFlow)
