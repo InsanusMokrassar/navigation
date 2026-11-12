@@ -1,5 +1,12 @@
 # Navigation Changelog
 
+## 0.11.0
+
+* `Tests`:
+  * Add bounded regression tests for chain clearing, lifecycle callback failures, reentrant state changes and subtree destruction
+  * Cover Compose pause animation disposal and JS saved-state recovery
+  * Cover Android fragment restoration, delayed startup after host destruction and ViewModel scope cleanup
+
 ## 0.10.0
 
 * `Core`:
