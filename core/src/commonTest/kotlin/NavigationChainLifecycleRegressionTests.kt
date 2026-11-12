@@ -10,6 +10,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
@@ -37,6 +38,9 @@ class NavigationChainLifecycleRegressionTests : NavigationTest() {
         val teardownCallbacks = mutableListOf<String>()
         var beforePause: suspend () -> Unit = {}
         var beforeDestroy: suspend () -> Unit = {}
+        lateinit var navigationJob: Job
+
+        override fun start(scope: CoroutineScope): Job = super.start(scope).also { navigationJob = it }
 
         override suspend fun onBeforePause() {
             teardownCallbacks += "beforePause"
@@ -278,6 +282,102 @@ class NavigationChainLifecycleRegressionTests : NavigationTest() {
             assertEquals(1, node.teardownCallbacks.count { it == "destroy" }, "Destruction of ${node.config}")
         }
     }
+
+    @Test
+    fun droppingAParentDoesNotReviveDestroyedSiblingsDuringSuspendingTeardown() = runNavigationTest { fixture ->
+        val parent = fixture.push("parent")
+        val (firstChild, _) = fixture.child(parent, "first child")
+        val (secondChild, _) = fixture.child(parent, "second child")
+        val gate = DestroyGate()
+        secondChild.beforeDestroy = gate::awaitRelease
+        val dropping = fixture.scope.async { fixture.root.dropAndAwaitDestroy(parent) }
+        runCurrent()
+
+        assertTrue(gate.entered.isCompleted)
+        assertEquals(NavigationNodeState.NEW, firstChild.state, "Queued parent updates must not revive a destroyed sibling")
+        assertFalse(dropping.isCompleted, "Parent destruction must await every descendant")
+        assertFalse(gate.cancelled)
+
+        gate.release.complete(Unit)
+        runCurrent()
+
+        assertTrue(gate.completed)
+        assertTrue(dropping.isCompleted && !dropping.isCancelled)
+        listOf(parent, firstChild, secondChild).forEach { node ->
+            assertEquals(NavigationNodeState.NEW, node.state)
+            assertEquals(1, node.teardownCallbacks.count { it == "destroy" })
+        }
+    }
+
+    @Test
+    fun droppingAParentDestroysDescendantsWhoseWorkersWereCancelled() = runNavigationTest { fixture ->
+        val parent = fixture.push("parent")
+        val (child, _) = fixture.child(parent, "child")
+        val (grandchild, _) = fixture.child(child, "grandchild")
+        parent.navigationJob.cancel()
+        runCurrent()
+
+        val dropping = fixture.scope.async { fixture.root.dropAndAwaitDestroy(parent) }
+        runCurrent()
+
+        assertTrue(dropping.isCompleted && !dropping.isCancelled)
+        listOf(parent, child, grandchild).forEach { node ->
+            assertEquals(NavigationNodeState.NEW, node.state)
+            assertEquals(1, node.teardownCallbacks.count { it == "destroy" })
+        }
+        fixture.push("next")
+    }
+
+    @Test
+    fun droppingAParentDoesNotWaitForAnUnstartedChildChain() = runNavigationTest { fixture ->
+        val parent = fixture.push("parent")
+        parent.navigationJob.cancel()
+        runCurrent()
+        val (child, _) = assertNotNull(parent.createSubChain("unstarted child"))
+
+        val dropping = fixture.scope.async { fixture.root.dropAndAwaitDestroy(parent) }
+        runCurrent()
+
+        assertTrue(dropping.isCompleted && !dropping.isCancelled)
+        assertEquals(NavigationNodeState.NEW, parent.state)
+        assertEquals(NavigationNodeState.NEW, child.state)
+        fixture.push("next")
+    }
+
+    private fun replacingAParentDestroysDescendants(reversed: Boolean) = runNavigationTest { fixture ->
+        val parent = fixture.push("parent")
+        val (child, _) = fixture.child(parent, "child")
+        val (grandchild, _) = fixture.child(child, "grandchild")
+        val gate = DestroyGate()
+        grandchild.beforeDestroy = gate::awaitRelease
+
+        val replacement = assertNotNull(
+            if (reversed) fixture.root.reversedReplace(parent, "replacement")
+            else fixture.root.replace(parent, "replacement")
+        ).second
+        runCurrent()
+
+        assertTrue(gate.entered.isCompleted)
+        assertFalse(gate.cancelled)
+        assertEquals(listOf(if (reversed) replacement else parent), fixture.root.stackFlow.value)
+
+        gate.release.complete(Unit)
+        runCurrent()
+
+        assertTrue(gate.completed && !gate.cancelled)
+        listOf(parent, child, grandchild).forEach { node ->
+            assertEquals(NavigationNodeState.NEW, node.state)
+            assertEquals(1, node.teardownCallbacks.count { it == "destroy" })
+        }
+        assertEquals(listOf(replacement), fixture.root.stackFlow.value)
+        assertEquals(NavigationNodeState.RESUMED, replacement.state)
+    }
+
+    @Test
+    fun replacingAParentAllowsASuspendingDescendantDestroyToFinish() = replacingAParentDestroysDescendants(false)
+
+    @Test
+    fun reverseReplacingAParentAllowsASuspendingDescendantDestroyToFinish() = replacingAParentDestroysDescendants(true)
 
     @Test
     fun reentrantStateChangeIsRejectedOrCompletesWithoutStrandingCommands() = runNavigationTest { fixture ->

@@ -59,8 +59,23 @@ class NavigationChain<Base>(
     }
 
     private val nodesChangesChannel: Channel<suspend () -> Unit> = Channel(Channel.UNLIMITED)
+    private val nodesChangesMutex = Mutex()
     private var nodesChangesJobMutex = Mutex()
     private var nodesChangesJob: Job? = null
+    private var isDestroyingSubtree = false
+
+    private suspend fun destroySubtree() {
+        nodesChangesMutex.withLock {
+            // Run in the removing ancestor's scope, even if this chain has no
+            // worker. Queued updates must not revive an explicitly removed subtree.
+            isDestroyingSubtree = true
+            stack.forEach { node ->
+                node.changeState(minOf(node.state, NavigationNodeState.STARTED))
+                node.subchains.forEach { it.destroySubtree() }
+                node.changeState(NavigationNodeState.NEW)
+            }
+        }
+    }
 
     fun push(config: Base): NavigationNode<out Base, Base>? {
         val newNode = nodeFactory.createNode(this, config) ?: let {
@@ -90,6 +105,9 @@ class NavigationChain<Base>(
 
         nodesChangesChannel.trySend {
             node.changeState(NavigationNodeState.STARTED)
+            // Removing the parent cancels its descendants' jobs. Await their
+            // serialized teardown first, including suspending lifecycle callbacks.
+            node.subchains.forEach { it.destroySubtree() }
 
             log.d { "Stack before removing of $node: ${stackFlow.value.joinToString("; ") { it.toString() }}" }
             _stackFlow.value = _stackFlow.value.filterNot { currentNode ->
@@ -126,6 +144,8 @@ class NavigationChain<Base>(
 
         nodesChangesChannel.trySend {
             val i = stack.indexOfFirst { it === node }.takeIf { it > -1 } ?: return@trySend
+            node.changeState(minOf(node.state, NavigationNodeState.STARTED))
+            node.subchains.forEach { it.destroySubtree() }
             node.changeState(NavigationNodeState.NEW)
 
             nodesIds.remove(node.id)
@@ -149,6 +169,8 @@ class NavigationChain<Base>(
             nodesIds.remove(node.id)
             nodesIds[newNode.id] = newNode
 
+            node.changeState(minOf(node.state, NavigationNodeState.STARTED))
+            node.subchains.forEach { it.destroySubtree() }
             node.changeState(NavigationNodeState.NEW)
         }
 
@@ -224,7 +246,9 @@ class NavigationChain<Base>(
                 nodesChangesJob ?.cancel()
                 nodesChangesJob = subscope.launch {
                     for (lambda in nodesChangesChannel) {
-                        lambda()
+                        nodesChangesMutex.withLock {
+                            if (!isDestroyingSubtree) lambda()
+                        }
                     }
                 }
             }
